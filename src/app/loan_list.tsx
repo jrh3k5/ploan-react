@@ -3,7 +3,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { PersonalLoanContext } from '@/services/personal_loan_service_provider';
 import { PersonalLoan } from '@/models/personal_loan';
-
+import { Asset } from './asset';
 
 export function LoanList() {
     const loanService = useContext(PersonalLoanContext);
@@ -39,12 +39,12 @@ export function LoanList() {
             <tbody>
                 {loans.map((loan) => (
                     <tr key={loan.loanID}>
-                        <td>{loan.lender.address}</td>
-                        <td>{loan.borrower.address}</td>
-                        <td>{loan.amountRepaid.toString()}/{loan.amountLoaned.toString()}</td>
+                        <td>{loan.lender?.address}</td>
+                        <td>{loan.borrower?.address}</td>
+                        <td>{loan.amountRepaid?.toString()}/{loan.amountLoaned?.toString()} <Asset asset={loan.asset} /></td>
                     </tr>
                 ))}
             </tbody>
         </table>
-    )   
+    )
 }
