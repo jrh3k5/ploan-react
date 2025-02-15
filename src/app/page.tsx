@@ -1,6 +1,7 @@
 'use client'
 
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { ConnectWallet } from './connect_wallet'
 
 function App() {
   const account = useAccount()
@@ -20,26 +21,13 @@ function App() {
           chainId: {account.chainId}
         </div>
 
-        {account.status === 'connected' && (
+        {account.status === 'connected' ? (
           <button type="button" onClick={() => disconnect()}>
             Disconnect
           </button>
+        ) : (
+          <ConnectWallet />
         )}
-      </div>
-
-      <div>
-        <h2>Connect</h2>
-        {connectors.map((connector) => (
-          <button
-            key={connector.uid}
-            onClick={() => connect({ connector })}
-            type="button"
-          >
-            {connector.name}
-          </button>
-        ))}
-        <div>{status}</div>
-        <div>{error?.message}</div>
       </div>
     </>
   )
