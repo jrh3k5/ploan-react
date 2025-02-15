@@ -33,8 +33,9 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     pendingIncomingLoans: PendingLoan[] = [];
     pendingOutgoingLoans: PendingLoan[] = [];
 
-    constructor(user: Identity) {
-        this.user = user;
+    constructor() {
+        this.user = new Identity("0x9134fc7112b478e97eE6F0E6A7bf81EcAfef19ED");
+        
         this.pendingIncomingLoans = [
             new PendingLoan(
                 "5",
@@ -48,7 +49,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         this.pendingOutgoingLoans = [
             new PendingLoan(
                 "6",
-                user,
+                this.user,
                 barmstrong,
                 1000n,
                 degenAsset,

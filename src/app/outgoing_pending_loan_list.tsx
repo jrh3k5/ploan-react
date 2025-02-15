@@ -4,6 +4,7 @@ import { useState, useEffect, useContext } from 'react';
 import { PersonalLoanContext } from '@/services/personal_loan_service_provider';
 import { PendingLoan } from '@/models/pending_loan';
 import { Asset } from './asset';
+import { UserIdentity } from './user_identity';
 
 export function OutgoingPendingLoanList() {
     const loanService = useContext(PersonalLoanContext);
@@ -37,7 +38,7 @@ export function OutgoingPendingLoanList() {
             <tbody>
                 {pendingOutgoingLoans.map((pendingOutgoingLoan) => (
                     <tr key={pendingOutgoingLoan.loanID}>
-                        <td>{pendingOutgoingLoan.borrower.address}</td>
+                        <td><UserIdentity identity={pendingOutgoingLoan.borrower} /></td>
                         <td>{pendingOutgoingLoan.amountLoaned.toString()} <Asset asset={pendingOutgoingLoan.asset} /></td>
                         <td>
                             <button>Cancel</button>
