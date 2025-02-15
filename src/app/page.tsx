@@ -1,30 +1,27 @@
 'use client'
 
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { useAccount, useDisconnect } from 'wagmi'
 import { ConnectWallet } from './connect_wallet'
+import { LoanList } from './loan_list'
+import { PersonalLoanServiceProvider } from '@/services/personal_loan_service_provider'
 
 function App() {
   const account = useAccount()
-  const { connectors, connect, status, error } = useConnect()
   const { disconnect } = useDisconnect()
 
   return (
     <>
       <div>
-        <h2>Account</h2>
-
-        <div>
-          status: {account.status}
-          <br />
-          addresses: {JSON.stringify(account.addresses)}
-          <br />
-          chainId: {account.chainId}
-        </div>
-
         {account.status === 'connected' ? (
-          <button type="button" onClick={() => disconnect()}>
-            Disconnect
-          </button>
+            <div>            
+                <button type="button" onClick={() => disconnect()}>
+                    Disconnect
+                </button>
+
+                <PersonalLoanServiceProvider>
+                    <LoanList />
+                </PersonalLoanServiceProvider>
+            </div>
         ) : (
           <ConnectWallet />
         )}
