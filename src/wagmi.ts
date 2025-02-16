@@ -1,18 +1,21 @@
 import { http, cookieStorage, createConfig, createStorage } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
+import { mainnet, base, baseSepolia } from "wagmi/chains";
 import { coinbaseWallet, injected } from "wagmi/connectors";
+import { Chain } from "wagmi/chains";
 
 export function getConfig() {
   return createConfig({
-    chains: [mainnet, sepolia],
+    // add in mainnet support for ENS resolution
+    chains: [mainnet, base, baseSepolia],
     connectors: [injected(), coinbaseWallet()],
     storage: createStorage({
       storage: cookieStorage,
     }),
     ssr: true,
     transports: {
-      [mainnet.id]: http(),
-      [sepolia.id]: http(),
+    [mainnet.id]: http(),
+      [base.id]: http(),
+      [baseSepolia.id]: http(),
     },
   });
 }
@@ -21,4 +24,9 @@ declare module "wagmi" {
   interface Register {
     config: ReturnType<typeof getConfig>;
   }
+}
+
+// getUserSelectableChains gets the chains that a user should be able to select
+export function getUserSelectableChains(): Chain[] {
+  return [base, baseSepolia];
 }

@@ -3,20 +3,10 @@ import { PersonalLoan, LoanStatus } from "@/models/personal_loan";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 import { Identity } from "@/models/identity";
 import { PendingLoan } from "@/models/pending_loan";
+import { EthereumAssetResolverService } from "./ethereum_asset_resolver_service";
 
-const usdcAsset = new EthereumAsset(
-  8453,
-  "USDC",
-  6,
-  "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-);
-
-const degenAsset = new EthereumAsset(
-  8453,
-  "DEGEN",
-  18,
-  "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed",
-);
+const usdcAddress = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+const degenAddress = "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed";
 
 const vbuterin = new Identity("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
 
@@ -25,78 +15,33 @@ const barmstrong = new Identity("0x5b76f5B8fc9D700624F78208132f91AD4e61a1f0");
 // InMemoryPersonalLoanService is the in-memory implementation of the personal loan service.
 // This is useful for testing functionlity without any onchain dependencies.
 export class InMemoryPersonalLoanService implements PersonalLoanService {
-  user: Identity;
-  pendingBorrowingLoans: PendingLoan[] = [];
-  pendingLendingLoans: PendingLoan[] = [];
-  borrowingLoans: PersonalLoan[] = [];
-  lendingLoans: PersonalLoan[] = [];
+  private ethereumAssetResolverService: EthereumAssetResolverService;
+  private user: Identity;
+  private pendingBorrowingLoans: PendingLoan[] | undefined = undefined;
+  private pendingLendingLoans: PendingLoan[]| undefined  = undefined;
+  private borrowingLoans: PersonalLoan[] | undefined = undefined;
+  private lendingLoans: PersonalLoan[] | undefined = undefined;
 
-  constructor() {
+  constructor(ethereumAssetResolverService: EthereumAssetResolverService) {
+    this.ethereumAssetResolverService = ethereumAssetResolverService;
     this.user = new Identity("0x9134fc7112b478e97eE6F0E6A7bf81EcAfef19ED");
-
-    this.pendingBorrowingLoans = [
-      new PendingLoan("5", vbuterin, this.user, 1000n, usdcAsset),
-    ];
-
-    this.pendingLendingLoans = [
-      new PendingLoan("6", this.user, barmstrong, 1000n, degenAsset),
-    ];
-
-    this.borrowingLoans = [
-      new PersonalLoan(
-        "3",
-        this.user,
-        barmstrong,
-        250n,
-        50n,
-        usdcAsset,
-        LoanStatus.IN_PROGRESS,
-      ),
-      new PersonalLoan(
-        "4",
-        this.user,
-        vbuterin,
-        250n,
-        50n,
-        degenAsset,
-        LoanStatus.IN_PROGRESS,
-      ),
-    ];
-
-    this.lendingLoans = [
-      new PersonalLoan(
-        "1",
-        vbuterin,
-        this.user,
-        1000n,
-        250n,
-        usdcAsset,
-        LoanStatus.IN_PROGRESS,
-      ),
-      new PersonalLoan(
-        "2",
-        barmstrong,
-        this.user,
-        1000n,
-        250n,
-        degenAsset,
-        LoanStatus.IN_PROGRESS,
-      ),
-    ];
   }
 
   async acceptBorrow(loanID: string): Promise<void> {
-    for (let i = this.pendingBorrowingLoans.length - 1; i >= 0; i--) {
-      if (this.pendingBorrowingLoans[i].loanID === loanID) {
-        const newLoan = this.pendingBorrowingLoans[i];
+    let pendingBorrowingLoans = await this.getOrInitBorrowLoans();
+
+    for (let i = pendingBorrowingLoans.length - 1; i >= 0; i--) {
+      if (pendingBorrowingLoans[i].loanID === loanID) {
+        const newLoan = pendingBorrowingLoans[i];
 
         // create a new array except with pendingLoans[i] removed
         // this needs to be a new array to trigger a refresh
-        this.pendingBorrowingLoans = this.pendingBorrowingLoans
+        pendingBorrowingLoans = pendingBorrowingLoans
           .slice(0, i)
-          .concat(this.pendingBorrowingLoans.slice(i + 1));
+          .concat(pendingBorrowingLoans.slice(i + 1));
 
-        this.borrowingLoans = this.borrowingLoans.concat([
+          const borrowingLoans = await this.getBorrowingLoans();
+        this.borrowingLoans = borrowingLoans.concat([
           new PersonalLoan(
             newLoan.loanID,
             newLoan.borrower,
@@ -112,62 +57,195 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   }
 
   async cancelLendingLoan(loanID: string): Promise<void> {
-    for (let i = this.lendingLoans.length - 1; i >= 0; i--) {
-      if (this.lendingLoans[i].loanID === loanID) {
-        this.lendingLoans[i].status = LoanStatus.CANCELED;
+    const lendingLoans = await this.getOrInitLendingLoans();
+
+    for (let i = lendingLoans.length - 1; i >= 0; i--) {
+      if (lendingLoans[i].loanID === loanID) {
+        lendingLoans[i].status = LoanStatus.CANCELED;
       }
     }
 
     // Completely rebuild the array to trigger a refresh of the data
-    const oldLoans = this.lendingLoans;
     this.lendingLoans = [];
-    this.lendingLoans.push(...oldLoans);
+    this.lendingLoans.push(...lendingLoans);
   }
 
   async cancelPendingLoan(loanID: string): Promise<void> {
-    for (let i = this.pendingLendingLoans.length - 1; i >= 0; i--) {
-      if (this.pendingLendingLoans[i].loanID === loanID) {
+    let pendingLendingLoans = await this.getOrInitPendingLendingLoans();
+
+    for (let i = pendingLendingLoans.length - 1; i >= 0; i--) {
+      if (pendingLendingLoans[i].loanID === loanID) {
         // create a new array except with pendingLoans[i] removed
         // this needs to be a new array to trigger a refresh
-        this.pendingLendingLoans = this.pendingLendingLoans
+        pendingLendingLoans = pendingLendingLoans
           .slice(0, i)
-          .concat(this.pendingLendingLoans.slice(i + 1));
+          .concat(pendingLendingLoans.slice(i + 1));
       }
     }
+
+    this.pendingLendingLoans = [];
+    this.pendingLendingLoans.push(...pendingLendingLoans);
   }
 
   async getBorrowingLoans(): Promise<PersonalLoan[]> {
-    return this.borrowingLoans;
+    return this.getOrInitBorrowLoans();
   }
 
   async getLendingLoans(): Promise<PersonalLoan[]> {
+    return this.getOrInitLendingLoans();
+  }
+
+  // getOrInitBorrowLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
+  async getOrInitBorrowLoans(): Promise<PersonalLoan[]> {
+    if (!this.borrowingLoans) {
+      const usdcAsset =
+        await this.ethereumAssetResolverService.getAsset(usdcAddress);
+      if (!usdcAsset) {
+        throw new Error("Failed to resolve USDC as an asset: " + usdcAddress);
+      }
+
+      const degenAsset =
+        await this.ethereumAssetResolverService.getAsset(degenAddress);
+      if (!degenAsset) {
+        throw new Error("Failed to resolve DEGEN as an asset: " + degenAddress);
+      }
+
+      this.borrowingLoans = [
+        new PersonalLoan(
+          "3",
+          this.user,
+          barmstrong,
+          250n,
+          50n,
+          usdcAsset,
+          LoanStatus.IN_PROGRESS,
+        ),
+        new PersonalLoan(
+          "4",
+          this.user,
+          vbuterin,
+          250n,
+          50n,
+          degenAsset,
+          LoanStatus.IN_PROGRESS,
+        ),
+      ];
+    }
+
+    return this.borrowingLoans;
+  }
+
+  //getOrInitLendingLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
+  async getOrInitLendingLoans(): Promise<PersonalLoan[]> {
+    if (!this.lendingLoans) {
+      const usdcAsset =
+        await this.ethereumAssetResolverService.getAsset(usdcAddress);
+      if (!usdcAsset) {
+        throw new Error("Failed to resolve USDC as an asset: " + usdcAddress);
+      }
+
+      const degenAsset =
+        await this.ethereumAssetResolverService.getAsset(degenAddress);
+      if (!degenAsset) {
+        throw new Error("Failed to resolve DEGEN as an asset: " + degenAddress);
+      }
+
+      this.lendingLoans = [
+        new PersonalLoan(
+          "1",
+          vbuterin,
+          this.user,
+          1000n,
+          250n,
+          usdcAsset,
+          LoanStatus.IN_PROGRESS,
+        ),
+        new PersonalLoan(
+          "2",
+          barmstrong,
+          this.user,
+          1000n,
+          250n,
+          degenAsset,
+          LoanStatus.IN_PROGRESS,
+        ),
+      ];
+    }
+
     return this.lendingLoans;
   }
 
-  async getPendingBorrowingLoans(): Promise<PendingLoan[]> {
+  // getOrInitPendingBorrowLoans retrieves the current pending borrowed loans and initializes the data if it's not already been initialized.
+  async getOrInitPendingBorrowingLoans(): Promise<PendingLoan[]> {
+    if (!this.pendingBorrowingLoans) {
+      const usdcAsset =
+        await this.ethereumAssetResolverService.getAsset(usdcAddress);
+      if (!usdcAsset) {
+        throw new Error("Failed to resolve USDC as an asset: " + usdcAddress);
+      }
+
+      this.pendingBorrowingLoans = [
+        new PendingLoan("5", vbuterin, this.user, 1000n, usdcAsset),
+      ];
+    }
+
     return this.pendingBorrowingLoans;
   }
 
-  async getPendingLendingLoans(): Promise<PendingLoan[]> {
+  // getOrInitPendingLendingLoans retrieves the current pending borrowed loans and initializes the data if it's not already been initialized.
+  async getOrInitPendingLendingLoans(): Promise<PendingLoan[]> {
+    if (!this.pendingLendingLoans) {
+      const degenAsset =
+        await this.ethereumAssetResolverService.getAsset(degenAddress);
+      if (!degenAsset) {
+        throw new Error("Failed to resolve DEGEN as an asset: " + degenAddress);
+      }
+
+      this.pendingLendingLoans = [
+        new PendingLoan("6", this.user, barmstrong, 1000n, degenAsset),
+      ];
+    }
+
     return this.pendingLendingLoans;
   }
 
+  async getPendingBorrowingLoans(): Promise<PendingLoan[]> {
+    return this.getOrInitPendingBorrowingLoans();
+  }
+
+  async getPendingLendingLoans(): Promise<PendingLoan[]> {
+    return this.getOrInitPendingLendingLoans();
+  }
+
+  // purgeData clears the data stored in-memory, allowing the simulation of a fresh start (e.g., a chain change).
+  async purgeData(): Promise<void> {
+    this.borrowingLoans = undefined;
+    this.lendingLoans = undefined;
+    this.pendingBorrowingLoans = undefined;
+    this.pendingLendingLoans = undefined;
+  }
+
   async rejectBorrow(loanID: string): Promise<void> {
-    for (let i = this.pendingBorrowingLoans.length - 1; i >= 0; i--) {
-      if (this.pendingBorrowingLoans[i].loanID === loanID) {
+    let pendingBorrowingLoans = await this.getOrInitPendingBorrowingLoans();
+
+    for (let i = pendingBorrowingLoans.length - 1; i >= 0; i--) {
+      if (pendingBorrowingLoans[i].loanID === loanID) {
         // create a new array except with pendingLoans[i] removed
         // this needs to be a new array to trigger a refresh
-        this.pendingBorrowingLoans = this.pendingBorrowingLoans
+        pendingBorrowingLoans = pendingBorrowingLoans
           .slice(0, i)
-          .concat(this.pendingBorrowingLoans.slice(i + 1));
+          .concat(pendingBorrowingLoans.slice(i + 1));
       }
     }
+
+    this.pendingBorrowingLoans = [];    
+    this.pendingBorrowingLoans.push(...pendingBorrowingLoans);
   }
 
   async repayLoan(loanID: string, amount: bigint): Promise<void> {
-    const repayableLoan = this.borrowingLoans.find(
-      (loan) => loan.loanID === loanID,
-    );
+    const borrowingLoans = await this.getOrInitBorrowLoans();
+
+    const repayableLoan = borrowingLoans.find((loan) => loan.loanID === loanID);
 
     if (!repayableLoan) {
       throw new Error("Loan not found for ID: " + loanID);
@@ -180,8 +258,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     repayableLoan.amountRepaid += amount;
 
     // Rebuild the list of loans to cause a UI refresh
-    const oldLoans = this.borrowingLoans;
     this.borrowingLoans = [];
-    this.borrowingLoans.push(...oldLoans);
+    this.borrowingLoans.push(...borrowingLoans);
   }
 }
