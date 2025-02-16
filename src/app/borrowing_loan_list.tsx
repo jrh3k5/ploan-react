@@ -5,6 +5,7 @@ import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { UserIdentity } from "./user_identity";
 import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
+import { LoanRepaymentForm } from "./loan_repayment_form";
 
 export interface BorrowingLoanListProps {
   borrowingLoans: PersonalLoan[];
@@ -15,6 +16,15 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
 
   const setBorrowingLoans = props.setBorrowingLoans;
+
+  const reloadBorrowingLoans = async () => {
+    if (!loanService) {
+      return;
+    }
+
+    const loans = await loanService.getBorrowingLoans();
+    setBorrowingLoans(loans);
+  };
 
   useEffect(() => {
     if (loanService) {
@@ -52,7 +62,10 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
               <LoanProgress loan={borrowingLoan} />
             </td>
             <td>
-              <button>Repay</button>
+              <LoanRepaymentForm
+                loan={borrowingLoan}
+                onPaymentSubmission={() => reloadBorrowingLoans()}
+              />
             </td>
           </tr>
         ))}

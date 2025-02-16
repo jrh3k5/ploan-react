@@ -30,4 +30,7 @@ export interface PersonalLoanService {
 
   // rejectBorrow rejects a pending loan where the user is the borrower
   rejectBorrow(loanID: string): Promise<void>;
+
+  // repayLoan repays the given amount into the loan.
+  repayLoan(loanID: string, amount: bigint): Promise<void>;
 }
