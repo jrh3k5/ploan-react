@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useState,
+  useEffect,
+  useContext,
+} from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 import { UserIdentity } from "./user_identity";
@@ -9,9 +15,15 @@ import { PersonalLoan } from "@/models/personal_loan";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 
-export function LendingLoanList() {
+export interface LendingLoanListProps {
+  lendingLoans: PersonalLoan[];
+  setLendingLoans: Dispatch<SetStateAction<PersonalLoan[]>>;
+}
+
+export function LendingLoanList(props: LendingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
-  const [lendingLoans, setLendingLoans] = useState<PersonalLoan[]>([]);
+  const lendingLoans = props.lendingLoans;
+  const setLendingLoans = props.setLendingLoans;
 
   useEffect(() => {
     if (loanService) {

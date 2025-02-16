@@ -1,15 +1,21 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { Dispatch, SetStateAction, useEffect, useContext } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
 import { Asset } from "./asset";
 import { UserIdentity } from "./user_identity";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 
-export function PendingLendingLoanList() {
+export interface PendingLendingLoanListProps {
+  pendingLoans: PendingLoan[];
+  setPendingLoans: Dispatch<SetStateAction<PendingLoan[]>>;
+}
+
+export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
-  const [pendingLoans, setPendingLoans] = useState<PendingLoan[]>([]);
+  const pendingLoans = props.pendingLoans;
+  const setPendingLoans = props.setPendingLoans;
 
   useEffect(() => {
     if (loanService) {
