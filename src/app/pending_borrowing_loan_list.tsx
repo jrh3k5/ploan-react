@@ -41,8 +41,8 @@ export function PendingBorrowingLoanList() {
                         <td><UserIdentity identity={pendingLoan.lender} /></td>
                         <td>{pendingLoan.amountLoaned.toString()} <Asset asset={pendingLoan.asset} /></td>
                         <td>
-                            <button>Accept</button>
-                            <button>Reject</button>
+                            <button>Accept Borrow</button>
+                            <button>Reject Borrow</button>
                         </td>
                     </tr>
                 ))}
