@@ -7,7 +7,11 @@ import { Asset } from './asset';
 import { UserIdentity } from './user_identity';
 import { PersonalLoanService } from '@/services/personal_loan_service';
 
-export function PendingBorrowingLoanList() {
+export interface PendingBorrowingLoanListProps {
+    onAcceptBorrow: (loanID: string) => Promise<void>;
+}
+
+export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
     const loanService = useContext(PersonalLoanContext);
     const [pendingBorrowingLoans, setPendingLoans] = useState<PendingLoan[]>([]);
 
@@ -28,7 +32,6 @@ export function PendingBorrowingLoanList() {
     }
 
     const acceptBorrow = async (loanService: PersonalLoanService | null, loanID: string) => {
-        console.log("accepting loan", loanID);
         if (!loanService) {
             return
         }
@@ -38,6 +41,8 @@ export function PendingBorrowingLoanList() {
         const pendingLoans = await loanService.getPendingBorrowingLoans();
 
         setPendingLoans(pendingLoans);
+
+        props.onAcceptBorrow(loanID);
     }
 
     return (

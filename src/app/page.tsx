@@ -2,11 +2,8 @@
 
 import { useAccount, useDisconnect } from 'wagmi'
 import { ConnectWallet } from './connect_wallet'
-import { BorrowingLoanList } from './borrowing_loan_list'
-import { LendingLoanList } from './lending_loan_list'
+import { LoanManagement } from './loan_management'
 import { PersonalLoanServiceProvider } from '@/services/personal_loan_service_provider'
-import { PendingBorrowingLoanList } from './pending_borrowing_loan_list'
-import { PendingLendingLoanList } from './pending_lending_loan_list'
 
 function App() {
   const account = useAccount()
@@ -22,10 +19,7 @@ function App() {
                 </button>
 
                 <PersonalLoanServiceProvider>
-                    <PendingBorrowingLoanList />
-                    <PendingLendingLoanList />
-                    <BorrowingLoanList />
-                    <LendingLoanList />
+                    <LoanManagement />
                 </PersonalLoanServiceProvider>
             </div>
         ) : (
