@@ -6,21 +6,21 @@ import { PendingLoan } from '@/models/pending_loan';
 import { Asset } from './asset';
 import { UserIdentity } from './user_identity';
 
-export function OutgoingPendingLoanList() {
+export function PendingLendingLoanList() {
     const loanService = useContext(PersonalLoanContext);
-    const [pendingOutgoingLoans, setPendingLoans] = useState<PendingLoan[]>([]);
+    const [pendingLoans, setPendingLoans] = useState<PendingLoan[]>([]);
 
     useEffect(() => {
         if (loanService) {
-            loanService.getPendingOutgoingLoans().then(outgoingLoans => {
-                setPendingLoans(outgoingLoans);
+            loanService.getPendingLendingLoans().then(lendingLoans => {
+                setPendingLoans(lendingLoans);
             }).catch(error => {
-                console.error("Failed to retrieve personal loans", error);
+                console.error("Failed to retrieve pending lending loans", error);
             });
         }
     }, []);
     
-    if (!pendingOutgoingLoans.length) {
+    if (!pendingLoans.length) {
         return (
             <div>You have no pending loans waiting to be accepted by the borrower</div>
         )
@@ -31,15 +31,15 @@ export function OutgoingPendingLoanList() {
             <thead>
                 <tr>
                     <th>Borrow</th>
-                    <th>Amount to Borrow</th>
+                    <th>Amount to Lend</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {pendingOutgoingLoans.map((pendingOutgoingLoan) => (
-                    <tr key={pendingOutgoingLoan.loanID}>
-                        <td><UserIdentity identity={pendingOutgoingLoan.borrower} /></td>
-                        <td>{pendingOutgoingLoan.amountLoaned.toString()} <Asset asset={pendingOutgoingLoan.asset} /></td>
+                {pendingLoans.map((pendingLoan) => (
+                    <tr key={pendingLoan.loanID}>
+                        <td><UserIdentity identity={pendingLoan.borrower} /></td>
+                        <td>{pendingLoan.amountLoaned.toString()} <Asset asset={pendingLoan.asset} /></td>
                         <td>
                             <button>Cancel</button>
                         </td>

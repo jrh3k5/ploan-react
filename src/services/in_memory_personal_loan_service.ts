@@ -30,13 +30,15 @@ const barmstrong = new Identity(
 // This is useful for testing functionlity without any onchain dependencies.
 export class InMemoryPersonalLoanService implements PersonalLoanService {
     user: Identity;
-    pendingIncomingLoans: PendingLoan[] = [];
-    pendingOutgoingLoans: PendingLoan[] = [];
+    pendingBorrowingLoans: PendingLoan[] = [];
+    pendingLendingLoans: PendingLoan[] = [];
+    borrowingLoans: PersonalLoan[] = [];
+    lendingLoans: PersonalLoan[] = [];
 
     constructor() {
         this.user = new Identity("0x9134fc7112b478e97eE6F0E6A7bf81EcAfef19ED");
         
-        this.pendingIncomingLoans = [
+        this.pendingBorrowingLoans = [
             new PendingLoan(
                 "5",
                 vbuterin,
@@ -46,7 +48,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
             )
         ];
 
-        this.pendingOutgoingLoans = [
+        this.pendingLendingLoans = [
             new PendingLoan(
                 "6",
                 this.user,
@@ -55,58 +57,59 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
                 degenAsset,
             )
         ];
-    }
 
-    async getPendingIncomingLoans(): Promise<PendingLoan[]> {
-        return this.pendingIncomingLoans;
-    }
-
-    async getPendingOutgoingLoans(): Promise<PendingLoan[]> {
-        return this.pendingOutgoingLoans;
-    }
-
-    async getPersonalLoans(): Promise<PersonalLoan[]> {
-        const lenderLoan0 = new PersonalLoan(
-            "1",
-            vbuterin,
-            this.user,
-            1000n,
-            250n,
-            usdcAsset,
-        );
-        
-        const lenderLoan1 = new PersonalLoan(
-            "2",
-            barmstrong,
-            this.user,
-            1000n,
-            250n,
-            degenAsset,
-        )
-
-        const borrowerLoan0 = new PersonalLoan(
-            "3",
-            this.user,
-            barmstrong,
-            250n,
-            50n,
-            usdcAsset,
-        );
-
-        const borrowerLoan1 = new PersonalLoan(
-            "4",
-            this.user,
-            vbuterin,
-            250n,
-            50n,
-            degenAsset,
-        );
-
-        return [
-            lenderLoan0,
-            lenderLoan1,
-            borrowerLoan0,
-            borrowerLoan1
+        this.borrowingLoans = [
+            new PersonalLoan(
+                "3",
+                this.user,
+                barmstrong,
+                250n,
+                50n,
+                usdcAsset,
+            ),
+            new PersonalLoan(
+                "4",
+                this.user,
+                vbuterin,
+                250n,
+                50n,
+                degenAsset,
+            )
         ];
+
+        this.lendingLoans = [
+            new PersonalLoan(
+                "1",
+                vbuterin,
+                this.user,
+                1000n,
+                250n,
+                usdcAsset,
+            ),
+            new PersonalLoan(
+                "2",
+                barmstrong,
+                this.user,
+                1000n,
+                250n,
+                degenAsset,
+            )
+        ];
+    }
+
+    async getBorrowingLoans(): Promise<PersonalLoan[]> {
+        return this.borrowingLoans;
+    }
+
+    async getLendingLoans(): Promise<PersonalLoan[]> {
+        return this.lendingLoans;
+    }
+
+    async getPendingBorrowingLoans(): Promise<PendingLoan[]> {
+        return this.pendingBorrowingLoans;
+    }
+
+    async getPendingLendingLoans(): Promise<PendingLoan[]> {
+        return this.pendingLendingLoans;
     }
 }   

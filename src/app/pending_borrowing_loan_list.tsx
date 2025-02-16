@@ -6,21 +6,21 @@ import { PendingLoan } from '@/models/pending_loan';
 import { Asset } from './asset';
 import { UserIdentity } from './user_identity';
 
-export function IncomingPendingLoanList() {
+export function PendingBorrowingLoanList() {
     const loanService = useContext(PersonalLoanContext);
-    const [pendingIncomingLoans, setPendingLoans] = useState<PendingLoan[]>([]);
+    const [pendingBorrowingLoans, setPendingLoans] = useState<PendingLoan[]>([]);
 
     useEffect(() => {
         if (loanService) {
-            loanService.getPendingIncomingLoans().then(incomingLoans => {
-                setPendingLoans(incomingLoans);
+            loanService.getPendingBorrowingLoans().then(pendingLoans => {
+                setPendingLoans(pendingLoans);
             }).catch(error => {
-                console.error("Failed to retrieve personal loans", error);
+                console.error("Failed to retrieve pending lending loans", error);
             });
         }
     }, []);
     
-    if (!pendingIncomingLoans.length) {
+    if (!pendingBorrowingLoans.length) {
         return (
             <div>You have no pending loans to be accepted</div>
         )
@@ -36,10 +36,10 @@ export function IncomingPendingLoanList() {
                 </tr>
             </thead>
             <tbody>
-                {pendingIncomingLoans.map((pendingIncomingLoan) => (
-                    <tr key={pendingIncomingLoan.loanID}>
-                        <td><UserIdentity identity={pendingIncomingLoan.lender} /></td>
-                        <td>{pendingIncomingLoan.amountLoaned.toString()} <Asset asset={pendingIncomingLoan.asset} /></td>
+                {pendingBorrowingLoans.map((pendingLoan) => (
+                    <tr key={pendingLoan.loanID}>
+                        <td><UserIdentity identity={pendingLoan.lender} /></td>
+                        <td>{pendingLoan.amountLoaned.toString()} <Asset asset={pendingLoan.asset} /></td>
                         <td>
                             <button>Accept</button>
                             <button>Reject</button>
