@@ -3,6 +3,9 @@ import {PendingLoan} from '@/models/pending_loan';
 
 // PloanService is the interface for the personal loan service.
 export interface PersonalLoanService {
+    // acceptLoan accepts a pending loan where the user is the borrower.
+    acceptBorrow(loanID: string): Promise<void>
+
     // cancelLoan cancels a pending loan.
     cancelPendingLoan(loanID: string): Promise<void>
 

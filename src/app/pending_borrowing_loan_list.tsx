@@ -5,6 +5,7 @@ import { PersonalLoanContext } from '@/services/personal_loan_service_provider';
 import { PendingLoan } from '@/models/pending_loan';
 import { Asset } from './asset';
 import { UserIdentity } from './user_identity';
+import { PersonalLoanService } from '@/services/personal_loan_service';
 
 export function PendingBorrowingLoanList() {
     const loanService = useContext(PersonalLoanContext);
@@ -26,6 +27,19 @@ export function PendingBorrowingLoanList() {
         )
     }
 
+    const acceptBorrow = async (loanService: PersonalLoanService | null, loanID: string) => {
+        console.log("accepting loan", loanID);
+        if (!loanService) {
+            return
+        }
+
+        await loanService.acceptBorrow(loanID);
+
+        const pendingLoans = await loanService.getPendingBorrowingLoans();
+
+        setPendingLoans(pendingLoans);
+    }
+
     return (
         <table>
             <thead>
@@ -41,7 +55,7 @@ export function PendingBorrowingLoanList() {
                         <td><UserIdentity identity={pendingLoan.lender} /></td>
                         <td>{pendingLoan.amountLoaned.toString()} <Asset asset={pendingLoan.asset} /></td>
                         <td>
-                            <button>Accept Borrow</button>
+                            <button onClick={() => acceptBorrow(loanService, pendingLoan.loanID)}>Accept Borrow</button>
                             <button>Reject Borrow</button>
                         </td>
                     </tr>

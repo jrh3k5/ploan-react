@@ -36,8 +36,6 @@ export function PendingLendingLoanList() {
 
         const pendingLoans = await loanService.getPendingLendingLoans();
 
-        console.log("pending loans after cancelation: ", pendingLoans);
-
         setPendingLoans(pendingLoans);
     }
 
