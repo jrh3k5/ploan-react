@@ -30,14 +30,6 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
     }
   }, [loanService, setPendingLoans]);
 
-  if (!pendingLoans.length) {
-    return (
-      <div>
-        You have no pending loans waiting to be accepted by the borrower
-      </div>
-    );
-  }
-
   const cancelLoan = async (
     loanService: PersonalLoanService | null,
     loanID: string,
@@ -54,34 +46,37 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   };
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Borrower</th>
-          <th>Amount to Lend</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {pendingLoans.map((pendingLoan) => (
-          <tr key={pendingLoan.loanID}>
-            <td>
-              <UserIdentity identity={pendingLoan.borrower} />
-            </td>
-            <td>
-              {pendingLoan.amountLoaned.toString()}{" "}
-              <Asset asset={pendingLoan.asset} />
-            </td>
-            <td>
-              <button
-                onClick={() => cancelLoan(loanService, pendingLoan.loanID)}
-              >
-                Cancel Pending Lend
-              </button>
-            </td>
+    <div className="loan-grouping">
+      <h3>Loans You&apos;ve Offered Others ({pendingLoans.length})</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Borrower</th>
+            <th>Amount to Lend</th>
+            <th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {pendingLoans.map((pendingLoan) => (
+            <tr key={pendingLoan.loanID}>
+              <td>
+                <UserIdentity identity={pendingLoan.borrower} />
+              </td>
+              <td className="amount">
+                {pendingLoan.amountLoaned.toString()}{" "}
+                <Asset asset={pendingLoan.asset} />
+              </td>
+              <td className="actions">
+                <button
+                  onClick={() => cancelLoan(loanService, pendingLoan.loanID)}
+                >
+                  Cancel Pending Lend
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

@@ -38,10 +38,6 @@ export function LendingLoanList(props: LendingLoanListProps) {
     }
   }, [loanService, setLendingLoans]);
 
-  if (!lendingLoans.length) {
-    return <div>You have no loans lent out to others</div>;
-  }
-
   const cancelLoan = async (
     loanService: PersonalLoanService | null,
     loanID: string,
@@ -58,39 +54,42 @@ export function LendingLoanList(props: LendingLoanListProps) {
   };
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Borrow</th>
-          <th>Amount to Lend</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {lendingLoans.map((lendingLoan) => (
-          <tr key={lendingLoan.loanID}>
-            <td>
-              <UserIdentity identity={lendingLoan.borrower} />
-            </td>
-            <td>
-              <LoanProgress loan={lendingLoan} />
-            </td>
-            <td>
-              <LoanStatus loan={lendingLoan} />
-            </td>
-            <td>
-              {lendingLoan.status === LoanStatusEnum.IN_PROGRESS && (
-                <button
-                  onClick={() => cancelLoan(loanService, lendingLoan.loanID)}
-                >
-                  Cancel
-                </button>
-              )}
-            </td>
+    <div className="loan-grouping">
+      <h3>Loans Owed to You ({lendingLoans.length})</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Borrower</th>
+            <th>Amount to Lend</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {lendingLoans.map((lendingLoan) => (
+            <tr key={lendingLoan.loanID}>
+              <td>
+                <UserIdentity identity={lendingLoan.borrower} />
+              </td>
+              <td>
+                <LoanProgress loan={lendingLoan} />
+              </td>
+              <td>
+                <LoanStatus loan={lendingLoan} />
+              </td>
+              <td>
+                {lendingLoan.status === LoanStatusEnum.IN_PROGRESS && (
+                  <button
+                    onClick={() => cancelLoan(loanService, lendingLoan.loanID)}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

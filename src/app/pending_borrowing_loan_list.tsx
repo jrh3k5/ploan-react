@@ -31,10 +31,6 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
     }
   }, [loanService, setPendingLoans]);
 
-  if (!pendingBorrowingLoans.length) {
-    return <div>You have no pending loans to be accepted</div>;
-  }
-
   const refreshBorrowingLoans = async (loanService: PersonalLoanService) => {
     if (!loanService) {
       return;
@@ -74,39 +70,42 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   };
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Lender</th>
-          <th>Amount to Borrow</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {pendingBorrowingLoans.map((pendingLoan) => (
-          <tr key={pendingLoan.loanID}>
-            <td>
-              <UserIdentity identity={pendingLoan.lender} />
-            </td>
-            <td>
-              {pendingLoan.amountLoaned.toString()}{" "}
-              <Asset asset={pendingLoan.asset} />
-            </td>
-            <td>
-              <button
-                onClick={() => acceptBorrow(loanService, pendingLoan.loanID)}
-              >
-                Accept Borrow
-              </button>
-              <button
-                onClick={() => rejectBorrow(loanService, pendingLoan.loanID)}
-              >
-                Reject Borrow
-              </button>
-            </td>
+    <div className="loan-grouping">
+      <h3>Loans Offered to You ({pendingBorrowingLoans.length})</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Lender</th>
+            <th>Amount to Borrow</th>
+            <th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {pendingBorrowingLoans.map((pendingLoan) => (
+            <tr key={pendingLoan.loanID}>
+              <td>
+                <UserIdentity identity={pendingLoan.lender} />
+              </td>
+              <td className="amount">
+                {pendingLoan.amountLoaned.toString()}{" "}
+                <Asset asset={pendingLoan.asset} />
+              </td>
+              <td className="actions">
+                <button
+                  onClick={() => acceptBorrow(loanService, pendingLoan.loanID)}
+                >
+                  Accept Borrow
+                </button>
+                <button
+                  onClick={() => rejectBorrow(loanService, pendingLoan.loanID)}
+                >
+                  Reject Borrow
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
