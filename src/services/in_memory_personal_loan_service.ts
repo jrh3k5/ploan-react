@@ -97,9 +97,29 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         ];
     }
 
-    async cancelPendingLoan(loanID: string): Promise<void> {
-        console.log("canceling loan");
+    async acceptBorrow(loanID: string): Promise<void> {
+        for (let i = this.pendingBorrowingLoans.length-1; i >= 0; i--) {
+            if (this.pendingBorrowingLoans[i].loanID === loanID) {
+                const newLoan = this.pendingBorrowingLoans[i];
 
+                // create a new array except with pendingLoans[i] removed
+                // this needs to be a new array to trigger a refresh
+                this.pendingBorrowingLoans = this.pendingBorrowingLoans.slice(0, i).concat(this.pendingBorrowingLoans.slice(i+1));
+
+                this.borrowingLoans = this.borrowingLoans.concat([new PersonalLoan(
+                    newLoan.loanID,
+                    newLoan.borrower,
+                    newLoan.lender,
+                    newLoan.amountLoaned,
+                    0n,
+                    newLoan.asset
+                )])
+            }
+        }
+    
+    }
+
+    async cancelPendingLoan(loanID: string): Promise<void> {
         for (let i = this.pendingLendingLoans.length-1; i >= 0; i--) {
             if (this.pendingLendingLoans[i].loanID === loanID) {
                 // create a new array except with pendingLoans[i] removed
@@ -123,5 +143,15 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
     async getPendingLendingLoans(): Promise<PendingLoan[]> {
         return this.pendingLendingLoans;
+    }
+
+    async rejectBorrow(loanID: string): Promise<void> {
+        for(let i = this.pendingBorrowingLoans.length-1; i >= 0; i--) {
+            if (this.pendingBorrowingLoans[i].loanID === loanID) {
+                // create a new array except with pendingLoans[i] removed
+                // this needs to be a new array to trigger a refresh
+                this.pendingBorrowingLoans = this.pendingBorrowingLoans.slice(0, i).concat(this.pendingBorrowingLoans.slice(i+1));
+            }
+        }
     }
 }   

@@ -5,8 +5,13 @@ import { PersonalLoanContext } from '@/services/personal_loan_service_provider';
 import { PendingLoan } from '@/models/pending_loan';
 import { Asset } from './asset';
 import { UserIdentity } from './user_identity';
+import { PersonalLoanService } from '@/services/personal_loan_service';
 
-export function PendingBorrowingLoanList() {
+export interface PendingBorrowingLoanListProps {
+    onAcceptBorrow: (loanID: string) => Promise<void>;
+}
+
+export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
     const loanService = useContext(PersonalLoanContext);
     const [pendingBorrowingLoans, setPendingLoans] = useState<PendingLoan[]>([]);
 
@@ -26,6 +31,36 @@ export function PendingBorrowingLoanList() {
         )
     }
 
+    const refreshBorrowingLoans = async (loanService: PersonalLoanService) => {
+        if (!loanService) { 
+            return;
+        }
+        
+        const pendingLoans = await loanService.getPendingBorrowingLoans();
+
+        setPendingLoans(pendingLoans);
+    }
+
+    const acceptBorrow = async (loanService: PersonalLoanService | null, loanID: string) => {
+        if (!loanService) {
+            return
+        }
+
+        await refreshBorrowingLoans(loanService);
+
+        props.onAcceptBorrow(loanID);
+    }
+
+    const rejectBorrow = async(loanService: PersonalLoanService | null, loanID: string) => {
+        if (!loanService) {
+            return
+        }
+
+        await loanService.rejectBorrow(loanID);
+        
+        await refreshBorrowingLoans(loanService);
+    }
+
     return (
         <table>
             <thead>
@@ -41,8 +76,8 @@ export function PendingBorrowingLoanList() {
                         <td><UserIdentity identity={pendingLoan.lender} /></td>
                         <td>{pendingLoan.amountLoaned.toString()} <Asset asset={pendingLoan.asset} /></td>
                         <td>
-                            <button>Accept Borrow</button>
-                            <button>Reject Borrow</button>
+                            <button onClick={() => acceptBorrow(loanService, pendingLoan.loanID)}>Accept Borrow</button>
+                            <button onClick={() => rejectBorrow(loanService, pendingLoan.loanID)}>Reject Borrow</button>
                         </td>
                     </tr>
                 ))}
