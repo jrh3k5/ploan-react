@@ -6,14 +6,15 @@ import { Chain } from "wagmi/chains";
 export function getConfig() {
   return createConfig({
     // add in mainnet support for ENS resolution
-    chains: [mainnet, base, baseSepolia],
+    // keep it last, though, to ensure that Base is used by default
+    chains: [base, baseSepolia, mainnet],
     connectors: [injected(), coinbaseWallet()],
     storage: createStorage({
       storage: cookieStorage,
     }),
     ssr: true,
     transports: {
-    [mainnet.id]: http(),
+      [mainnet.id]: http(),
       [base.id]: http(),
       [baseSepolia.id]: http(),
     },

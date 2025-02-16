@@ -6,6 +6,8 @@ import { UserIdentity } from "./user_identity";
 import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
 import { LoanRepaymentForm } from "./loan_repayment_form";
+import { LoanStatus } from "./loan_status";
+import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 
 export interface BorrowingLoanListProps {
   borrowingLoans: PersonalLoan[];
@@ -48,7 +50,8 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
       <thead>
         <tr>
           <th>Lender</th>
-          <th>Amount to Lend</th>
+          <th>Progress</th>
+          <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -61,11 +64,16 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
             <td>
               <LoanProgress loan={borrowingLoan} />
             </td>
+            <th>
+              <LoanStatus loan={borrowingLoan} />
+            </th>
             <td>
-              <LoanRepaymentForm
-                loan={borrowingLoan}
-                onPaymentSubmission={() => reloadBorrowingLoans()}
-              />
+              {borrowingLoan.status == LoanStatusEnum.IN_PROGRESS && (
+                <LoanRepaymentForm
+                  loan={borrowingLoan}
+                  onPaymentSubmission={() => reloadBorrowingLoans()}
+                />
+              )}
             </td>
           </tr>
         ))}

@@ -1,49 +1,69 @@
-'use client';
+"use client";
 
-import { getConfig, getUserSelectableChains } from "@/wagmi";
-import { base, baseSepolia } from "wagmi/chains";
-import { switchChain } from '@wagmi/core'
+import { getUserSelectableChains } from "@/wagmi";
+import { base } from "wagmi/chains";
+import { switchChain } from "@wagmi/core";
+import { useConfig } from "wagmi";
 
 export interface ChainSelectorProps {
-    onChainSelection: (chainId: number) => Promise<void>
+  onChainSelection: (chainId: number) => Promise<void>;
 }
 
 export function ChainSelector(props: ChainSelectorProps) {
-    const wagmiConfig = getConfig();
-    const currentChainId = wagmiConfig.state.chainId;
-    const userSelectableChains = getUserSelectableChains();
+  const wagmiConfig = useConfig();
+  const currentChainId = wagmiConfig.state.chainId;
+  const userSelectableChains = getUserSelectableChains();
 
-    let isSelectableChain = false;
-    for (const selectableChain of userSelectableChains) {
-        isSelectableChain = isSelectableChain || selectableChain.id === currentChainId;
-        if (isSelectableChain) {
-            break;
-        }
+  let isSelectableChain = false;
+  for (const selectableChain of userSelectableChains) {
+    isSelectableChain =
+      isSelectableChain ||
+      selectableChain.id.toString() === currentChainId.toString();
+    if (isSelectableChain) {
+      break;
     }
+  }
 
-    if (!isSelectableChain) {
-        // Switch the user to Base by default
-        switchChain(wagmiConfig, { chainId: base.id });
-    }
+  console.log(
+    "isSelectableChain",
+    wagmiConfig.state.chainId,
+    isSelectableChain,
+  );
+  if (!isSelectableChain) {
+    // Switch the user to Base by default
+    switchChain(wagmiConfig, { chainId: base.id })
+      .then(() => {
+        props.onChainSelection(base.id).catch((e) => {
+          console.warn(
+            "Failed to invoke onChainSelection on initialization to switch to Base",
+            e,
+          );
+        });
+      })
+      .catch((e) => {
+        console.warn("Failed to switch chain to Base on initialization", e);
+      });
+  }
 
-    const changeSelectedChain = async (chainId: number) => {
-        switchChain(wagmiConfig, { chainId: chainId as 8453 | 84532 });
-        await props.onChainSelection(chainId);
-    };
-    
-    return (
-        <select
-            id="chain-select"
-            onChange={(event) => {
-                const selectedChainId = parseInt(event.target.value);
-                changeSelectedChain(selectedChainId);
-            }}
-        >
-            {userSelectableChains.map((chain) => (
-                <option key={chain.id} value={chain.id} defaultChecked={chain.id === currentChainId}>
-                    {chain.name}
-                </option>
-            ))}
-        </select>
-    );
+  const changeSelectedChain = async (chainId: number) => {
+    await switchChain(wagmiConfig, { chainId: chainId as 8453 | 84532 });
+    await props.onChainSelection(chainId);
+  };
+
+  return (
+    <select
+      id="chain-select"
+      onChange={(event) => {
+        const selectedChainId = parseInt(event.target.value);
+        changeSelectedChain(selectedChainId);
+      }}
+      value={currentChainId.toString()}
+    >
+      {userSelectableChains.map((chain) => (
+        <option key={chain.id} value={chain.id.toString()}>
+          {chain.name}
+        </option>
+      ))}
+    </select>
+  );
 }

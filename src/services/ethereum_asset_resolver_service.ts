@@ -1,5 +1,8 @@
 import { EthereumAsset } from "../models/asset";
 
 export interface EthereumAssetResolverService {
-  getAsset(contractAddress: string): Promise<EthereumAsset | null>;
+  getAsset(
+    chainId: number,
+    contractAddress: string,
+  ): Promise<EthereumAsset | undefined>;
 }
