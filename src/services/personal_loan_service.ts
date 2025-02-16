@@ -3,14 +3,19 @@ import {PendingLoan} from '@/models/pending_loan';
 
 // PloanService is the interface for the personal loan service.
 export interface PersonalLoanService {
-    // getPendingIncomingLoans gets loans that have been extended to the current user
+    // getPersonalLoans gets all personal loans for the current user
+    // where the user is the borrower.
+    getBorrowingLoans() : Promise<PersonalLoan[]>
+
+    // getPersonalLoans gets all personal loans for the current user
+    // where the user is the lender.
+    getLendingLoans() : Promise<PersonalLoan[]>
+
+    // getPendingBorrowingLoans gets loans that have been extended to the current user
     // as the borrower and have not yet been accepted by the current user.
-    getPendingIncomingLoans(): Promise<PendingLoan[]>
+    getPendingBorrowingLoans(): Promise<PendingLoan[]>
 
-    // getPendingOutgoingLoans gets loans that have been extended by the current user
+    // getPendingLendingLoans gets loans that have been extended by the current user
     // as the lender and have not yet been accepted by the borrower.
-    getPendingOutgoingLoans(): Promise<PendingLoan[]>
-
-    // getPersonalLoans gets the loans of the current user.
-    getPersonalLoans(): Promise<PersonalLoan[]>
+    getPendingLendingLoans(): Promise<PendingLoan[]>
 }
