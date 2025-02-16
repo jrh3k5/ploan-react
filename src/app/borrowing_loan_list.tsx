@@ -14,18 +14,20 @@ export interface BorrowingLoanListProps {
 export function BorrowingLoanList(props: BorrowingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
 
+  const setBorrowingLoans = props.setBorrowingLoans;
+
   useEffect(() => {
     if (loanService) {
       loanService
         .getBorrowingLoans()
         .then((retrievedLoans) => {
-          props.setBorrowingLoans(retrievedLoans);
+          setBorrowingLoans(retrievedLoans);
         })
         .catch((error) => {
           console.error("Failed to retrieve borrowing loans", error);
         });
     }
-  }, []);
+  }, [loanService, setBorrowingLoans]);
 
   if (!props.borrowingLoans.length) {
     return <div>You are currently borrowing nothing from others</div>;

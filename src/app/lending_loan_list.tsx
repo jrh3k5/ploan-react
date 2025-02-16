@@ -24,7 +24,7 @@ export function LendingLoanList() {
           console.error("Failed to retrieve lending loans", error);
         });
     }
-  }, []);
+  }, [loanService, setLendingLoans]);
 
   if (!lendingLoans.length) {
     return <div>You have no loans lent out to others</div>;

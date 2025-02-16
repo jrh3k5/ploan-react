@@ -22,7 +22,7 @@ export function PendingLendingLoanList() {
           console.error("Failed to retrieve pending lending loans", error);
         });
     }
-  }, []);
+  }, [loanService, setPendingLoans]);
 
   if (!pendingLoans.length) {
     return (
