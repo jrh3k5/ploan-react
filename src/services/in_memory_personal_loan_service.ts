@@ -97,6 +97,18 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         ];
     }
 
+    async cancelPendingLoan(loanID: string): Promise<void> {
+        console.log("canceling loan");
+
+        for (let i = this.pendingLendingLoans.length-1; i >= 0; i--) {
+            if (this.pendingLendingLoans[i].loanID === loanID) {
+                // create a new array except with pendingLoans[i] removed
+                // this needs to be a new array to trigger a refresh
+                this.pendingLendingLoans = this.pendingLendingLoans.slice(0, i).concat(this.pendingLendingLoans.slice(i+1));
+            }
+        }
+    }
+
     async getBorrowingLoans(): Promise<PersonalLoan[]> {
         return this.borrowingLoans;
     }
