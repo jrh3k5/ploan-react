@@ -26,7 +26,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
           console.error("Failed to retrieve pending lending loans", error);
         });
     }
-  }, []);
+  }, [loanService, setPendingLoans]);
 
   if (!pendingBorrowingLoans.length) {
     return <div>You have no pending loans to be accepted</div>;
@@ -49,6 +49,8 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
     if (!loanService) {
       return;
     }
+
+    await loanService.acceptBorrow(loanID);
 
     await refreshBorrowingLoans(loanService);
 
