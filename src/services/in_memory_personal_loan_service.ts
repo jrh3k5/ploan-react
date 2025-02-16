@@ -163,4 +163,25 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       }
     }
   }
+
+  async repayLoan(loanID: string, amount: bigint): Promise<void> {
+    const repayableLoan = this.borrowingLoans.find(
+      (loan) => loan.loanID === loanID,
+    );
+
+    if (!repayableLoan) {
+      throw new Error("Loan not found for ID: " + loanID);
+    }
+
+    if (repayableLoan.amountRepaid + amount > repayableLoan.amountLoaned) {
+      throw new Error("Cannot repay more than the loan amount");
+    }
+
+    repayableLoan.amountRepaid += amount;
+
+    // Rebuild the list of loans to cause a UI refresh
+    const oldLoans = this.borrowingLoans;
+    this.borrowingLoans = [];
+    this.borrowingLoans.push(...oldLoans);
+  }
 }
