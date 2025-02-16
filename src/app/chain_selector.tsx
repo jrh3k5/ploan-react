@@ -24,11 +24,6 @@ export function ChainSelector(props: ChainSelectorProps) {
     }
   }
 
-  console.log(
-    "isSelectableChain",
-    wagmiConfig.state.chainId,
-    isSelectableChain,
-  );
   if (!isSelectableChain) {
     // Switch the user to Base by default
     switchChain(wagmiConfig, { chainId: base.id })
