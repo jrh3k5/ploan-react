@@ -5,14 +5,20 @@ on:
     branches: [main]
 
 jobs:
-  prettier:
+  format:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
-
-      - name: Prettify code
-        uses: creyD/prettier_action@v4.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+      - run: npm ci
+      - run: npm run format
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Apply formatting changes
+          branch: ${{ github.head_ref }}
