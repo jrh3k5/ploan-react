@@ -1,5 +1,5 @@
 import { EthereumAsset } from '@/models/asset';
-import {PersonalLoan} from '@/models/personal_loan';
+import { PersonalLoan, LoanStatus } from '@/models/personal_loan';
 import { PersonalLoanService } from '@/services/personal_loan_service';
 import { Identity } from '@/models/identity';
 import { PendingLoan } from '@/models/pending_loan';
@@ -66,6 +66,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
                 250n,
                 50n,
                 usdcAsset,
+                LoanStatus.IN_PROGRESS,
             ),
             new PersonalLoan(
                 "4",
@@ -74,6 +75,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
                 250n,
                 50n,
                 degenAsset,
+                LoanStatus.IN_PROGRESS,
             )
         ];
 
@@ -85,6 +87,8 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
                 1000n,
                 250n,
                 usdcAsset,
+                LoanStatus.IN_PROGRESS,
+                
             ),
             new PersonalLoan(
                 "2",
@@ -93,6 +97,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
                 1000n,
                 250n,
                 degenAsset,
+                LoanStatus.IN_PROGRESS,
             )
         ];
     }
@@ -112,11 +117,24 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
                     newLoan.lender,
                     newLoan.amountLoaned,
                     0n,
-                    newLoan.asset
+                    newLoan.asset,
+                    LoanStatus.IN_PROGRESS,
                 )])
             }
         }
-    
+    }
+
+    async cancelLendingLoan(loanID: string): Promise<void> {
+        for (let i = this.lendingLoans.length-1; i >= 0; i--) {
+            if (this.lendingLoans[i].loanID === loanID) {
+                this.lendingLoans[i].status = LoanStatus.CANCELED;
+            }
+        }
+
+        // Completely rebuild the array to trigger a refresh of the data
+        const oldLoans = this.lendingLoans;
+        this.lendingLoans = [];
+        this.lendingLoans.push(...oldLoans);
     }
 
     async cancelPendingLoan(loanID: string): Promise<void> {

@@ -6,6 +6,9 @@ export interface PersonalLoanService {
     // acceptLoan accepts a pending loan where the user is the borrower.
     acceptBorrow(loanID: string): Promise<void>
 
+    // cancelLoan cancels a personal loan where the user is the lender.
+    cancelLendingLoan(loanID: string): Promise<void>
+
     // cancelLoan cancels a pending loan.
     cancelPendingLoan(loanID: string): Promise<void>
 
@@ -26,5 +29,5 @@ export interface PersonalLoanService {
     getPendingLendingLoans(): Promise<PendingLoan[]>
 
     // rejectBorrow rejects a pending loan where the user is the borrower
-    rejectBorrow(): Promise<void>
+    rejectBorrow(loanID: string): Promise<void>
 }

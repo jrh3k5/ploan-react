@@ -8,6 +8,7 @@ export class PersonalLoan {
     amountLoaned: bigint;
     amountRepaid: bigint;
     asset: EthereumAsset;
+    status: LoanStatus;
 
     constructor(
         loanID: string,
@@ -15,7 +16,8 @@ export class PersonalLoan {
         lender: Identity,
         amountLoaned: bigint,
         amountRepaid: bigint,
-        asset: EthereumAsset
+        asset: EthereumAsset,
+        status: LoanStatus,
     ) { 
         this.loanID = loanID;
         this.borrower = borrower;
@@ -23,5 +25,13 @@ export class PersonalLoan {
         this.amountLoaned = amountLoaned;
         this.amountRepaid = amountRepaid;
         this.asset = asset;
+        this.status = status;
     }
+}
+
+export enum LoanStatus {
+    UNSPECIFIED,
+    IN_PROGRESS,
+    COMPLETED,
+    CANCELED
 }
