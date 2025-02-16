@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useContext } from 'react';
 import { PersonalLoanContext } from '@/services/personal_loan_service_provider';
+import { PersonalLoanService } from '@/services/personal_loan_service';
 import { UserIdentity } from './user_identity';
 import { LoanProgress } from './loan_progress';
 import { PersonalLoan } from '@/models/personal_loan';
+import { LoanStatus } from './loan_status';
+import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 
 export function LendingLoanList() {
     const loanService = useContext(PersonalLoanContext);
@@ -26,12 +29,25 @@ export function LendingLoanList() {
         )
     }
 
+    const cancelLoan = async (loanService: PersonalLoanService | null, loanID: string) => {
+        if (!loanService) {
+            return
+        }
+
+        await loanService.cancelLendingLoan(loanID);
+
+        const lendingLoans = await loanService.getLendingLoans();
+
+        setLendingLoans(lendingLoans);
+    }
+
     return (
         <table>
             <thead>
                 <tr>
                     <th>Borrow</th>
                     <th>Amount to Lend</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -40,8 +56,9 @@ export function LendingLoanList() {
                     <tr key={lendingLoan.loanID}>
                         <td><UserIdentity identity={lendingLoan.borrower} /></td>
                         <td><LoanProgress loan={lendingLoan} /></td>
+                        <td><LoanStatus loan={lendingLoan} /></td>
                         <td>
-                            <button>Cancel</button>
+                            {lendingLoan.status === LoanStatusEnum.IN_PROGRESS && <button onClick={() => cancelLoan(loanService, lendingLoan.loanID)}>Cancel</button>}
                         </td>
                     </tr>
                 ))}
