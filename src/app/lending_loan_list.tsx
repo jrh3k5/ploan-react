@@ -13,7 +13,7 @@ export function LendingLoanList() {
   const loanService = useContext(PersonalLoanContext);
   const [lendingLoans, setLendingLoans] = useState<PersonalLoan[]>([]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (loanService) {
       loanService
         .getLendingLoans()
