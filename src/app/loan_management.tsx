@@ -49,7 +49,7 @@ export function LoanManagement(props: LoanManagementProps) {
   };
 
   return (
-    <div>
+    <div className="loan-management">
       <PendingBorrowingLoanList
         onAcceptBorrow={onAcceptBorrow}
         pendingBorrowingLoans={pendingBorrowingLoans}

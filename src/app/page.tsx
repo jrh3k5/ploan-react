@@ -12,6 +12,9 @@ import { useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { PendingLoan } from "@/models/pending_loan";
 import { base } from "wagmi/chains";
+import { WelcomePage } from "./welcome_page";
+import { UserIdentity } from "./user_identity";
+import { Identity } from "@/models/identity";
 
 // Declare outside of app so that it's not constantly building new instances
 const wagmiResolver = new WagmiEthereumAssetResolverService();
@@ -33,34 +36,18 @@ function App() {
 
   return (
     <>
-      <div>
+      <div className="app">
         {account.status === "connected" ? (
           <div>
-            <h2>Connected to {account.address}</h2>
-            <ChainSelector
-              onChainSelection={async (chainId) => {
-                await loanService.purgeData();
-
-                await loanService.setChainId(chainId);
-
-                const borrowingLoans = await loanService.getBorrowingLoans();
-                setBorrowingLoans(borrowingLoans);
-
-                const lendingLoans = await loanService.getLendingLoans();
-                setLendingLoans(lendingLoans);
-
-                const pendingBorrowingLoans =
-                  await loanService.getPendingBorrowingLoans();
-                setPendingBorrowingLoans(pendingBorrowingLoans);
-
-                const pendingLendingLoans =
-                  await loanService.getPendingLendingLoans();
-                setPendingLendingLoans(pendingLendingLoans);
-              }}
-            />
-            <button type="button" onClick={() => disconnect()}>
-              Disconnect
-            </button>
+            <div className="wallet-info">
+              <span className="identity">
+                Connected as{" "}
+                <UserIdentity identity={new Identity(account.address)} />
+              </span>
+              <button type="button" onClick={() => disconnect()}>
+                Disconnect
+              </button>
+            </div>
 
             <PersonalLoanServiceProvider loanService={loanService}>
               <LoanManagement
@@ -74,9 +61,34 @@ function App() {
                 setPendingLendingLoans={setPendingLendingLoans}
               />
             </PersonalLoanServiceProvider>
+
+            <div className="chain-selector">
+              Select chain:
+              <ChainSelector
+                onChainSelection={async (chainId) => {
+                  await loanService.purgeData();
+
+                  await loanService.setChainId(chainId);
+
+                  const borrowingLoans = await loanService.getBorrowingLoans();
+                  setBorrowingLoans(borrowingLoans);
+
+                  const lendingLoans = await loanService.getLendingLoans();
+                  setLendingLoans(lendingLoans);
+
+                  const pendingBorrowingLoans =
+                    await loanService.getPendingBorrowingLoans();
+                  setPendingBorrowingLoans(pendingBorrowingLoans);
+
+                  const pendingLendingLoans =
+                    await loanService.getPendingLendingLoans();
+                  setPendingLendingLoans(pendingLendingLoans);
+                }}
+              />
+            </div>
           </div>
         ) : (
-          <ConnectWallet />
+          <WelcomePage />
         )}
       </div>
     </>

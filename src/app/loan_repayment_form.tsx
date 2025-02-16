@@ -40,10 +40,13 @@ export function LoanRepaymentForm(props: LoanRepaymentFormProps) {
       {!showPayAmountInput && (
         <button onClick={() => repayClicked()}>Repay</button>
       )}
-      <form onSubmit={(e) => submitRepayment(e, props.loan.loanID)}>
+      <form
+        onSubmit={(e) => submitRepayment(e, props.loan.loanID)}
+        className="loan-repayment-form"
+      >
         {showPayAmountInput && (
           <div>
-            <input type="number" name="amount" />{" "}
+            <input type="number" name="amount" />
             <button>Submit Repayment</button>
           </div>
         )}

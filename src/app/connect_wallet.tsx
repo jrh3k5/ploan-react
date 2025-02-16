@@ -7,17 +7,21 @@ export function ConnectWallet() {
 
   return (
     <div>
-      <h2>Connect Wallet</h2>
-      {connectors.map((connector) => (
-        <button
-          key={connector.uid}
-          onClick={() => connect({ connector })}
-          type="button"
-        >
-          {connector.name}
-        </button>
+      <h2 className="section-title">Connect Wallet</h2>
+      {connectors.toReversed().map((connector) => (
+        <div key={connector.uid} className="wallet-option">
+          <button
+            className="wallet-option"
+            onClick={() => connect({ connector })}
+            type="button"
+          >
+            {connector.name === "Injected"
+              ? "Metamask and Others"
+              : connector.name}
+          </button>
+        </div>
       ))}
-      <div>{error?.message}</div>
+      {error?.message && <div className="error">{error?.message}</div>}
     </div>
   );
 }

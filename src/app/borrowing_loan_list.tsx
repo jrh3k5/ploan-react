@@ -41,43 +41,42 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
     }
   }, [loanService, setBorrowingLoans]);
 
-  if (!props.borrowingLoans.length) {
-    return <div>You are currently borrowing nothing from others</div>;
-  }
-
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Lender</th>
-          <th>Progress</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {props.borrowingLoans.map((borrowingLoan) => (
-          <tr key={borrowingLoan.loanID}>
-            <td>
-              <UserIdentity identity={borrowingLoan.lender} />
-            </td>
-            <td>
-              <LoanProgress loan={borrowingLoan} />
-            </td>
-            <th>
-              <LoanStatus loan={borrowingLoan} />
-            </th>
-            <td>
-              {borrowingLoan.status == LoanStatusEnum.IN_PROGRESS && (
-                <LoanRepaymentForm
-                  loan={borrowingLoan}
-                  onPaymentSubmission={() => reloadBorrowingLoans()}
-                />
-              )}
-            </td>
+    <div className="loan-grouping">
+      <h3>Loans You Owe On ({props.borrowingLoans.length})</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Lender</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {props.borrowingLoans.map((borrowingLoan) => (
+            <tr key={borrowingLoan.loanID}>
+              <td>
+                <UserIdentity identity={borrowingLoan.lender} />
+              </td>
+              <td>
+                <LoanProgress loan={borrowingLoan} />
+              </td>
+              <th>
+                <LoanStatus loan={borrowingLoan} />
+              </th>
+              <td className="actions">
+                {borrowingLoan.status == LoanStatusEnum.IN_PROGRESS && (
+                  <LoanRepaymentForm
+                    loan={borrowingLoan}
+                    onPaymentSubmission={() => reloadBorrowingLoans()}
+                  />
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
