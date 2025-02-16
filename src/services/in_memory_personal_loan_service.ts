@@ -1,175 +1,166 @@
-import { EthereumAsset } from '@/models/asset';
-import { PersonalLoan, LoanStatus } from '@/models/personal_loan';
-import { PersonalLoanService } from '@/services/personal_loan_service';
-import { Identity } from '@/models/identity';
-import { PendingLoan } from '@/models/pending_loan';
+import { EthereumAsset } from "@/models/asset";
+import { PersonalLoan, LoanStatus } from "@/models/personal_loan";
+import { PersonalLoanService } from "@/services/personal_loan_service";
+import { Identity } from "@/models/identity";
+import { PendingLoan } from "@/models/pending_loan";
 
 const usdcAsset = new EthereumAsset(
-    8453,
-    "USDC",
-    6,
-    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  8453,
+  "USDC",
+  6,
+  "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
 );
 
 const degenAsset = new EthereumAsset(
-    8453,
-    "DEGEN",
-    18,
-    "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed"
+  8453,
+  "DEGEN",
+  18,
+  "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed",
 );
 
-const vbuterin = new Identity(
-    "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-);
+const vbuterin = new Identity("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
 
-const barmstrong = new Identity(
-    "0x5b76f5B8fc9D700624F78208132f91AD4e61a1f0",
-);
+const barmstrong = new Identity("0x5b76f5B8fc9D700624F78208132f91AD4e61a1f0");
 
 // InMemoryPersonalLoanService is the in-memory implementation of the personal loan service.
 // This is useful for testing functionlity without any onchain dependencies.
 export class InMemoryPersonalLoanService implements PersonalLoanService {
-    user: Identity;
-    pendingBorrowingLoans: PendingLoan[] = [];
-    pendingLendingLoans: PendingLoan[] = [];
-    borrowingLoans: PersonalLoan[] = [];
-    lendingLoans: PersonalLoan[] = [];
+  user: Identity;
+  pendingBorrowingLoans: PendingLoan[] = [];
+  pendingLendingLoans: PendingLoan[] = [];
+  borrowingLoans: PersonalLoan[] = [];
+  lendingLoans: PersonalLoan[] = [];
 
-    constructor() {
-        this.user = new Identity("0x9134fc7112b478e97eE6F0E6A7bf81EcAfef19ED");
-        
-        this.pendingBorrowingLoans = [
-            new PendingLoan(
-                "5",
-                vbuterin,
-                this.user,
-                1000n,
-                usdcAsset,
-            )
-        ];
+  constructor() {
+    this.user = new Identity("0x9134fc7112b478e97eE6F0E6A7bf81EcAfef19ED");
 
-        this.pendingLendingLoans = [
-            new PendingLoan(
-                "6",
-                this.user,
-                barmstrong,
-                1000n,
-                degenAsset,
-            )
-        ];
+    this.pendingBorrowingLoans = [
+      new PendingLoan("5", vbuterin, this.user, 1000n, usdcAsset),
+    ];
 
-        this.borrowingLoans = [
-            new PersonalLoan(
-                "3",
-                this.user,
-                barmstrong,
-                250n,
-                50n,
-                usdcAsset,
-                LoanStatus.IN_PROGRESS,
-            ),
-            new PersonalLoan(
-                "4",
-                this.user,
-                vbuterin,
-                250n,
-                50n,
-                degenAsset,
-                LoanStatus.IN_PROGRESS,
-            )
-        ];
+    this.pendingLendingLoans = [
+      new PendingLoan("6", this.user, barmstrong, 1000n, degenAsset),
+    ];
 
-        this.lendingLoans = [
-            new PersonalLoan(
-                "1",
-                vbuterin,
-                this.user,
-                1000n,
-                250n,
-                usdcAsset,
-                LoanStatus.IN_PROGRESS,
-                
-            ),
-            new PersonalLoan(
-                "2",
-                barmstrong,
-                this.user,
-                1000n,
-                250n,
-                degenAsset,
-                LoanStatus.IN_PROGRESS,
-            )
-        ];
+    this.borrowingLoans = [
+      new PersonalLoan(
+        "3",
+        this.user,
+        barmstrong,
+        250n,
+        50n,
+        usdcAsset,
+        LoanStatus.IN_PROGRESS,
+      ),
+      new PersonalLoan(
+        "4",
+        this.user,
+        vbuterin,
+        250n,
+        50n,
+        degenAsset,
+        LoanStatus.IN_PROGRESS,
+      ),
+    ];
+
+    this.lendingLoans = [
+      new PersonalLoan(
+        "1",
+        vbuterin,
+        this.user,
+        1000n,
+        250n,
+        usdcAsset,
+        LoanStatus.IN_PROGRESS,
+      ),
+      new PersonalLoan(
+        "2",
+        barmstrong,
+        this.user,
+        1000n,
+        250n,
+        degenAsset,
+        LoanStatus.IN_PROGRESS,
+      ),
+    ];
+  }
+
+  async acceptBorrow(loanID: string): Promise<void> {
+    for (let i = this.pendingBorrowingLoans.length - 1; i >= 0; i--) {
+      if (this.pendingBorrowingLoans[i].loanID === loanID) {
+        const newLoan = this.pendingBorrowingLoans[i];
+
+        // create a new array except with pendingLoans[i] removed
+        // this needs to be a new array to trigger a refresh
+        this.pendingBorrowingLoans = this.pendingBorrowingLoans
+          .slice(0, i)
+          .concat(this.pendingBorrowingLoans.slice(i + 1));
+
+        this.borrowingLoans = this.borrowingLoans.concat([
+          new PersonalLoan(
+            newLoan.loanID,
+            newLoan.borrower,
+            newLoan.lender,
+            newLoan.amountLoaned,
+            0n,
+            newLoan.asset,
+            LoanStatus.IN_PROGRESS,
+          ),
+        ]);
+      }
+    }
+  }
+
+  async cancelLendingLoan(loanID: string): Promise<void> {
+    for (let i = this.lendingLoans.length - 1; i >= 0; i--) {
+      if (this.lendingLoans[i].loanID === loanID) {
+        this.lendingLoans[i].status = LoanStatus.CANCELED;
+      }
     }
 
-    async acceptBorrow(loanID: string): Promise<void> {
-        for (let i = this.pendingBorrowingLoans.length-1; i >= 0; i--) {
-            if (this.pendingBorrowingLoans[i].loanID === loanID) {
-                const newLoan = this.pendingBorrowingLoans[i];
+    // Completely rebuild the array to trigger a refresh of the data
+    const oldLoans = this.lendingLoans;
+    this.lendingLoans = [];
+    this.lendingLoans.push(...oldLoans);
+  }
 
-                // create a new array except with pendingLoans[i] removed
-                // this needs to be a new array to trigger a refresh
-                this.pendingBorrowingLoans = this.pendingBorrowingLoans.slice(0, i).concat(this.pendingBorrowingLoans.slice(i+1));
-
-                this.borrowingLoans = this.borrowingLoans.concat([new PersonalLoan(
-                    newLoan.loanID,
-                    newLoan.borrower,
-                    newLoan.lender,
-                    newLoan.amountLoaned,
-                    0n,
-                    newLoan.asset,
-                    LoanStatus.IN_PROGRESS,
-                )])
-            }
-        }
+  async cancelPendingLoan(loanID: string): Promise<void> {
+    for (let i = this.pendingLendingLoans.length - 1; i >= 0; i--) {
+      if (this.pendingLendingLoans[i].loanID === loanID) {
+        // create a new array except with pendingLoans[i] removed
+        // this needs to be a new array to trigger a refresh
+        this.pendingLendingLoans = this.pendingLendingLoans
+          .slice(0, i)
+          .concat(this.pendingLendingLoans.slice(i + 1));
+      }
     }
+  }
 
-    async cancelLendingLoan(loanID: string): Promise<void> {
-        for (let i = this.lendingLoans.length-1; i >= 0; i--) {
-            if (this.lendingLoans[i].loanID === loanID) {
-                this.lendingLoans[i].status = LoanStatus.CANCELED;
-            }
-        }
+  async getBorrowingLoans(): Promise<PersonalLoan[]> {
+    return this.borrowingLoans;
+  }
 
-        // Completely rebuild the array to trigger a refresh of the data
-        const oldLoans = this.lendingLoans;
-        this.lendingLoans = [];
-        this.lendingLoans.push(...oldLoans);
+  async getLendingLoans(): Promise<PersonalLoan[]> {
+    return this.lendingLoans;
+  }
+
+  async getPendingBorrowingLoans(): Promise<PendingLoan[]> {
+    return this.pendingBorrowingLoans;
+  }
+
+  async getPendingLendingLoans(): Promise<PendingLoan[]> {
+    return this.pendingLendingLoans;
+  }
+
+  async rejectBorrow(loanID: string): Promise<void> {
+    for (let i = this.pendingBorrowingLoans.length - 1; i >= 0; i--) {
+      if (this.pendingBorrowingLoans[i].loanID === loanID) {
+        // create a new array except with pendingLoans[i] removed
+        // this needs to be a new array to trigger a refresh
+        this.pendingBorrowingLoans = this.pendingBorrowingLoans
+          .slice(0, i)
+          .concat(this.pendingBorrowingLoans.slice(i + 1));
+      }
     }
-
-    async cancelPendingLoan(loanID: string): Promise<void> {
-        for (let i = this.pendingLendingLoans.length-1; i >= 0; i--) {
-            if (this.pendingLendingLoans[i].loanID === loanID) {
-                // create a new array except with pendingLoans[i] removed
-                // this needs to be a new array to trigger a refresh
-                this.pendingLendingLoans = this.pendingLendingLoans.slice(0, i).concat(this.pendingLendingLoans.slice(i+1));
-            }
-        }
-    }
-
-    async getBorrowingLoans(): Promise<PersonalLoan[]> {
-        return this.borrowingLoans;
-    }
-
-    async getLendingLoans(): Promise<PersonalLoan[]> {
-        return this.lendingLoans;
-    }
-
-    async getPendingBorrowingLoans(): Promise<PendingLoan[]> {
-        return this.pendingBorrowingLoans;
-    }
-
-    async getPendingLendingLoans(): Promise<PendingLoan[]> {
-        return this.pendingLendingLoans;
-    }
-
-    async rejectBorrow(loanID: string): Promise<void> {
-        for(let i = this.pendingBorrowingLoans.length-1; i >= 0; i--) {
-            if (this.pendingBorrowingLoans[i].loanID === loanID) {
-                // create a new array except with pendingLoans[i] removed
-                // this needs to be a new array to trigger a refresh
-                this.pendingBorrowingLoans = this.pendingBorrowingLoans.slice(0, i).concat(this.pendingBorrowingLoans.slice(i+1));
-            }
-        }
-    }
-}   
+  }
+}
