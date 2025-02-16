@@ -24,4 +24,7 @@ export interface PersonalLoanService {
     // getPendingLendingLoans gets loans that have been extended by the current user
     // as the lender and have not yet been accepted by the borrower.
     getPendingLendingLoans(): Promise<PendingLoan[]>
+
+    // rejectBorrow rejects a pending loan where the user is the borrower
+    rejectBorrow(): Promise<void>
 }

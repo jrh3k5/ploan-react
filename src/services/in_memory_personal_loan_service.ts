@@ -144,4 +144,14 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     async getPendingLendingLoans(): Promise<PendingLoan[]> {
         return this.pendingLendingLoans;
     }
+
+    async rejectBorrow(loanID: string): Promise<void> {
+        for(let i = this.pendingBorrowingLoans.length-1; i >= 0; i--) {
+            if (this.pendingBorrowingLoans[i].loanID === loanID) {
+                // create a new array except with pendingLoans[i] removed
+                // this needs to be a new array to trigger a refresh
+                this.pendingBorrowingLoans = this.pendingBorrowingLoans.slice(0, i).concat(this.pendingBorrowingLoans.slice(i+1));
+            }
+        }
+    }
 }   

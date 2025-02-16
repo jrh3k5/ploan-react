@@ -31,18 +31,34 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
         )
     }
 
+    const refreshBorrowingLoans = async (loanService: PersonalLoanService) => {
+        if (!loanService) { 
+            return;
+        }
+        
+        const pendingLoans = await loanService.getPendingBorrowingLoans();
+
+        setPendingLoans(pendingLoans);
+    }
+
     const acceptBorrow = async (loanService: PersonalLoanService | null, loanID: string) => {
         if (!loanService) {
             return
         }
 
-        await loanService.acceptBorrow(loanID);
-
-        const pendingLoans = await loanService.getPendingBorrowingLoans();
-
-        setPendingLoans(pendingLoans);
+        await refreshBorrowingLoans(loanService);
 
         props.onAcceptBorrow(loanID);
+    }
+
+    const rejectBorrow = async(loanService: PersonalLoanService | null, loanID: string) => {
+        if (!loanService) {
+            return
+        }
+
+        await loanService.rejectBorrow(loanID);
+        
+        await refreshBorrowingLoans(loanService);
     }
 
     return (
@@ -61,7 +77,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                         <td>{pendingLoan.amountLoaned.toString()} <Asset asset={pendingLoan.asset} /></td>
                         <td>
                             <button onClick={() => acceptBorrow(loanService, pendingLoan.loanID)}>Accept Borrow</button>
-                            <button>Reject Borrow</button>
+                            <button onClick={() => rejectBorrow(loanService, pendingLoan.loanID)}>Reject Borrow</button>
                         </td>
                     </tr>
                 ))}
