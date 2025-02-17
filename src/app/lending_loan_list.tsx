@@ -74,10 +74,10 @@ export function LendingLoanList(props: LendingLoanListProps) {
               <td>
                 <LoanProgress loan={lendingLoan} />
               </td>
-              <td>
+              <td className="status">
                 <LoanStatus loan={lendingLoan} />
               </td>
-              <td>
+              <td className="actions">
                 {lendingLoan.status === LoanStatusEnum.IN_PROGRESS && (
                   <button
                     onClick={() => cancelLoan(loanService, lendingLoan.loanID)}

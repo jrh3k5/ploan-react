@@ -78,6 +78,10 @@ td.amount {
   text-align: center;
 }
 
+td.status {
+  text-align: center;
+}
+
 td.actions {
   text-align: center;
 }
