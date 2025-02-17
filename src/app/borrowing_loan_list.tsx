@@ -85,9 +85,9 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
               <td>
                 <LoanProgress loan={borrowingLoan} />
               </td>
-              <th>
+              <td className="status">
                 <LoanStatus loan={borrowingLoan} />
-              </th>
+              </td>
               <td className="actions">
                 {borrowingLoan.status == LoanStatusEnum.IN_PROGRESS && (
                   <button onClick={() => openRepaymentModal(borrowingLoan)}>
