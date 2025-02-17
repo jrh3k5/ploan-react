@@ -6,6 +6,7 @@ import { PendingLoan } from "@/models/pending_loan";
 import { Asset } from "./asset";
 import { UserIdentity } from "./user_identity";
 import { PersonalLoanService } from "@/services/personal_loan_service";
+import { AssetAmount } from "./asset_amount";
 
 export interface PendingLendingLoanListProps {
   pendingLoans: PendingLoan[];
@@ -63,8 +64,10 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
                 <UserIdentity identity={pendingLoan.borrower} />
               </td>
               <td className="amount">
-                {pendingLoan.amountLoaned.toString()}{" "}
-                <Asset asset={pendingLoan.asset} />
+                <AssetAmount
+                  asset={pendingLoan.asset}
+                  amount={pendingLoan.amountLoaned}
+                />
               </td>
               <td className="actions">
                 <button

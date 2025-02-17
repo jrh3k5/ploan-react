@@ -3,7 +3,7 @@
 import { Dispatch, SetStateAction, useEffect, useContext } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
-import { Asset } from "./asset";
+import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 
@@ -87,8 +87,10 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                 <UserIdentity identity={pendingLoan.lender} />
               </td>
               <td className="amount">
-                {pendingLoan.amountLoaned.toString()}{" "}
-                <Asset asset={pendingLoan.asset} />
+                <AssetAmount
+                  asset={pendingLoan.asset}
+                  amount={pendingLoan.amountLoaned}
+                />
               </td>
               <td className="actions">
                 <button

@@ -28,7 +28,17 @@ export function LoanRepaymentForm(props: LoanRepaymentFormProps) {
       return;
     }
 
-    await loanService.repayLoan(loanID, BigInt(e.currentTarget.amount.value));
+    const splitValue = e.currentTarget.amount.value.split(".");
+    let enteredAmount =
+      BigInt(splitValue[0]) * BigInt(10 ** props.loan.asset.decimals);
+    if (splitValue.length > 1) {
+      const enteredPartialTokens = splitValue[1];
+      enteredAmount +=
+        BigInt(enteredPartialTokens) *
+        BigInt(10 ** (props.loan.asset.decimals - enteredPartialTokens.length));
+    }
+
+    await loanService.repayLoan(loanID, enteredAmount);
 
     setShowPayAmountInput(false);
 
@@ -46,7 +56,7 @@ export function LoanRepaymentForm(props: LoanRepaymentFormProps) {
       >
         {showPayAmountInput && (
           <div>
-            <input type="number" name="amount" />
+            <input type="text" name="amount" />
             <button>Submit Repayment</button>
           </div>
         )}
