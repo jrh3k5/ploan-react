@@ -33,7 +33,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   }
 
   async acceptBorrow(loanID: string): Promise<void> {
-    let pendingBorrowingLoans = await this.getOrInitBorrowLoans();
+    let pendingBorrowingLoans = await this.getOrInitPendingBorrowingLoans();
 
     for (let i = pendingBorrowingLoans.length - 1; i >= 0; i--) {
       if (pendingBorrowingLoans[i].loanID === loanID) {
@@ -44,6 +44,9 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         pendingBorrowingLoans = pendingBorrowingLoans
           .slice(0, i)
           .concat(pendingBorrowingLoans.slice(i + 1));
+
+        this.pendingBorrowingLoans = [];
+        this.pendingBorrowingLoans.push(...pendingBorrowingLoans);
 
         const borrowingLoans = await this.getBorrowingLoans();
         this.borrowingLoans = borrowingLoans.concat([
