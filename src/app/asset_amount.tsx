@@ -2,6 +2,7 @@
 
 import { EthereumAsset } from "@/models/asset";
 import { Asset } from "./asset";
+import { formatAssetAmount } from "@/lib/asset_amount";
 
 export interface AssetAmountProps {
   asset: EthereumAsset;
@@ -9,10 +10,13 @@ export interface AssetAmountProps {
 }
 
 export function AssetAmount(props: AssetAmountProps) {
-  const wholeTokenAmount = props.amount / BigInt(10 ** props.asset.decimals);
+  const formattedAssetAmount = formatAssetAmount(
+    props.amount,
+    props.asset.decimals,
+  );
   return (
     <span>
-      {wholeTokenAmount.toString()} <Asset asset={props.asset} />
+      {formattedAssetAmount} <Asset asset={props.asset} />
     </span>
   );
 }
