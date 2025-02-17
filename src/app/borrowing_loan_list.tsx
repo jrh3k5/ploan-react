@@ -1,13 +1,20 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useContext } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useContext,
+  useState,
+} from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { UserIdentity } from "./user_identity";
 import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
-import { LoanRepaymentForm } from "./loan_repayment_form";
+import { createPortal } from "react-dom";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
+import { LoanRepaymentModal } from "./loan_repayment_modal";
 
 export interface BorrowingLoanListProps {
   borrowingLoans: PersonalLoan[];
@@ -16,6 +23,8 @@ export interface BorrowingLoanListProps {
 
 export function BorrowingLoanList(props: BorrowingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
+  const [repaymentModalVisible, setRepaymentModalVisible] = useState(false);
+  const [activeRepayingLoan, setActiveRepayingLoan] = useState<PersonalLoan>();
 
   const setBorrowingLoans = props.setBorrowingLoans;
 
@@ -41,8 +50,22 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
     }
   }, [loanService, setBorrowingLoans]);
 
+  const openRepaymentModal = (loan: PersonalLoan) => {
+    setActiveRepayingLoan(loan);
+    setRepaymentModalVisible(true);
+  };
+
   return (
     <div className="loan-grouping">
+      {repaymentModalVisible &&
+        createPortal(
+          <LoanRepaymentModal
+            loan={activeRepayingLoan}
+            onClose={async () => setRepaymentModalVisible(false)}
+            onPaymentSubmission={reloadBorrowingLoans}
+          />,
+          document.body,
+        )}
       <h3>Loans You Owe On ({props.borrowingLoans.length})</h3>
       <table>
         <thead>
@@ -67,10 +90,9 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
               </th>
               <td className="actions">
                 {borrowingLoan.status == LoanStatusEnum.IN_PROGRESS && (
-                  <LoanRepaymentForm
-                    loan={borrowingLoan}
-                    onPaymentSubmission={() => reloadBorrowingLoans()}
-                  />
+                  <button onClick={() => openRepaymentModal(borrowingLoan)}>
+                    Repay {borrowingLoan.asset.symbol}
+                  </button>
                 )}
               </td>
             </tr>
