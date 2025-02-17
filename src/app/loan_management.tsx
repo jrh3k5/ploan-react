@@ -63,10 +63,10 @@ export function LoanManagement(props: LoanManagementProps) {
         borrowingLoans={borrowingLoans}
         setBorrowingLoans={setBorrowingLoans}
       />
-      <LendingLoanList
-        lendingLoans={lendingLoans}
-        setLendingLoans={setLendingLoans}
-      />
+        <LendingLoanList
+          lendingLoans={lendingLoans}
+          setLendingLoans={setLendingLoans}
+        />
     </div>
   );
 }
