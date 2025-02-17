@@ -29,10 +29,13 @@ export function LoanRepaymentForm(props: LoanRepaymentFormProps) {
     }
 
     const splitValue = e.currentTarget.amount.value.split(".");
-    let enteredAmount = BigInt(splitValue[0]) * BigInt(10 ** props.loan.asset.decimals);
+    let enteredAmount =
+      BigInt(splitValue[0]) * BigInt(10 ** props.loan.asset.decimals);
     if (splitValue.length > 1) {
-        const enteredPartialTokens = splitValue[1];
-        enteredAmount += BigInt(enteredPartialTokens) * BigInt(10 ** (props.loan.asset.decimals - enteredPartialTokens.length));
+      const enteredPartialTokens = splitValue[1];
+      enteredAmount +=
+        BigInt(enteredPartialTokens) *
+        BigInt(10 ** (props.loan.asset.decimals - enteredPartialTokens.length));
     }
 
     await loanService.repayLoan(loanID, enteredAmount);

@@ -219,7 +219,13 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       }
 
       this.pendingLendingLoans = [
-        new PendingLoan("6", this.user, barmstrong, 1000000000000000000000n, degenAsset),
+        new PendingLoan(
+          "6",
+          this.user,
+          barmstrong,
+          1000000000000000000000n,
+          degenAsset,
+        ),
       ];
     }
 

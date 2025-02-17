@@ -87,7 +87,10 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                 <UserIdentity identity={pendingLoan.lender} />
               </td>
               <td className="amount">
-                <AssetAmount asset={pendingLoan.asset} amount={pendingLoan.amountLoaned} />
+                <AssetAmount
+                  asset={pendingLoan.asset}
+                  amount={pendingLoan.amountLoaned}
+                />
               </td>
               <td className="actions">
                 <button
