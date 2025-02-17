@@ -1,4 +1,4 @@
-import { formatAssetAmount } from "@/lib/format_asset_amount";
+import { formatAssetAmount } from "@/lib/asset_amount";
 import { PersonalLoan } from "@/models/personal_loan";
 
 export function LoanProgress(props: { loan: PersonalLoan }) {

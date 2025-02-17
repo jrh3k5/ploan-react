@@ -5,6 +5,7 @@ import { PersonalLoan } from "@/models/personal_loan";
 import { UserIdentity } from "./user_identity";
 import { AssetAmount } from "./asset_amount";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
+import { calculateTokenAmount } from "@/lib/asset_amount";
 
 export interface LoanRepaymentModalProps {
   loan: PersonalLoan | undefined;
@@ -33,31 +34,10 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
     }
 
     const enteredAmount = e.currentTarget.amount.value;
-    const splitAmount = enteredAmount.split(".");
-    let wholeAmount: bigint;
-    if (splitAmount.length == 1) {
-      wholeAmount = BigInt(splitAmount[0]) * BigInt(10 ** loan.asset.decimals);
-    } else {
-      const partialTokenAmount = splitAmount[1];
-      // Count leading zeroes
-      let leadingZeroes = 0;
-      for (let i = 0; i < partialTokenAmount.length; i++) {
-        if (partialTokenAmount[i] !== "0") {
-          break;
-        }
-        leadingZeroes++;
-      }
-
-      const wholeTokens =
-        BigInt(splitAmount[0]) * BigInt(10 ** loan.asset.decimals);
-      const partialTokenScale = BigInt(
-        10 ** (loan.asset.decimals - leadingZeroes - 1),
-      );
-      const partialTokens =
-        BigInt(partialTokenAmount.slice(leadingZeroes)) * partialTokenScale;
-
-      wholeAmount = wholeTokens + partialTokens;
-    }
+    const wholeAmount = calculateTokenAmount(
+      enteredAmount,
+      loan.asset.decimals,
+    );
 
     await loanService.repayLoan(loan.loanID, wholeAmount);
 

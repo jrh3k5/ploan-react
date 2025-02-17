@@ -2,7 +2,7 @@
 
 import { EthereumAsset } from "@/models/asset";
 import { Asset } from "./asset";
-import { formatAssetAmount } from "@/lib/format_asset_amount";
+import { formatAssetAmount } from "@/lib/asset_amount";
 
 export interface AssetAmountProps {
   asset: EthereumAsset;
