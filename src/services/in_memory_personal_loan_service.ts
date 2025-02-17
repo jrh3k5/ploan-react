@@ -45,8 +45,8 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           .slice(0, i)
           .concat(pendingBorrowingLoans.slice(i + 1));
 
-          this.pendingBorrowingLoans = [];
-          this.pendingBorrowingLoans.push(...pendingBorrowingLoans);
+        this.pendingBorrowingLoans = [];
+        this.pendingBorrowingLoans.push(...pendingBorrowingLoans);
 
         const borrowingLoans = await this.getBorrowingLoans();
         this.borrowingLoans = borrowingLoans.concat([
