@@ -124,8 +124,8 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           "3",
           this.user,
           barmstrong,
-          250n,
-          50n,
+          250000000n,
+          50000000n,
           usdcAsset,
           LoanStatus.IN_PROGRESS,
         ),
@@ -133,8 +133,8 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           "4",
           this.user,
           vbuterin,
-          250n,
-          50n,
+          250000000000000000000n,
+          50000000000000000000n,
           degenAsset,
           LoanStatus.IN_PROGRESS,
         ),
@@ -168,8 +168,8 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           "1",
           vbuterin,
           this.user,
-          1000n,
-          250n,
+          1000000000n,
+          250000000n,
           usdcAsset,
           LoanStatus.IN_PROGRESS,
         ),
@@ -177,8 +177,8 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           "2",
           barmstrong,
           this.user,
-          1000n,
-          250n,
+          1000000000000000000000n,
+          250000000000000000000n,
           degenAsset,
           LoanStatus.IN_PROGRESS,
         ),
@@ -200,7 +200,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       }
 
       this.pendingBorrowingLoans = [
-        new PendingLoan("5", vbuterin, this.user, 1000n, usdcAsset),
+        new PendingLoan("5", vbuterin, this.user, 1000000000n, usdcAsset),
       ];
     }
 
@@ -219,7 +219,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       }
 
       this.pendingLendingLoans = [
-        new PendingLoan("6", this.user, barmstrong, 1000n, degenAsset),
+        new PendingLoan("6", this.user, barmstrong, 1000000000000000000000n, degenAsset),
       ];
     }
 
