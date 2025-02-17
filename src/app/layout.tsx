@@ -16,10 +16,16 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout(props: { children: ReactNode }) {
-  const initialState = cookieToInitialState(
-    getConfig(),
-    headers().get("cookie"),
-  );
+  let initialState;
+  try {
+    initialState = cookieToInitialState(getConfig(), headers().get("cookie"));
+  } catch (e) {
+    console.warn(
+      "Failed to parse cookie to initial state; it will not be restored",
+      e,
+    );
+  }
+
   return (
     <html lang="en">
       <body className={inter.className}>
