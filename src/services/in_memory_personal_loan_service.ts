@@ -5,7 +5,7 @@ import { Identity } from "@/models/identity";
 import { PendingLoan } from "@/models/pending_loan";
 import { EthereumAssetResolverService } from "./ethereum_asset_resolver_service";
 
-const usdcAddress = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+const usdcAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // Base Sepolia USDC
 const degenAddress = "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed";
 
 const vbuterin = new Identity("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
@@ -16,20 +16,19 @@ const barmstrong = new Identity("0x5b76f5B8fc9D700624F78208132f91AD4e61a1f0");
 // This is useful for testing functionlity without any onchain dependencies.
 export class InMemoryPersonalLoanService implements PersonalLoanService {
   private ethereumAssetResolverService: EthereumAssetResolverService;
-  private user: Identity;
-  private chainId: number;
+  private userAddress: string | null;
+  private chainId: number | null;
   private pendingBorrowingLoans: PendingLoan[] | undefined = undefined;
   private pendingLendingLoans: PendingLoan[] | undefined = undefined;
   private borrowingLoans: PersonalLoan[] | undefined = undefined;
   private lendingLoans: PersonalLoan[] | undefined = undefined;
 
   constructor(
-    chainId: number,
     ethereumAssetResolverService: EthereumAssetResolverService,
   ) {
-    this.chainId = chainId;
+    this.userAddress = null;
+    this.chainId = null;
     this.ethereumAssetResolverService = ethereumAssetResolverService;
-    this.user = new Identity("0x9134fc7112b478e97eE6F0E6A7bf81EcAfef19ED");
   }
 
   async acceptBorrow(loanID: string): Promise<void> {
@@ -105,6 +104,10 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
   // getOrInitBorrowLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
   async getOrInitBorrowLoans(): Promise<PersonalLoan[]> {
+    if (!this.userAddress || !this.chainId) {
+        return [];
+    }
+
     if (!this.borrowingLoans) {
       const usdcAsset = await this.ethereumAssetResolverService.getAsset(
         this.chainId,
@@ -122,10 +125,12 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         throw new Error("Failed to resolve DEGEN as an asset: " + degenAddress);
       }
 
+      const userIdentity = new Identity(this.userAddress);
+
       this.borrowingLoans = [
         new PersonalLoan(
           "3",
-          this.user,
+          userIdentity,
           barmstrong,
           250000000n,
           50000000n,
@@ -134,7 +139,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         ),
         new PersonalLoan(
           "4",
-          this.user,
+          userIdentity,
           vbuterin,
           250000000000000000000n,
           50000000000000000000n,
@@ -149,6 +154,10 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
   //getOrInitLendingLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
   async getOrInitLendingLoans(): Promise<PersonalLoan[]> {
+    if (!this.userAddress || !this.chainId) {
+        return [];
+    }
+
     if (!this.lendingLoans) {
       const usdcAsset = await this.ethereumAssetResolverService.getAsset(
         this.chainId,
@@ -166,11 +175,13 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         throw new Error("Failed to resolve DEGEN as an asset: " + degenAddress);
       }
 
+      const userIdentity = new Identity(this.userAddress);
+
       this.lendingLoans = [
         new PersonalLoan(
           "1",
           vbuterin,
-          this.user,
+          userIdentity,
           1000000000n,
           250000000n,
           usdcAsset,
@@ -179,7 +190,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         new PersonalLoan(
           "2",
           barmstrong,
-          this.user,
+          userIdentity,
           1000000000000000000000n,
           250000000000000000000n,
           degenAsset,
@@ -193,6 +204,10 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
   // getOrInitPendingBorrowLoans retrieves the current pending borrowed loans and initializes the data if it's not already been initialized.
   async getOrInitPendingBorrowingLoans(): Promise<PendingLoan[]> {
+    if (!this.userAddress || !this.chainId) {
+        return [];
+    }
+
     if (!this.pendingBorrowingLoans) {
       const usdcAsset = await this.ethereumAssetResolverService.getAsset(
         this.chainId,
@@ -203,7 +218,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       }
 
       this.pendingBorrowingLoans = [
-        new PendingLoan("5", vbuterin, this.user, 1000000000n, usdcAsset),
+        new PendingLoan("5", vbuterin, new Identity(this.userAddress), 1000000000n, usdcAsset),
       ];
     }
 
@@ -212,6 +227,10 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
   // getOrInitPendingLendingLoans retrieves the current pending borrowed loans and initializes the data if it's not already been initialized.
   async getOrInitPendingLendingLoans(): Promise<PendingLoan[]> {
+    if (!this.userAddress || !this.chainId) {
+        return [];
+    }
+
     if (!this.pendingLendingLoans) {
       const degenAsset = await this.ethereumAssetResolverService.getAsset(
         this.chainId,
@@ -224,7 +243,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       this.pendingLendingLoans = [
         new PendingLoan(
           "6",
-          this.user,
+          new Identity(this.userAddress),
           barmstrong,
           1000000000000000000000n,
           degenAsset,
@@ -249,6 +268,10 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     this.lendingLoans = undefined;
     this.pendingBorrowingLoans = undefined;
     this.pendingLendingLoans = undefined;
+  }
+
+  async proposeLoan(borrowerAddress: string, amount: bigint, assetAddress: string): Promise<void> {
+      // for now, no-op since there's only a single user 
   }
 
   async rejectBorrow(loanID: string): Promise<void> {
@@ -293,5 +316,9 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
   async setChainId(chainId: number): Promise<void> {
     this.chainId = chainId;
+  }
+
+  async setUserAddress(userAddress: string): Promise<void> {
+    this.userAddress = userAddress;
   }
 }

@@ -7,6 +7,7 @@ export function getConfig() {
   return createConfig({
     // add in mainnet support for ENS resolution
     // keep it last, though, to ensure that Base is used by default
+    // for now, only support Sepolia
     chains: [base, baseSepolia, mainnet],
     connectors: [injected(), coinbaseWallet()],
     storage: createStorage({
@@ -29,5 +30,5 @@ declare module "wagmi" {
 
 // getUserSelectableChains gets the chains that a user should be able to select
 export function getUserSelectableChains(): Chain[] {
-  return [base, baseSepolia];
+  return [baseSepolia];
 }

@@ -1,6 +1,12 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useContext, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useContext,
+  useState,
+} from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
 import { createPortal } from "react-dom";
@@ -11,6 +17,7 @@ import { ProposeLoanModal } from "./propose_loan_modal";
 
 export interface PendingLendingLoanListProps {
   pendingLoans: PendingLoan[];
+  chainId: number;
   setPendingLoans: Dispatch<SetStateAction<PendingLoan[]>>;
 }
 
@@ -19,7 +26,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   const pendingLoans = props.pendingLoans;
   const setPendingLoans = props.setPendingLoans;
 
-    const [proposeLoanModalVisible, setProposeLoanModalVisible] = useState(false);
+  const [proposeLoanModalVisible, setProposeLoanModalVisible] = useState(false);
 
   useEffect(() => {
     if (loanService) {
@@ -53,7 +60,9 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
     <div className="loan-grouping">
       <h3>Loans You&apos;ve Offered Others ({pendingLoans.length})</h3>
       <div className="form-buttons">
-        <button onClick={() => setProposeLoanModalVisible(true)}>Propose Loan</button>
+        <button onClick={() => setProposeLoanModalVisible(true)}>
+          Propose Loan
+        </button>
       </div>
       <table>
         <thead>
@@ -88,11 +97,12 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
       </table>
       {proposeLoanModalVisible &&
         createPortal(
-            <ProposeLoanModal 
-                onClose={async () => setProposeLoanModalVisible(false)}
-                onLoanProposal={async () => {}}
-            />,
-            document.body
+          <ProposeLoanModal
+            chainId={props.chainId}
+            onClose={async () => setProposeLoanModalVisible(false)}
+            onLoanProposal={async () => {}}
+          />,
+          document.body,
         )}
     </div>
   );

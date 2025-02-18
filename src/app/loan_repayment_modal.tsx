@@ -49,7 +49,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
 
   return (
     <div className="modal">
-        <h3 className="section-title">Repay Loan</h3>
+      <h3 className="section-title">Repay Loan</h3>
       <ul className="details">
         <li>
           <span className="label">Lender</span>
@@ -86,7 +86,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
         <label>Repayment Amount:</label>
         <input type="text" name="amount" />
         <div className="form-buttons">
-          <button onClick={() => props.onPaymentSubmission()}>
+          <button type="submit">
             Submit Repayment
           </button>
           <button onClick={() => props.onClose()}>Cancel</button>
