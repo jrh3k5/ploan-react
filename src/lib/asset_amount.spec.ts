@@ -58,6 +58,14 @@ describe("calculateTokenAmount", () => {
       );
     });
 
+    describe("there is a trailing zero", () => {
+      it("correctly parses the token amount", () => {
+        expect(calculateTokenAmount("10.10", 18)).toBe(
+          10n * 10n ** 18n + 1n * 10n ** 17n,
+        );
+      });
+    });
+
     describe("there are no whole tokens", () => {
       it("returns the token amount as a bigint", () => {
         expect(calculateTokenAmount("0.01", 18)).toBe(1n * 10n ** 16n);
@@ -65,7 +73,13 @@ describe("calculateTokenAmount", () => {
 
       describe("there are no zeroes for the missing whole token", () => {
         it("returns the token amount as a bigint", () => {
-          expect(calculateTokenAmount(".01", 18)).toBe(1n * 10n ** 16n);
+          expect(calculateTokenAmount(".12", 18)).toBe(12n * 10n ** 16n);
+        });
+
+        describe("there are leading zeroes", () => {
+          it("returns the token amount as a bigint", () => {
+            expect(calculateTokenAmount(".01", 18)).toBe(1n * 10n ** 16n);
+          });
         });
       });
     });
