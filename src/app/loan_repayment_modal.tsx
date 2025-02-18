@@ -49,6 +49,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
 
   return (
     <div className="modal">
+        <h3 className="section-title">Repay Loan</h3>
       <ul className="details">
         <li>
           <span className="label">Lender</span>

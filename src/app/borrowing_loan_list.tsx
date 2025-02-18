@@ -57,15 +57,6 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
 
   return (
     <div className="loan-grouping">
-      {repaymentModalVisible &&
-        createPortal(
-          <LoanRepaymentModal
-            loan={activeRepayingLoan}
-            onClose={async () => setRepaymentModalVisible(false)}
-            onPaymentSubmission={reloadBorrowingLoans}
-          />,
-          document.body,
-        )}
       <h3>Loans You Owe On ({props.borrowingLoans.length})</h3>
       <table>
         <thead>
@@ -99,6 +90,15 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
           ))}
         </tbody>
       </table>
+      {repaymentModalVisible &&
+        createPortal(
+          <LoanRepaymentModal
+            loan={activeRepayingLoan}
+            onClose={async () => setRepaymentModalVisible(false)}
+            onPaymentSubmission={reloadBorrowingLoans}
+          />,
+          document.body,
+        )}
     </div>
   );
 }
