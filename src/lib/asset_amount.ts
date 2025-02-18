@@ -57,22 +57,14 @@ export function calculateTokenAmount(
   } else {
     const partialTokenAmount = splitAmount[1];
 
-    // Count leading zeroes
-    let leadingZeroes = 0;
-    for (let i = 0; i < partialTokenAmount.length; i++) {
-      if (partialTokenAmount[i] === "0") {
-        leadingZeroes += 1;
-      } else {
-        break;
-      }
-    }
-
     let wholeTokens = BigInt(0);
     if (splitAmount[0] !== "") {
       wholeTokens = BigInt(splitAmount[0]) * BigInt(10 ** decimals);
     }
 
-    const partialTokenScale = BigInt(10 ** (decimals - 1 - leadingZeroes));
+    const partialTokenScale = BigInt(
+      10 ** (decimals - partialTokenAmount.length),
+    );
     wholeAmount = wholeTokens + BigInt(partialTokenAmount) * partialTokenScale;
   }
 
