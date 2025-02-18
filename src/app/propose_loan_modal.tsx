@@ -1,9 +1,12 @@
 "use client";
 
+import { SupportAssetResolver } from "@/services/supported_asset_resolver";
+
 
 export interface ProposeLoanModalProps {
   onClose: () => Promise<void>;
   onLoanProposal: () => Promise<void>;
+  supportedAssetResolver: SupportAssetResolver,
 }
 
 export function ProposeLoanModal(props: ProposeLoanModalProps) {
