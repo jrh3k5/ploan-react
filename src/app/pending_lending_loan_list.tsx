@@ -63,7 +63,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   return (
     <div className="loan-grouping">
       <h3>Loans You&apos;ve Offered Others ({pendingLoans.length})</h3>
-      <div className="form-buttons">
+      <div>
         <button onClick={() => setProposeLoanModalVisible(true)}>
           Propose Loan
         </button>

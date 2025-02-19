@@ -6,11 +6,14 @@ import {
   useCallback,
   useEffect,
   useContext,
+  useState,
 } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
 import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
+import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
+import { createPortal } from "react-dom";
 
 export interface PendingBorrowingLoanListProps {
   chainId: number;
@@ -26,6 +29,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   const chainId = props.chainId;
   const userAddress = props.userAddress;
   const setPendingLoans = props.setPendingBorrowingLoans;
+  const [showAllowlistModal, setShowAllowlistModal] = useState(false);
 
   const refreshBorrowingLoans = useCallback(async () => {
     if (!loanService) {
@@ -74,6 +78,16 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   return (
     <div className="loan-grouping">
       <h3>Loans Offered to You ({pendingBorrowingLoans.length})</h3>
+      <div>
+        <div>
+          <button onClick={() => setShowAllowlistModal(true)}>
+            Manage Allowlist
+          </button>
+        </div>
+        <div className="contextual-description">
+          Only users on your allowlist can propose loans for you to accept
+        </div>
+      </div>
       <table>
         <thead>
           <tr>
@@ -106,6 +120,15 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
           ))}
         </tbody>
       </table>
+      {showAllowlistModal &&
+        createPortal(
+          <ProposeLoanAllowlistModal
+            chainId={props.chainId}
+            userAddress={props.userAddress}
+            onClose={async () => setShowAllowlistModal(false)}
+          />,
+          document.body,
+        )}
     </div>
   );
 }

@@ -148,3 +148,7 @@ ul.details span.value {
   display: block;
   padding-bottom: 0.5em;
 }
+
+.contextual-description {
+  font-size: x-small;
+}

@@ -16,6 +16,9 @@ export interface PersonalLoanService {
   // cancelLoan cancels a pending loan.
   cancelPendingLoan(loanID: string): Promise<void>;
 
+  // disallowLoanProposal disallows a user from proposing a loan to the current user.
+  disallowLoanProposal(identity: Identity): Promise<void>;
+
   // getPersonalLoans gets all personal loans for the current user
   // where the user is the borrower.
   getBorrowingLoans(): Promise<PersonalLoan[]>;

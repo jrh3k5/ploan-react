@@ -18,10 +18,8 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   private ethereumAssetResolverService: EthereumAssetResolverService;
   private userAddress: string | null;
   private chainId: number | null;
-  private pendingBorrowingLoans: PendingLoan[] | undefined = undefined;
-  private pendingLendingLoans: PendingLoan[] | undefined = undefined;
-  private borrowingLoans: PersonalLoan[] | undefined = undefined;
-  private lendingLoans: PersonalLoan[] | undefined = undefined;
+  private pendingLoans: PendingLoan[] | undefined = undefined;
+  private activeLoans: PersonalLoan[] | undefined = undefined;
   private idCounter: number;
   private loanProposalAllowlist: Map<string, string[]> = new Map();
 
@@ -33,7 +31,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   }
 
   async acceptBorrow(loanID: string): Promise<void> {
-    let pendingBorrowingLoans = await this.getOrInitPendingBorrowingLoans();
+    let pendingBorrowingLoans = await this.getOrInitPendingLoans();
 
     for (let i = pendingBorrowingLoans.length - 1; i >= 0; i--) {
       if (pendingBorrowingLoans[i].loanID === loanID) {
@@ -45,11 +43,10 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           .slice(0, i)
           .concat(pendingBorrowingLoans.slice(i + 1));
 
-        this.pendingBorrowingLoans = [];
-        this.pendingBorrowingLoans.push(...pendingBorrowingLoans);
+        this.pendingLoans = pendingBorrowingLoans;
 
-        const borrowingLoans = await this.getBorrowingLoans();
-        this.borrowingLoans = borrowingLoans.concat([
+        const activeLoans = await this.getOrInitActiveLoans();
+        this.activeLoans = activeLoans.concat([
           new PersonalLoan(
             newLoan.loanID,
             newLoan.borrower,
@@ -79,21 +76,17 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   }
 
   async cancelLendingLoan(loanID: string): Promise<void> {
-    const lendingLoans = await this.getOrInitLendingLoans();
+    const activeLoans = await this.getOrInitActiveLoans();
 
-    for (let i = lendingLoans.length - 1; i >= 0; i--) {
-      if (lendingLoans[i].loanID === loanID) {
-        lendingLoans[i].status = LoanStatus.CANCELED;
+    for (let i = activeLoans.length - 1; i >= 0; i--) {
+      if (activeLoans[i].loanID === loanID) {
+        activeLoans[i].status = LoanStatus.CANCELED;
       }
     }
-
-    // Completely rebuild the array to trigger a refresh of the data
-    this.lendingLoans = [];
-    this.lendingLoans.push(...lendingLoans);
   }
 
   async cancelPendingLoan(loanID: string): Promise<void> {
-    let pendingLendingLoans = await this.getOrInitPendingLendingLoans();
+    let pendingLendingLoans = await this.getOrInitPendingLoans();
 
     for (let i = pendingLendingLoans.length - 1; i >= 0; i--) {
       if (pendingLendingLoans[i].loanID === loanID) {
@@ -102,11 +95,10 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         pendingLendingLoans = pendingLendingLoans
           .slice(0, i)
           .concat(pendingLendingLoans.slice(i + 1));
+
+        this.pendingLoans = pendingLendingLoans;
       }
     }
-
-    this.pendingLendingLoans = [];
-    this.pendingLendingLoans.push(...pendingLendingLoans);
   }
 
   async disallowLoanProposal(identity: Identity): Promise<void> {
@@ -135,11 +127,30 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   }
 
   async getBorrowingLoans(): Promise<PersonalLoan[]> {
-    return this.getOrInitBorrowLoans();
+    if (!this.userAddress || !this.chainId) {
+      return [];
+    }
+
+    const userAddress = this.userAddress;
+    const activeLoans = await this.getOrInitActiveLoans();
+
+    return activeLoans.filter(
+      (loan) =>
+        loan.borrower.address.toLowerCase() === userAddress.toLowerCase(),
+    );
   }
 
   async getLendingLoans(): Promise<PersonalLoan[]> {
-    return this.getOrInitLendingLoans();
+    if (!this.userAddress || !this.chainId) {
+      return [];
+    }
+
+    const userAddress = this.userAddress;
+    const activeLoans = await this.getOrInitActiveLoans();
+
+    return activeLoans.filter(
+      (loan) => loan.lender.address.toLowerCase() === userAddress.toLowerCase(),
+    );
   }
 
   async getLoanProposalAllowlist(): Promise<Identity[]> {
@@ -158,15 +169,15 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     return allowedAddresses.map((address) => new Identity(address));
   }
 
-  // getOrInitBorrowLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
-  async getOrInitBorrowLoans(): Promise<PersonalLoan[]> {
+  // getOrInitActiveLoans retrieves the current active loans and initializes the data if it's not already been initialized.
+  async getOrInitActiveLoans(): Promise<PersonalLoan[]> {
     if (!this.userAddress || !this.chainId) {
       return [];
     }
 
     const userAddress = this.userAddress;
 
-    if (!this.borrowingLoans) {
+    if (!this.activeLoans) {
       const usdcAsset = await this.ethereumAssetResolverService.getAsset(
         this.chainId,
         usdcAddress,
@@ -185,7 +196,25 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
       const userIdentity = new Identity(userAddress);
 
-      this.borrowingLoans = [
+      this.activeLoans = [
+        new PersonalLoan(
+          `${this.idCounter++}`,
+          vbuterin,
+          userIdentity,
+          1000000000n,
+          250000000n,
+          usdcAsset,
+          LoanStatus.IN_PROGRESS,
+        ),
+        new PersonalLoan(
+          `${this.idCounter++}`,
+          barmstrong,
+          userIdentity,
+          1000000000000000000000n,
+          250000000000000000000n,
+          degenAsset,
+          LoanStatus.IN_PROGRESS,
+        ),
         new PersonalLoan(
           `${this.idCounter++}`,
           userIdentity,
@@ -207,20 +236,17 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       ];
     }
 
-    return this.borrowingLoans.filter(
-      (l) => l.borrower.address.toLowerCase() === userAddress.toLowerCase(),
-    );
+    return this.activeLoans;
   }
 
-  //getOrInitLendingLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
-  async getOrInitLendingLoans(): Promise<PersonalLoan[]> {
+  async getOrInitPendingLoans(): Promise<PendingLoan[]> {
     if (!this.userAddress || !this.chainId) {
       return [];
     }
 
     const userAddress = this.userAddress;
 
-    if (!this.lendingLoans) {
+    if (!this.pendingLoans) {
       const usdcAsset = await this.ethereumAssetResolverService.getAsset(
         this.chainId,
         usdcAddress,
@@ -237,53 +263,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         throw new Error("Failed to resolve DEGEN as an asset: " + degenAddress);
       }
 
-      const userIdentity = new Identity(userAddress);
-
-      this.lendingLoans = [
-        new PersonalLoan(
-          `${this.idCounter++}`,
-          vbuterin,
-          userIdentity,
-          1000000000n,
-          250000000n,
-          usdcAsset,
-          LoanStatus.IN_PROGRESS,
-        ),
-        new PersonalLoan(
-          `${this.idCounter++}`,
-          barmstrong,
-          userIdentity,
-          1000000000000000000000n,
-          250000000000000000000n,
-          degenAsset,
-          LoanStatus.IN_PROGRESS,
-        ),
-      ];
-    }
-
-    return this.lendingLoans.filter(
-      (l) => l.lender.address.toLowerCase() === userAddress.toLowerCase(),
-    );
-  }
-
-  // getOrInitPendingBorrowLoans retrieves the current pending borrowed loans and initializes the data if it's not already been initialized.
-  async getOrInitPendingBorrowingLoans(): Promise<PendingLoan[]> {
-    if (!this.userAddress || !this.chainId) {
-      return [];
-    }
-
-    const userAddress = this.userAddress;
-
-    if (!this.pendingBorrowingLoans) {
-      const usdcAsset = await this.ethereumAssetResolverService.getAsset(
-        this.chainId,
-        usdcAddress,
-      );
-      if (!usdcAsset) {
-        throw new Error("Failed to resolve USDC as an asset: " + usdcAddress);
-      }
-
-      this.pendingBorrowingLoans = [
+      this.pendingLoans = [
         new PendingLoan(
           `${this.idCounter++}`,
           vbuterin,
@@ -291,32 +271,6 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           1000000000n,
           usdcAsset,
         ),
-      ];
-    }
-
-    return this.pendingBorrowingLoans.filter(
-      (l) => l.borrower.address.toLowerCase() === userAddress.toLowerCase(),
-    );
-  }
-
-  // getOrInitPendingLendingLoans retrieves the current pending borrowed loans and initializes the data if it's not already been initialized.
-  async getOrInitPendingLendingLoans(): Promise<PendingLoan[]> {
-    if (!this.userAddress || !this.chainId) {
-      return [];
-    }
-
-    const userAddress = this.userAddress;
-
-    if (!this.pendingLendingLoans) {
-      const degenAsset = await this.ethereumAssetResolverService.getAsset(
-        this.chainId,
-        degenAddress,
-      );
-      if (!degenAsset) {
-        throw new Error("Failed to resolve DEGEN as an asset: " + degenAddress);
-      }
-
-      this.pendingLendingLoans = [
         new PendingLoan(
           `${this.idCounter++}`,
           new Identity(userAddress),
@@ -327,17 +281,35 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       ];
     }
 
-    return this.pendingLendingLoans.filter(
-      (l) => l.lender.address.toLowerCase() === userAddress.toLowerCase(),
-    );
+    return this.pendingLoans;
   }
 
   async getPendingBorrowingLoans(): Promise<PendingLoan[]> {
-    return this.getOrInitPendingBorrowingLoans();
+    if (!this.userAddress || !this.chainId) {
+      return [];
+    }
+
+    const pendingLoans = await this.getOrInitPendingLoans();
+
+    const userAddress = this.userAddress;
+
+    return pendingLoans.filter(
+      (l) => l.borrower.address.toLowerCase() === userAddress.toLowerCase(),
+    );
   }
 
   async getPendingLendingLoans(): Promise<PendingLoan[]> {
-    return this.getOrInitPendingLendingLoans();
+    if (!this.userAddress || !this.chainId) {
+      return [];
+    }
+
+    const pendingLoans = await this.getOrInitPendingLoans();
+
+    const userAddress = this.userAddress;
+
+    return pendingLoans.filter(
+      (l) => l.lender.address.toLowerCase() === userAddress.toLowerCase(),
+    );
   }
 
   async proposeLoan(
@@ -376,12 +348,9 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       );
     }
 
-    let pendingLoans = this.pendingLendingLoans;
-    if (!pendingLoans) {
-      pendingLoans = [];
-    }
+    const pendingLoans = await this.getOrInitPendingLoans();
 
-    this.pendingLendingLoans = pendingLoans.concat(
+    this.pendingLoans = pendingLoans.concat(
       new PendingLoan(
         `${this.idCounter++}`,
         new Identity(this.userAddress),
@@ -393,7 +362,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   }
 
   async rejectBorrow(loanID: string): Promise<void> {
-    let pendingBorrowingLoans = await this.getOrInitPendingBorrowingLoans();
+    let pendingBorrowingLoans = await this.getOrInitPendingLoans();
 
     for (let i = pendingBorrowingLoans.length - 1; i >= 0; i--) {
       if (pendingBorrowingLoans[i].loanID === loanID) {
@@ -405,12 +374,11 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       }
     }
 
-    this.pendingBorrowingLoans = [];
-    this.pendingBorrowingLoans.push(...pendingBorrowingLoans);
+    this.pendingLoans = pendingBorrowingLoans;
   }
 
   async repayLoan(loanID: string, amount: bigint): Promise<void> {
-    const borrowingLoans = await this.getOrInitBorrowLoans();
+    const borrowingLoans = await this.getOrInitActiveLoans();
 
     const repayableLoan = borrowingLoans.find((loan) => loan.loanID === loanID);
 
@@ -426,10 +394,6 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     if (repayableLoan.amountRepaid === repayableLoan.amountLoaned) {
       repayableLoan.status = LoanStatus.COMPLETED;
     }
-
-    // Rebuild the list of loans to cause a UI refresh
-    this.borrowingLoans = [];
-    this.borrowingLoans.push(...borrowingLoans);
   }
 
   async setChainId(chainId: number): Promise<void> {
