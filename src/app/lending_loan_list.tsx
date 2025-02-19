@@ -3,17 +3,17 @@
 import {
   Dispatch,
   SetStateAction,
-  useState,
+  useCallback,
   useEffect,
   useContext,
 } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
-import { PersonalLoanService } from "@/services/personal_loan_service";
 import { UserIdentity } from "./user_identity";
 import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
+import { useAccount } from "wagmi";
 
 export interface LendingLoanListProps {
   lendingLoans: PersonalLoan[];
@@ -21,36 +21,34 @@ export interface LendingLoanListProps {
 }
 
 export function LendingLoanList(props: LendingLoanListProps) {
+  const account = useAccount();
   const loanService = useContext(PersonalLoanContext);
   const lendingLoans = props.lendingLoans;
   const setLendingLoans = props.setLendingLoans;
 
-  useEffect(() => {
-    if (loanService) {
-      loanService
-        .getLendingLoans()
-        .then((retrievedLoans) => {
-          setLendingLoans(retrievedLoans);
-        })
-        .catch((error) => {
-          console.error("Failed to retrieve lending loans", error);
-        });
+  const refreshLoans = useCallback(async () => {
+    if (!loanService) {
+      return;
     }
+    const lendingLoans = await loanService.getLendingLoans();
+
+    setLendingLoans(lendingLoans);
   }, [loanService, setLendingLoans]);
 
-  const cancelLoan = async (
-    loanService: PersonalLoanService | null,
-    loanID: string,
-  ) => {
+  useEffect(() => {
+    refreshLoans().catch((error) => {
+      console.error("Failed to retrieve lending loans", error);
+    });
+  }, [loanService, refreshLoans, setLendingLoans, account]);
+
+  const cancelLoan = async (loanID: string) => {
     if (!loanService) {
       return;
     }
 
     await loanService.cancelLendingLoan(loanID);
 
-    const lendingLoans = await loanService.getLendingLoans();
-
-    setLendingLoans(lendingLoans);
+    await refreshLoans();
   };
 
   return (
@@ -79,9 +77,7 @@ export function LendingLoanList(props: LendingLoanListProps) {
               </td>
               <td className="actions">
                 {lendingLoan.status === LoanStatusEnum.IN_PROGRESS && (
-                  <button
-                    onClick={() => cancelLoan(loanService, lendingLoan.loanID)}
-                  >
+                  <button onClick={() => cancelLoan(lendingLoan.loanID)}>
                     Cancel
                   </button>
                 )}

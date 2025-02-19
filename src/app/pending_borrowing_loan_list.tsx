@@ -1,11 +1,17 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useContext } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useContext,
+} from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
 import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
-import { PersonalLoanService } from "@/services/personal_loan_service";
+import { useAccount } from "wagmi";
 
 export interface PendingBorrowingLoanListProps {
   pendingBorrowingLoans: PendingLoan[];
@@ -14,24 +20,12 @@ export interface PendingBorrowingLoanListProps {
 }
 
 export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
+  const account = useAccount();
   const loanService = useContext(PersonalLoanContext);
   const pendingBorrowingLoans = props.pendingBorrowingLoans;
   const setPendingLoans = props.setPendingBorrowingLoans;
 
-  useEffect(() => {
-    if (loanService) {
-      loanService
-        .getPendingBorrowingLoans()
-        .then((pendingLoans) => {
-          setPendingLoans(pendingLoans);
-        })
-        .catch((error) => {
-          console.error("Failed to retrieve pending lending loans", error);
-        });
-    }
-  }, [loanService, setPendingLoans]);
-
-  const refreshBorrowingLoans = async (loanService: PersonalLoanService) => {
+  const refreshBorrowingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
@@ -39,34 +33,34 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
     const pendingLoans = await loanService.getPendingBorrowingLoans();
 
     setPendingLoans(pendingLoans);
-  };
+  }, [loanService, setPendingLoans]);
 
-  const acceptBorrow = async (
-    loanService: PersonalLoanService | null,
-    loanID: string,
-  ) => {
+  useEffect(() => {
+    refreshBorrowingLoans().catch((error) => {
+      console.error("Failed to retrieve pending lending loans", error);
+    });
+  }, [loanService, refreshBorrowingLoans, setPendingLoans, account]);
+
+  const acceptBorrow = async (loanID: string) => {
     if (!loanService) {
       return;
     }
 
     await loanService.acceptBorrow(loanID);
 
-    await refreshBorrowingLoans(loanService);
+    await refreshBorrowingLoans();
 
     props.onAcceptBorrow(loanID);
   };
 
-  const rejectBorrow = async (
-    loanService: PersonalLoanService | null,
-    loanID: string,
-  ) => {
+  const rejectBorrow = async (loanID: string) => {
     if (!loanService) {
       return;
     }
 
     await loanService.rejectBorrow(loanID);
 
-    await refreshBorrowingLoans(loanService);
+    await refreshBorrowingLoans();
   };
 
   return (
@@ -93,14 +87,10 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                 />
               </td>
               <td className="actions">
-                <button
-                  onClick={() => acceptBorrow(loanService, pendingLoan.loanID)}
-                >
+                <button onClick={() => acceptBorrow(pendingLoan.loanID)}>
                   Accept Borrow
                 </button>
-                <button
-                  onClick={() => rejectBorrow(loanService, pendingLoan.loanID)}
-                >
+                <button onClick={() => rejectBorrow(pendingLoan.loanID)}>
                   Reject Borrow
                 </button>
               </td>

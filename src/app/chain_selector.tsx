@@ -1,9 +1,10 @@
 "use client";
 
 import { getUserSelectableChains } from "@/wagmi";
-import { base } from "wagmi/chains";
+import { baseSepolia } from "wagmi/chains";
 import { switchChain } from "@wagmi/core";
 import { useConfig } from "wagmi";
+import { defaultChain } from "@/models/chain";
 
 export interface ChainSelectorProps {
   onChainSelection: (chainId: number) => Promise<void>;
@@ -26,11 +27,11 @@ export function ChainSelector(props: ChainSelectorProps) {
 
   if (!isSelectableChain) {
     // Switch the user to Base by default
-    switchChain(wagmiConfig, { chainId: base.id })
+    switchChain(wagmiConfig, { chainId: defaultChain.id })
       .then(() => {
-        props.onChainSelection(base.id).catch((e) => {
+        props.onChainSelection(defaultChain.id).catch((e) => {
           console.warn(
-            "Failed to invoke onChainSelection on initialization to switch to Base",
+            "Failed to invoke onChainSelection on initialization to switch to default chain",
             e,
           );
         });

@@ -28,6 +28,13 @@ export interface PersonalLoanService {
   // as the lender and have not yet been accepted by the borrower.
   getPendingLendingLoans(): Promise<PendingLoan[]>;
 
+  // proposeoan proposes a new loan
+  proposeLoan(
+    borrowerAddress: string,
+    amount: bigint,
+    assetAddress: string,
+  ): Promise<void>;
+
   // rejectBorrow rejects a pending loan where the user is the borrower
   rejectBorrow(loanID: string): Promise<void>;
 

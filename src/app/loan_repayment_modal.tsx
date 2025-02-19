@@ -42,43 +42,52 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
     await loanService.repayLoan(loan.loanID, wholeAmount);
 
     await props.onPaymentSubmission();
-    props.onClose();
+
+    await props.onClose();
   };
 
   const remainingBalance = props.loan.amountLoaned - props.loan.amountRepaid;
 
   return (
     <div className="modal">
-      <ul>
+      <h3 className="section-title">Repay Loan</h3>
+      <ul className="details">
         <li>
-          Lender: <UserIdentity identity={props.loan?.lender} />
+          <span className="label">Lender</span>
+          <span className="value">
+            <UserIdentity identity={props.loan?.lender} />
+          </span>
         </li>
         <li>
-          Total Loaned:{" "}
-          <AssetAmount
-            amount={props.loan.amountLoaned}
-            asset={props.loan.asset}
-          />
+          <span className="label">Total Loaned</span>
+          <span className="value">
+            <AssetAmount
+              amount={props.loan.amountLoaned}
+              asset={props.loan.asset}
+            />
+          </span>
         </li>
         <li>
-          Total Paid:{" "}
-          <AssetAmount
-            amount={props.loan.amountRepaid}
-            asset={props.loan.asset}
-          />
+          <span className="label">Total Paid</span>
+          <span className="value">
+            <AssetAmount
+              amount={props.loan.amountRepaid}
+              asset={props.loan.asset}
+            />
+          </span>
         </li>
         <li>
-          Remaining Owed:{" "}
-          <AssetAmount amount={remainingBalance} asset={props.loan.asset} />
+          <span className="label">Remaining Owed</span>
+          <span className="value">
+            <AssetAmount amount={remainingBalance} asset={props.loan.asset} />
+          </span>
         </li>
       </ul>
       <form onSubmit={(e) => submitRepayment(e, props.loan as PersonalLoan)}>
         <label>Repayment Amount:</label>
         <input type="text" name="amount" />
         <div className="form-buttons">
-          <button onClick={() => props.onPaymentSubmission()}>
-            Submit Repayment
-          </button>
+          <button type="submit">Submit Repayment</button>
           <button onClick={() => props.onClose()}>Cancel</button>
         </div>
       </form>

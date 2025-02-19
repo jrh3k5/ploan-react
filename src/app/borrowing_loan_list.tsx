@@ -3,8 +3,9 @@
 import {
   Dispatch,
   SetStateAction,
-  useEffect,
+  useCallback,
   useContext,
+  useEffect,
   useState,
 } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
@@ -15,6 +16,7 @@ import { createPortal } from "react-dom";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 import { LoanRepaymentModal } from "./loan_repayment_modal";
+import { useAccount } from "wagmi";
 
 export interface BorrowingLoanListProps {
   borrowingLoans: PersonalLoan[];
@@ -22,33 +24,27 @@ export interface BorrowingLoanListProps {
 }
 
 export function BorrowingLoanList(props: BorrowingLoanListProps) {
+  const account = useAccount();
   const loanService = useContext(PersonalLoanContext);
   const [repaymentModalVisible, setRepaymentModalVisible] = useState(false);
   const [activeRepayingLoan, setActiveRepayingLoan] = useState<PersonalLoan>();
 
   const setBorrowingLoans = props.setBorrowingLoans;
 
-  const reloadBorrowingLoans = async () => {
+  const reloadBorrowingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
     const loans = await loanService.getBorrowingLoans();
     setBorrowingLoans(loans);
-  };
+  }, [loanService, setBorrowingLoans]);
 
   useEffect(() => {
-    if (loanService) {
-      loanService
-        .getBorrowingLoans()
-        .then((retrievedLoans) => {
-          setBorrowingLoans(retrievedLoans);
-        })
-        .catch((error) => {
-          console.error("Failed to retrieve borrowing loans", error);
-        });
-    }
-  }, [loanService, setBorrowingLoans]);
+    reloadBorrowingLoans().catch((error) => {
+      console.error("Failed to retrieve borrowing loans", error);
+    });
+  }, [loanService, reloadBorrowingLoans, setBorrowingLoans, account]);
 
   const openRepaymentModal = (loan: PersonalLoan) => {
     setActiveRepayingLoan(loan);
@@ -57,15 +53,6 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
 
   return (
     <div className="loan-grouping">
-      {repaymentModalVisible &&
-        createPortal(
-          <LoanRepaymentModal
-            loan={activeRepayingLoan}
-            onClose={async () => setRepaymentModalVisible(false)}
-            onPaymentSubmission={reloadBorrowingLoans}
-          />,
-          document.body,
-        )}
       <h3>Loans You Owe On ({props.borrowingLoans.length})</h3>
       <table>
         <thead>
@@ -99,6 +86,15 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
           ))}
         </tbody>
       </table>
+      {repaymentModalVisible &&
+        createPortal(
+          <LoanRepaymentModal
+            loan={activeRepayingLoan}
+            onClose={async () => setRepaymentModalVisible(false)}
+            onPaymentSubmission={reloadBorrowingLoans}
+          />,
+          document.body,
+        )}
     </div>
   );
 }

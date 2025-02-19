@@ -101,6 +101,7 @@ progress {
 }
 
 .modal {
+  box-sizing: border-box;
   justify-content: space-evenly;
   align-items: center;
   box-shadow: rgba(100, 100, 111, 0.3) 0px 7px 29px 0px;
@@ -109,7 +110,8 @@ progress {
   border-radius: 12px;
   position: absolute;
   top: 70px;
-  left: calc(50% - 125px);
+  left: calc(30%);
+  width: 40%;
   padding: 2em;
 }
 
@@ -129,4 +131,20 @@ form input {
   margin-top: 0.25em;
   margin-bottom: 0.25em;
   padding: 0.25em;
+}
+
+ul.details {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul.details span.label {
+  display: block;
+  font-weight: bold;
+}
+
+ul.details span.value {
+  display: block;
+  padding-bottom: 0.5em;
 }
