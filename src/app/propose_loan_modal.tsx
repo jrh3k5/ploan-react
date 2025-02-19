@@ -1,10 +1,10 @@
 "use client";
 
 import { useContext, useEffect, useState } from "react";
-import { SupportAssetResolver } from "@/services/supported_asset_resolver";
+import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { SupportedAssetResolverContext } from "@/services/supported_asset_resolver_provider";
 import { EthereumAsset } from "@/models/asset";
-import { Asset } from "./asset";
+import { calculateTokenAmount } from "@/lib/asset_amount";
 
 export interface ProposeLoanModalProps {
   chainId: number;
@@ -13,6 +13,7 @@ export interface ProposeLoanModalProps {
 }
 
 export function ProposeLoanModal(props: ProposeLoanModalProps) {
+  const loanService = useContext(PersonalLoanContext);
   const supportedAssetResolver = useContext(SupportedAssetResolverContext);
   const chainId = props.chainId;
 
@@ -35,10 +36,36 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
       });
   }, [chainId, supportedAssetResolver]);
 
-  const proposeLoan = (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const proposeLoan = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
-    return props.onLoanProposal();
+    if (!loanService) {
+        console.warn("Cannot propose loan; loan service not yet set");
+
+        return;
+    }
+
+    const chosenAssetAddress = e.currentTarget.asset.value;
+    const chosenAsset = supportedAssets.find(
+      (asset) => asset.address === chosenAssetAddress,
+    );
+    if (!chosenAsset) {
+        console.error("Failed to find chosen asset for contract address among supported assets: ", chosenAssetAddress);
+
+        return;
+    }
+
+    const tokenAmount = calculateTokenAmount(e.currentTarget.amount.value, chosenAsset.decimals);
+
+    await loanService.proposeLoan(
+      e.currentTarget.borrower.value,
+      tokenAmount,
+      e.currentTarget.asset.value,
+    );
+
+    await props.onLoanProposal();
+
+    await props.onClose();
   };
 
   return (

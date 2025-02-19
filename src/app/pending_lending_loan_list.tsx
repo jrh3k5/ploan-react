@@ -28,17 +28,20 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
 
   const [proposeLoanModalVisible, setProposeLoanModalVisible] = useState(false);
 
-  useEffect(() => {
-    if (loanService) {
-      loanService
-        .getPendingLendingLoans()
-        .then((lendingLoans) => {
-          setPendingLoans(lendingLoans);
-        })
-        .catch((error) => {
-          console.error("Failed to retrieve pending lending loans", error);
-        });
+    const refreshPendingLendingLoans = async () => {
+    if (!loanService) {
+      return;
     }
+
+    const pendingLoans = await loanService.getPendingLendingLoans();
+
+    setPendingLoans(pendingLoans);
+  };
+
+  useEffect(() => {
+    refreshPendingLendingLoans().catch((error) => {
+        console.error("Failed to refresh pending lending loans", error);
+    })
   }, [loanService, setPendingLoans]);
 
   const cancelLoan = async (
@@ -51,9 +54,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
 
     await loanService.cancelPendingLoan(loanID);
 
-    const pendingLoans = await loanService.getPendingLendingLoans();
-
-    setPendingLoans(pendingLoans);
+    await refreshPendingLendingLoans();
   };
 
   return (
@@ -100,7 +101,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
           <ProposeLoanModal
             chainId={props.chainId}
             onClose={async () => setProposeLoanModalVisible(false)}
-            onLoanProposal={async () => {}}
+            onLoanProposal={async () => refreshPendingLendingLoans()}
           />,
           document.body,
         )}

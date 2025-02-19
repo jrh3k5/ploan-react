@@ -63,8 +63,6 @@ function App() {
               Select chain:
               <ChainSelector
                 onChainSelection={async (chainId) => {
-                  // Needed for managing test data
-                  await loanService.purgeData();
                   await loanService.setChainId(chainId);
 
                   setChainId(chainId);

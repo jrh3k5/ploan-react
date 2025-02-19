@@ -42,7 +42,8 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
     await loanService.repayLoan(loan.loanID, wholeAmount);
 
     await props.onPaymentSubmission();
-    props.onClose();
+    
+    await props.onClose();
   };
 
   const remainingBalance = props.loan.amountLoaned - props.loan.amountRepaid;
