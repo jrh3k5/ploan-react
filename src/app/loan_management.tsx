@@ -8,14 +8,17 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
+import { Account } from "viem";
 
 type LoanManagementProps = {
   chainId: number;
+  userAddress: string | undefined;
 };
 
 export function LoanManagement(props: LoanManagementProps) {
   const loanService = useContext(PersonalLoanContext);
   const chainId = props.chainId;
+  const userAddress = props.userAddress;
 
   const [borrowingLoans, setBorrowingLoans] = useState<PersonalLoan[]>([]);
   const [lendingLoans, setLendingLoans] = useState<PersonalLoan[]>([]);
@@ -39,7 +42,7 @@ export function LoanManagement(props: LoanManagementProps) {
     if (loanService) {
       refreshBorrowingLoans();
     }
-  }, [chainId, loanService, refreshBorrowingLoans]);
+  }, [loanService, refreshBorrowingLoans, chainId, userAddress]);
 
   const onAcceptBorrow = async (loanID: string) => {
     await refreshBorrowingLoans();
@@ -48,20 +51,27 @@ export function LoanManagement(props: LoanManagementProps) {
   return (
     <div className="loan-management">
       <PendingBorrowingLoanList
+        chainId={chainId}
+        userAddress={userAddress}
         onAcceptBorrow={onAcceptBorrow}
         pendingBorrowingLoans={pendingBorrowingLoans}
         setPendingBorrowingLoans={setPendingBorrowingLoans}
       />
       <PendingLendingLoanList
         chainId={chainId}
+        userAddress={userAddress}
         pendingLoans={pendingLendingLoans}
         setPendingLoans={setPendingLendingLoans}
       />
       <BorrowingLoanList
+        chainId={chainId}
+        userAddress={userAddress}
         borrowingLoans={borrowingLoans}
         setBorrowingLoans={setBorrowingLoans}
       />
       <LendingLoanList
+        chainId={chainId}
+        userAddress={userAddress}
         lendingLoans={lendingLoans}
         setLendingLoans={setLendingLoans}
       />

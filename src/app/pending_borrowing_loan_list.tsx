@@ -11,18 +11,20 @@ import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
 import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
-import { useAccount } from "wagmi";
 
 export interface PendingBorrowingLoanListProps {
+  chainId: number;
+  userAddress: string | undefined;
   pendingBorrowingLoans: PendingLoan[];
   setPendingBorrowingLoans: Dispatch<SetStateAction<PendingLoan[]>>;
   onAcceptBorrow: (loanID: string) => Promise<void>;
 }
 
 export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
-  const account = useAccount();
   const loanService = useContext(PersonalLoanContext);
   const pendingBorrowingLoans = props.pendingBorrowingLoans;
+  const chainId = props.chainId;
+  const userAddress = props.userAddress;
   const setPendingLoans = props.setPendingBorrowingLoans;
 
   const refreshBorrowingLoans = useCallback(async () => {
@@ -39,7 +41,13 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
     refreshBorrowingLoans().catch((error) => {
       console.error("Failed to retrieve pending lending loans", error);
     });
-  }, [loanService, refreshBorrowingLoans, setPendingLoans, account]);
+  }, [
+    loanService,
+    refreshBorrowingLoans,
+    setPendingLoans,
+    chainId,
+    userAddress,
+  ]);
 
   const acceptBorrow = async (loanID: string) => {
     if (!loanService) {

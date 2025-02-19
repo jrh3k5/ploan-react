@@ -24,7 +24,7 @@ export interface PersonalLoanService {
   // where the user is the lender.
   getLendingLoans(): Promise<PersonalLoan[]>;
 
-    // getLoanProposalAllowlist gets the list of users that are allowed to propose loans
+  // getLoanProposalAllowlist gets the list of users that are allowed to propose loans
   getLoanProposalAllowlist(): Promise<Identity[]>;
 
   // getPendingBorrowingLoans gets loans that have been extended to the current user

@@ -4,7 +4,6 @@ import { PersonalLoanService } from "@/services/personal_loan_service";
 import { Identity } from "@/models/identity";
 import { PendingLoan } from "@/models/pending_loan";
 import { EthereumAssetResolverService } from "./ethereum_asset_resolver_service";
-import { UserAddressAssignable } from "./user_address_assignable";
 
 const usdcAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // Base Sepolia USDC
 const degenAddress = "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed";
@@ -15,7 +14,7 @@ const barmstrong = new Identity("0x5b76f5B8fc9D700624F78208132f91AD4e61a1f0");
 
 // InMemoryPersonalLoanService is the in-memory implementation of the personal loan service.
 // This is useful for testing functionlity without any onchain dependencies.
-export class InMemoryPersonalLoanService implements PersonalLoanService, UserAddressAssignable {
+export class InMemoryPersonalLoanService implements PersonalLoanService {
   private ethereumAssetResolverService: EthereumAssetResolverService;
   private userAddress: string | null;
   private chainId: number | null;
@@ -67,11 +66,11 @@ export class InMemoryPersonalLoanService implements PersonalLoanService, UserAdd
 
   async allowLoanProposal(identity: Identity): Promise<void> {
     if (!this.userAddress) {
-        throw new Error(
-          "A user address is required to be set to allow a loan proposal.",
-        )
+      throw new Error(
+        "A user address is required to be set to allow a loan proposal.",
+      );
     }
-      
+
     if (!this.loanProposalAllowlist.has(this.userAddress)) {
       this.loanProposalAllowlist.set(this.userAddress, []);
     }
@@ -112,25 +111,23 @@ export class InMemoryPersonalLoanService implements PersonalLoanService, UserAdd
 
   async disallowLoanProposal(identity: Identity): Promise<void> {
     if (!this.userAddress) {
-        throw new Error(
-          "A user address is required to be set to disallow a loan proposal.",
-        )
+      throw new Error(
+        "A user address is required to be set to disallow a loan proposal.",
+      );
     }
-      
+
     let allowlist: string[];
     if (!this.loanProposalAllowlist.has(this.userAddress)) {
-        allowlist = [];
+      allowlist = [];
     } else {
-        allowlist = this.loanProposalAllowlist.get(this.userAddress)!;
+      allowlist = this.loanProposalAllowlist.get(this.userAddress)!;
     }
 
     for (let i = allowlist.length - 1; i >= 0; i--) {
       if (allowlist[i] === identity.address) {
         // create a new array except with pendingLoans[i] removed
         // this needs to be a new array to trigger a refresh
-        allowlist = allowlist
-          .slice(0, i)
-          .concat(allowlist.slice(i + 1));
+        allowlist = allowlist.slice(0, i).concat(allowlist.slice(i + 1));
       }
     }
 
@@ -153,10 +150,10 @@ export class InMemoryPersonalLoanService implements PersonalLoanService, UserAdd
     }
 
     if (!this.loanProposalAllowlist.has(this.userAddress)) {
-        return [];
+      return [];
     }
 
-    const allowedAddresses = this.loanProposalAllowlist.get(this.userAddress)!; 
+    const allowedAddresses = this.loanProposalAllowlist.get(this.userAddress)!;
 
     return allowedAddresses.map((address) => new Identity(address));
   }
@@ -360,9 +357,13 @@ export class InMemoryPersonalLoanService implements PersonalLoanService, UserAdd
 
     const borrowerAllowlist = this.loanProposalAllowlist.get(borrowerAddress);
     if (!borrowerAllowlist) {
-      throw new Error("Borrower has no allowlist set; lender cannot propose a loan");
+      throw new Error(
+        "Borrower has no allowlist set; lender cannot propose a loan",
+      );
     } else if (!borrowerAllowlist.includes(this.userAddress)) {
-      throw new Error("Borrower is not on the allowlist; lender cannot propose a loan");
+      throw new Error(
+        "Borrower is not on the allowlist; lender cannot propose a loan",
+      );
     }
 
     const loanedAsset = await this.ethereumAssetResolverService.getAsset(

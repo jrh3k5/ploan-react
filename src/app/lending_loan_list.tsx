@@ -13,17 +13,20 @@ import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
-import { useAccount } from "wagmi";
+import { userAgent } from "next/server";
 
 export interface LendingLoanListProps {
+  chainId: number;
+  userAddress: string | undefined;
   lendingLoans: PersonalLoan[];
   setLendingLoans: Dispatch<SetStateAction<PersonalLoan[]>>;
 }
 
 export function LendingLoanList(props: LendingLoanListProps) {
-  const account = useAccount();
   const loanService = useContext(PersonalLoanContext);
   const lendingLoans = props.lendingLoans;
+  const chainId = props.chainId;
+  const userAddress = props.userAddress;
   const setLendingLoans = props.setLendingLoans;
 
   const refreshLoans = useCallback(async () => {
@@ -39,7 +42,7 @@ export function LendingLoanList(props: LendingLoanListProps) {
     refreshLoans().catch((error) => {
       console.error("Failed to retrieve lending loans", error);
     });
-  }, [loanService, refreshLoans, setLendingLoans, account]);
+  }, [loanService, refreshLoans, setLendingLoans, chainId, userAddress]);
 
   const cancelLoan = async (loanID: string) => {
     if (!loanService) {
