@@ -23,6 +23,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   private borrowingLoans: PersonalLoan[] | undefined = undefined;
   private lendingLoans: PersonalLoan[] | undefined = undefined;
   private idCounter: number;
+  private loanProposalAllowlist: Map<string, string[]> = new Map();
 
   constructor(ethereumAssetResolverService: EthereumAssetResolverService) {
     this.idCounter = 0;
@@ -63,6 +64,20 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     }
   }
 
+  async allowLoanProposal(identity: Identity): Promise<void> {
+    if (!this.userAddress) {
+        throw new Error(
+          "A user address is required to be set to allow a loan proposal.",
+        )
+    }
+      
+    if (!this.loanProposalAllowlist.has(this.userAddress)) {
+      this.loanProposalAllowlist.set(this.userAddress, []);
+    }
+
+    this.loanProposalAllowlist.get(this.userAddress)?.push(identity.address);
+  }
+
   async cancelLendingLoan(loanID: string): Promise<void> {
     const lendingLoans = await this.getOrInitLendingLoans();
 
@@ -92,6 +107,33 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
     this.pendingLendingLoans = [];
     this.pendingLendingLoans.push(...pendingLendingLoans);
+  }
+
+  async disallowLoanProposal(identity: Identity): Promise<void> {
+    if (!this.userAddress) {
+        throw new Error(
+          "A user address is required to be set to disallow a loan proposal.",
+        )
+    }
+      
+    let allowlist: string[];
+    if (!this.loanProposalAllowlist.has(this.userAddress)) {
+        allowlist = [];
+    } else {
+        allowlist = this.loanProposalAllowlist.get(this.userAddress)!;
+    }
+
+    for (let i = allowlist.length - 1; i >= 0; i--) {
+      if (allowlist[i] === identity.address) {
+        // create a new array except with pendingLoans[i] removed
+        // this needs to be a new array to trigger a refresh
+        allowlist = allowlist
+          .slice(0, i)
+          .concat(allowlist.slice(i + 1));
+      }
+    }
+
+    this.loanProposalAllowlist.set(this.userAddress, allowlist);
   }
 
   async getBorrowingLoans(): Promise<PersonalLoan[]> {
