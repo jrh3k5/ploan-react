@@ -4,6 +4,7 @@ import { PersonalLoanService } from "@/services/personal_loan_service";
 import { Identity } from "@/models/identity";
 import { PendingLoan } from "@/models/pending_loan";
 import { EthereumAssetResolverService } from "./ethereum_asset_resolver_service";
+import { UserAddressAssignable } from "./user_address_assignable";
 
 const usdcAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // Base Sepolia USDC
 const degenAddress = "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed";
@@ -14,7 +15,7 @@ const barmstrong = new Identity("0x5b76f5B8fc9D700624F78208132f91AD4e61a1f0");
 
 // InMemoryPersonalLoanService is the in-memory implementation of the personal loan service.
 // This is useful for testing functionlity without any onchain dependencies.
-export class InMemoryPersonalLoanService implements PersonalLoanService {
+export class InMemoryPersonalLoanService implements PersonalLoanService, UserAddressAssignable {
   private ethereumAssetResolverService: EthereumAssetResolverService;
   private userAddress: string | null;
   private chainId: number | null;
@@ -142,6 +143,22 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
   async getLendingLoans(): Promise<PersonalLoan[]> {
     return this.getOrInitLendingLoans();
+  }
+
+  async getLoanProposalAllowlist(): Promise<Identity[]> {
+    if (!this.userAddress) {
+      throw new Error(
+        "A user address is required to be set to get loan proposal allowlist.",
+      );
+    }
+
+    if (!this.loanProposalAllowlist.has(this.userAddress)) {
+        return [];
+    }
+
+    const allowedAddresses = this.loanProposalAllowlist.get(this.userAddress)!; 
+
+    return allowedAddresses.map((address) => new Identity(address));
   }
 
   // getOrInitBorrowLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
@@ -339,6 +356,13 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
     if (!this.chainId) {
       throw new Error("A chain ID is required to be set to propose a loan.");
+    }
+
+    const borrowerAllowlist = this.loanProposalAllowlist.get(borrowerAddress);
+    if (!borrowerAllowlist) {
+      throw new Error("Borrower has no allowlist set; lender cannot propose a loan");
+    } else if (!borrowerAllowlist.includes(this.userAddress)) {
+      throw new Error("Borrower is not on the allowlist; lender cannot propose a loan");
     }
 
     const loanedAsset = await this.ethereumAssetResolverService.getAsset(
