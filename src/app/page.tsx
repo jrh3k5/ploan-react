@@ -31,7 +31,8 @@ function App() {
   supportedAssetResolver.setChainId(chainId);
 
   useEffect(() => {
-    if (account.status === "connected") {
+    if (account.address) {
+      console.log("Setting user address", account.address);
       loanService.setUserAddress(account.address);
     }
   }, [account]);

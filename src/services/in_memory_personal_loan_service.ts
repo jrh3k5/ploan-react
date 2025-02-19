@@ -24,9 +24,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   private lendingLoans: PersonalLoan[] | undefined = undefined;
   private idCounter: number;
 
-  constructor(
-    ethereumAssetResolverService: EthereumAssetResolverService,
-  ) {
+  constructor(ethereumAssetResolverService: EthereumAssetResolverService) {
     this.idCounter = 0;
     this.userAddress = null;
     this.chainId = null;
@@ -107,7 +105,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   // getOrInitBorrowLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
   async getOrInitBorrowLoans(): Promise<PersonalLoan[]> {
     if (!this.userAddress || !this.chainId) {
-        return [];
+      return [];
     }
 
     const userAddress = this.userAddress;
@@ -153,13 +151,15 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       ];
     }
 
-    return this.borrowingLoans.filter(l => l.borrower.address.toLowerCase() === userAddress.toLowerCase());
+    return this.borrowingLoans.filter(
+      (l) => l.borrower.address.toLowerCase() === userAddress.toLowerCase(),
+    );
   }
 
   //getOrInitLendingLoans retrieves the current borrowed loans and initializes the data if it's not already been initialized.
   async getOrInitLendingLoans(): Promise<PersonalLoan[]> {
     if (!this.userAddress || !this.chainId) {
-        return [];
+      return [];
     }
 
     const userAddress = this.userAddress;
@@ -205,13 +205,15 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       ];
     }
 
-    return this.lendingLoans.filter(l => l.lender.address.toLowerCase() === userAddress.toLowerCase());
+    return this.lendingLoans.filter(
+      (l) => l.lender.address.toLowerCase() === userAddress.toLowerCase(),
+    );
   }
 
   // getOrInitPendingBorrowLoans retrieves the current pending borrowed loans and initializes the data if it's not already been initialized.
   async getOrInitPendingBorrowingLoans(): Promise<PendingLoan[]> {
     if (!this.userAddress || !this.chainId) {
-        return [];
+      return [];
     }
 
     const userAddress = this.userAddress;
@@ -226,17 +228,25 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       }
 
       this.pendingBorrowingLoans = [
-        new PendingLoan(`${this.idCounter++}`, vbuterin, new Identity(userAddress), 1000000000n, usdcAsset),
+        new PendingLoan(
+          `${this.idCounter++}`,
+          vbuterin,
+          new Identity(userAddress),
+          1000000000n,
+          usdcAsset,
+        ),
       ];
     }
 
-    return this.pendingBorrowingLoans.filter(l => l.borrower.address.toLowerCase() === userAddress.toLowerCase());
+    return this.pendingBorrowingLoans.filter(
+      (l) => l.borrower.address.toLowerCase() === userAddress.toLowerCase(),
+    );
   }
 
   // getOrInitPendingLendingLoans retrieves the current pending borrowed loans and initializes the data if it's not already been initialized.
   async getOrInitPendingLendingLoans(): Promise<PendingLoan[]> {
     if (!this.userAddress || !this.chainId) {
-        return [];
+      return [];
     }
 
     const userAddress = this.userAddress;
@@ -261,7 +271,9 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       ];
     }
 
-    return this.pendingLendingLoans.filter(l => l.lender.address.toLowerCase() === userAddress.toLowerCase());
+    return this.pendingLendingLoans.filter(
+      (l) => l.lender.address.toLowerCase() === userAddress.toLowerCase(),
+    );
   }
 
   async getPendingBorrowingLoans(): Promise<PendingLoan[]> {
@@ -272,23 +284,34 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     return this.getOrInitPendingLendingLoans();
   }
 
-  async proposeLoan(borrowerAddress: string, amount: bigint, assetAddress: string): Promise<void> {
+  async proposeLoan(
+    borrowerAddress: string,
+    amount: bigint,
+    assetAddress: string,
+  ): Promise<void> {
     if (!this.userAddress) {
-        throw new Error("A user address is required to be set to propose a loan.");
+      throw new Error(
+        "A user address is required to be set to propose a loan.",
+      );
     }
 
     if (!this.chainId) {
-        throw new Error("A chain ID is required to be set to propose a loan.");
+      throw new Error("A chain ID is required to be set to propose a loan.");
     }
 
-    const loanedAsset = await this.ethereumAssetResolverService.getAsset(this.chainId, assetAddress);
+    const loanedAsset = await this.ethereumAssetResolverService.getAsset(
+      this.chainId,
+      assetAddress,
+    );
     if (!loanedAsset) {
-        throw new Error("Failed to resolve loaned asset during loan proposal: " + assetAddress);
+      throw new Error(
+        "Failed to resolve loaned asset during loan proposal: " + assetAddress,
+      );
     }
 
     let pendingLoans = this.pendingLendingLoans;
     if (!pendingLoans) {
-        pendingLoans = [];
+      pendingLoans = [];
     }
 
     this.pendingLendingLoans = pendingLoans.concat(

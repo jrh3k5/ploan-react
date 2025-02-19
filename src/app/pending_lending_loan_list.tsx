@@ -4,6 +4,7 @@ import {
   Dispatch,
   SetStateAction,
   useEffect,
+  useCallback,
   useContext,
   useState,
 } from "react";
@@ -14,6 +15,7 @@ import { UserIdentity } from "./user_identity";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 import { AssetAmount } from "./asset_amount";
 import { ProposeLoanModal } from "./propose_loan_modal";
+import { useAccount } from "wagmi";
 
 export interface PendingLendingLoanListProps {
   pendingLoans: PendingLoan[];
@@ -22,13 +24,14 @@ export interface PendingLendingLoanListProps {
 }
 
 export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
+  const account = useAccount();
   const loanService = useContext(PersonalLoanContext);
   const pendingLoans = props.pendingLoans;
   const setPendingLoans = props.setPendingLoans;
 
   const [proposeLoanModalVisible, setProposeLoanModalVisible] = useState(false);
 
-    const refreshPendingLendingLoans = async () => {
+  const refreshPendingLendingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
@@ -36,13 +39,13 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
     const pendingLoans = await loanService.getPendingLendingLoans();
 
     setPendingLoans(pendingLoans);
-  };
+  }, [loanService, setPendingLoans]);
 
   useEffect(() => {
     refreshPendingLendingLoans().catch((error) => {
-        console.error("Failed to refresh pending lending loans", error);
-    })
-  }, [loanService, setPendingLoans]);
+      console.error("Failed to refresh pending lending loans", error);
+    });
+  }, [loanService, refreshPendingLendingLoans, setPendingLoans, account]);
 
   const cancelLoan = async (
     loanService: PersonalLoanService | null,

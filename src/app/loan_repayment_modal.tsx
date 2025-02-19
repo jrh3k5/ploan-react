@@ -42,7 +42,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
     await loanService.repayLoan(loan.loanID, wholeAmount);
 
     await props.onPaymentSubmission();
-    
+
     await props.onClose();
   };
 
@@ -87,9 +87,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
         <label>Repayment Amount:</label>
         <input type="text" name="amount" />
         <div className="form-buttons">
-          <button type="submit">
-            Submit Repayment
-          </button>
+          <button type="submit">Submit Repayment</button>
           <button onClick={() => props.onClose()}>Cancel</button>
         </div>
       </form>

@@ -13,9 +13,7 @@ export class SupportedAssetResolverImpl implements SupportAssetResolver {
   private ethereumAssetResolverService: EthereumAssetResolverService;
   private chainId: number | null;
 
-  constructor(
-    ethereumAssetResolverService: EthereumAssetResolverService,
-  ) {
+  constructor(ethereumAssetResolverService: EthereumAssetResolverService) {
     this.chainId = null;
     this.ethereumAssetResolverService = ethereumAssetResolverService;
 

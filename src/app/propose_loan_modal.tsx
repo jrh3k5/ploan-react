@@ -36,13 +36,15 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
       });
   }, [chainId, supportedAssetResolver]);
 
-  const proposeLoan = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const proposeLoan = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
 
     if (!loanService) {
-        console.warn("Cannot propose loan; loan service not yet set");
+      console.warn("Cannot propose loan; loan service not yet set");
 
-        return;
+      return;
     }
 
     const chosenAssetAddress = e.currentTarget.asset.value;
@@ -50,12 +52,18 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
       (asset) => asset.address === chosenAssetAddress,
     );
     if (!chosenAsset) {
-        console.error("Failed to find chosen asset for contract address among supported assets: ", chosenAssetAddress);
+      console.error(
+        "Failed to find chosen asset for contract address among supported assets: ",
+        chosenAssetAddress,
+      );
 
-        return;
+      return;
     }
 
-    const tokenAmount = calculateTokenAmount(e.currentTarget.amount.value, chosenAsset.decimals);
+    const tokenAmount = calculateTokenAmount(
+      e.currentTarget.amount.value,
+      chosenAsset.decimals,
+    );
 
     await loanService.proposeLoan(
       e.currentTarget.borrower.value,
