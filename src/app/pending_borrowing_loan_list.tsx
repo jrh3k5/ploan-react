@@ -1,57 +1,31 @@
 "use client";
 
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useContext,
-  useState,
-} from "react";
+import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
-import { PendingLoan } from "@/models/pending_loan";
+import {
+  PendingLoan,
+  PendingLoanStatus as PendingLoanStatusEnum,
+} from "@/models/pending_loan";
 import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
 import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
 import { createPortal } from "react-dom";
+import { PendingLoanStatus } from "./pending_loan_status";
+import { Identity } from "@/models/identity";
 
 export interface PendingBorrowingLoanListProps {
-  chainId: number;
-  userAddress: string | undefined;
+  allowList: Identity[];
   pendingBorrowingLoans: PendingLoan[];
-  setPendingBorrowingLoans: Dispatch<SetStateAction<PendingLoan[]>>;
   onAcceptBorrow: (loanID: string) => Promise<void>;
+  onRejectLoan: (loanID: string) => Promise<void>;
+  onAllowlistAddition: (identity: Identity) => Promise<void>;
+  onAllowlistRemoval: (identity: Identity) => Promise<void>;
 }
 
 export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
   const pendingBorrowingLoans = props.pendingBorrowingLoans;
-  const chainId = props.chainId;
-  const userAddress = props.userAddress;
-  const setPendingLoans = props.setPendingBorrowingLoans;
   const [showAllowlistModal, setShowAllowlistModal] = useState(false);
-
-  const refreshBorrowingLoans = useCallback(async () => {
-    if (!loanService) {
-      return;
-    }
-
-    const pendingLoans = await loanService.getPendingBorrowingLoans();
-
-    setPendingLoans(pendingLoans);
-  }, [loanService, setPendingLoans]);
-
-  useEffect(() => {
-    refreshBorrowingLoans().catch((error) => {
-      console.error("Failed to retrieve pending lending loans", error);
-    });
-  }, [
-    loanService,
-    refreshBorrowingLoans,
-    setPendingLoans,
-    chainId,
-    userAddress,
-  ]);
 
   const acceptBorrow = async (loanID: string) => {
     if (!loanService) {
@@ -60,9 +34,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
 
     await loanService.acceptBorrow(loanID);
 
-    await refreshBorrowingLoans();
-
-    props.onAcceptBorrow(loanID);
+    await props.onAcceptBorrow(loanID);
   };
 
   const rejectBorrow = async (loanID: string) => {
@@ -72,7 +44,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
 
     await loanService.rejectBorrow(loanID);
 
-    await refreshBorrowingLoans();
+    await props.onRejectLoan(loanID);
   };
 
   return (
@@ -93,6 +65,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
           <tr>
             <th>Lender</th>
             <th>Amount to Borrow</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -108,10 +81,16 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                   amount={pendingLoan.amountLoaned}
                 />
               </td>
+              <td className="status">
+                <PendingLoanStatus loan={pendingLoan} />
+              </td>
               <td className="actions">
-                <button onClick={() => acceptBorrow(pendingLoan.loanID)}>
-                  Accept Borrow
-                </button>
+                {pendingLoan.status ==
+                  PendingLoanStatusEnum.WAITING_FOR_ACCEPTANCE && (
+                  <button onClick={() => acceptBorrow(pendingLoan.loanID)}>
+                    Accept Borrow
+                  </button>
+                )}
                 <button onClick={() => rejectBorrow(pendingLoan.loanID)}>
                   Reject Borrow
                 </button>
@@ -123,8 +102,9 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       {showAllowlistModal &&
         createPortal(
           <ProposeLoanAllowlistModal
-            chainId={props.chainId}
-            userAddress={props.userAddress}
+            allowList={props.allowList}
+            onAllowlistAddition={props.onAllowlistAddition}
+            onAllowlistRemoval={props.onAllowlistRemoval}
             onClose={async () => setShowAllowlistModal(false)}
           />,
           document.body,

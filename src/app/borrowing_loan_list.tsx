@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { UserIdentity } from "./user_identity";
 import { LoanProgress } from "./loan_progress";
@@ -18,41 +11,13 @@ import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 import { LoanRepaymentModal } from "./loan_repayment_modal";
 
 export interface BorrowingLoanListProps {
-  chainId: number;
-  userAddress: string | undefined;
   borrowingLoans: PersonalLoan[];
-  setBorrowingLoans: Dispatch<SetStateAction<PersonalLoan[]>>;
+  onPaymentSubmission: (loanID: string) => Promise<void>;
 }
 
 export function BorrowingLoanList(props: BorrowingLoanListProps) {
-  const loanService = useContext(PersonalLoanContext);
-  const chainId = props.chainId;
-  const userAddress = props.userAddress;
   const [repaymentModalVisible, setRepaymentModalVisible] = useState(false);
   const [activeRepayingLoan, setActiveRepayingLoan] = useState<PersonalLoan>();
-
-  const setBorrowingLoans = props.setBorrowingLoans;
-
-  const reloadBorrowingLoans = useCallback(async () => {
-    if (!loanService) {
-      return;
-    }
-
-    const loans = await loanService.getBorrowingLoans();
-    setBorrowingLoans(loans);
-  }, [loanService, setBorrowingLoans]);
-
-  useEffect(() => {
-    reloadBorrowingLoans().catch((error) => {
-      console.error("Failed to retrieve borrowing loans", error);
-    });
-  }, [
-    loanService,
-    reloadBorrowingLoans,
-    setBorrowingLoans,
-    chainId,
-    userAddress,
-  ]);
 
   const openRepaymentModal = (loan: PersonalLoan) => {
     setActiveRepayingLoan(loan);
@@ -99,7 +64,7 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
           <LoanRepaymentModal
             loan={activeRepayingLoan}
             onClose={async () => setRepaymentModalVisible(false)}
-            onPaymentSubmission={reloadBorrowingLoans}
+            onPaymentSubmission={props.onPaymentSubmission}
           />,
           document.body,
         )}

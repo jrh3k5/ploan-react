@@ -10,7 +10,7 @@ import { calculateTokenAmount } from "@/lib/asset_amount";
 export interface LoanRepaymentModalProps {
   loan: PersonalLoan | undefined;
   onClose: () => Promise<void>;
-  onPaymentSubmission: () => Promise<void>;
+  onPaymentSubmission: (loanID: string) => Promise<void>;
 }
 
 export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
@@ -41,7 +41,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
 
     await loanService.repayLoan(loan.loanID, wholeAmount);
 
-    await props.onPaymentSubmission();
+    await props.onPaymentSubmission(loan.loanID);
 
     await props.onClose();
   };
