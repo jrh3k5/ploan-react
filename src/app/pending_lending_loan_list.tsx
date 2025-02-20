@@ -15,18 +15,18 @@ import { UserIdentity } from "./user_identity";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 import { AssetAmount } from "./asset_amount";
 import { ProposeLoanModal } from "./propose_loan_modal";
-import { useAccount } from "wagmi";
 
 export interface PendingLendingLoanListProps {
   pendingLoans: PendingLoan[];
   chainId: number;
+  userAddress: string | undefined;
   setPendingLoans: Dispatch<SetStateAction<PendingLoan[]>>;
 }
 
 export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
-  const account = useAccount();
   const loanService = useContext(PersonalLoanContext);
   const pendingLoans = props.pendingLoans;
+  const userAddress = props.userAddress;
   const setPendingLoans = props.setPendingLoans;
 
   const [proposeLoanModalVisible, setProposeLoanModalVisible] = useState(false);
@@ -45,7 +45,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
     refreshPendingLendingLoans().catch((error) => {
       console.error("Failed to refresh pending lending loans", error);
     });
-  }, [loanService, refreshPendingLendingLoans, setPendingLoans, account]);
+  }, [loanService, refreshPendingLendingLoans, setPendingLoans, userAddress]);
 
   const cancelLoan = async (
     loanService: PersonalLoanService | null,
@@ -63,7 +63,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   return (
     <div className="loan-grouping">
       <h3>Loans You&apos;ve Offered Others ({pendingLoans.length})</h3>
-      <div className="form-buttons">
+      <div>
         <button onClick={() => setProposeLoanModalVisible(true)}>
           Propose Loan
         </button>

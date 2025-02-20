@@ -26,14 +26,17 @@ function App() {
   const { disconnect } = useDisconnect();
 
   const [chainId, setChainId] = useState<number>(defaultChain.id);
+  const [userAddress, setUserAddress] = useState<string | undefined>(
+    account.address,
+  );
 
   loanService.setChainId(chainId);
   supportedAssetResolver.setChainId(chainId);
 
   useEffect(() => {
     if (account.address) {
-      console.log("Setting user address", account.address);
       loanService.setUserAddress(account.address);
+      setUserAddress(account.address);
     }
   }, [account]);
 
@@ -56,7 +59,7 @@ function App() {
               <SupportedAssetResolverProvider
                 supportedAssetResolver={supportedAssetResolver}
               >
-                <LoanManagement chainId={chainId} />
+                <LoanManagement chainId={chainId} userAddress={userAddress} />
               </SupportedAssetResolverProvider>
             </PersonalLoanServiceProvider>
 

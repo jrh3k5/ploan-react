@@ -16,16 +16,18 @@ import { createPortal } from "react-dom";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 import { LoanRepaymentModal } from "./loan_repayment_modal";
-import { useAccount } from "wagmi";
 
 export interface BorrowingLoanListProps {
+  chainId: number;
+  userAddress: string | undefined;
   borrowingLoans: PersonalLoan[];
   setBorrowingLoans: Dispatch<SetStateAction<PersonalLoan[]>>;
 }
 
 export function BorrowingLoanList(props: BorrowingLoanListProps) {
-  const account = useAccount();
   const loanService = useContext(PersonalLoanContext);
+  const chainId = props.chainId;
+  const userAddress = props.userAddress;
   const [repaymentModalVisible, setRepaymentModalVisible] = useState(false);
   const [activeRepayingLoan, setActiveRepayingLoan] = useState<PersonalLoan>();
 
@@ -44,7 +46,13 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
     reloadBorrowingLoans().catch((error) => {
       console.error("Failed to retrieve borrowing loans", error);
     });
-  }, [loanService, reloadBorrowingLoans, setBorrowingLoans, account]);
+  }, [
+    loanService,
+    reloadBorrowingLoans,
+    setBorrowingLoans,
+    chainId,
+    userAddress,
+  ]);
 
   const openRepaymentModal = (loan: PersonalLoan) => {
     setActiveRepayingLoan(loan);
