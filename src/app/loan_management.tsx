@@ -8,7 +8,6 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
-import { Account } from "viem";
 
 type LoanManagementProps = {
   chainId: number;
@@ -38,42 +37,79 @@ export function LoanManagement(props: LoanManagementProps) {
     setBorrowingLoans(borrowingLoans);
   }, [loanService, setBorrowingLoans]);
 
-  useEffect(() => {
-    if (loanService) {
-      refreshBorrowingLoans();
+  const refreshLendingLoans = useCallback(async () => {
+    if (!loanService) {
+      return;
     }
+
+    const lendingLoans = await loanService.getLendingLoans();
+    setLendingLoans(lendingLoans);
+  }, [loanService, setLendingLoans]);
+
+  const refreshPendingBorrowLoans = useCallback(async () => {
+    if (!loanService) {
+      return;
+    }
+
+    const pendingBorrowingLoans = await loanService.getPendingBorrowingLoans();
+    setPendingBorrowingLoans(pendingBorrowingLoans);
+  }, [loanService, setPendingBorrowingLoans]);
+
+  const refreshPendingLendingLoans = useCallback(async () => {
+    if (!loanService) {
+      return;
+    }
+
+    const pendingLendingLoans = await loanService.getPendingLendingLoans();
+    setPendingLendingLoans(pendingLendingLoans);
+  }, [loanService, setPendingLendingLoans]);
+
+  useEffect(() => {
+    refreshBorrowingLoans();
   }, [loanService, refreshBorrowingLoans, chainId, userAddress]);
+
+  useEffect(() => {
+    refreshPendingLendingLoans();
+  }, [loanService, refreshPendingLendingLoans, chainId, userAddress]);
+
+  useEffect(() => {
+    refreshLendingLoans();
+  }, [loanService, refreshLendingLoans, chainId, userAddress]);
 
   const onAcceptBorrow = async (loanID: string) => {
     await refreshBorrowingLoans();
   };
 
+  const onRejectBorrow = async (loanID: string) => {
+    await refreshPendingBorrowLoans();
+  };
+
   return (
     <div className="loan-management">
       <PendingBorrowingLoanList
-        chainId={chainId}
-        userAddress={userAddress}
-        onAcceptBorrow={onAcceptBorrow}
         pendingBorrowingLoans={pendingBorrowingLoans}
-        setPendingBorrowingLoans={setPendingBorrowingLoans}
+        onAcceptBorrow={onAcceptBorrow}
+        onRejectLoan={onRejectBorrow}
       />
       <PendingLendingLoanList
         chainId={chainId}
-        userAddress={userAddress}
         pendingLoans={pendingLendingLoans}
-        setPendingLoans={setPendingLendingLoans}
+        onLoanCancellation={refreshPendingLendingLoans}
+        onLoanExecution={async () => {
+          await Promise.all([
+            refreshPendingLendingLoans(),
+            refreshLendingLoans(),
+          ]);
+        }}
+        onLoanProposal={refreshPendingLendingLoans}
       />
       <BorrowingLoanList
-        chainId={chainId}
-        userAddress={userAddress}
         borrowingLoans={borrowingLoans}
-        setBorrowingLoans={setBorrowingLoans}
+        onPaymentSubmission={refreshBorrowingLoans}
       />
       <LendingLoanList
-        chainId={chainId}
-        userAddress={userAddress}
         lendingLoans={lendingLoans}
-        setLendingLoans={setLendingLoans}
+        onLoanCancelation={refreshLendingLoans}
       />
     </div>
   );

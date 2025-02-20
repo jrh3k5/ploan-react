@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useContext,
-  useState,
-} from "react";
+import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
 import { AssetAmount } from "./asset_amount";
@@ -16,42 +9,15 @@ import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
 import { createPortal } from "react-dom";
 
 export interface PendingBorrowingLoanListProps {
-  chainId: number;
-  userAddress: string | undefined;
   pendingBorrowingLoans: PendingLoan[];
-  setPendingBorrowingLoans: Dispatch<SetStateAction<PendingLoan[]>>;
   onAcceptBorrow: (loanID: string) => Promise<void>;
+  onRejectLoan: (loanID: string) => Promise<void>;
 }
 
 export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
   const pendingBorrowingLoans = props.pendingBorrowingLoans;
-  const chainId = props.chainId;
-  const userAddress = props.userAddress;
-  const setPendingLoans = props.setPendingBorrowingLoans;
   const [showAllowlistModal, setShowAllowlistModal] = useState(false);
-
-  const refreshBorrowingLoans = useCallback(async () => {
-    if (!loanService) {
-      return;
-    }
-
-    const pendingLoans = await loanService.getPendingBorrowingLoans();
-
-    setPendingLoans(pendingLoans);
-  }, [loanService, setPendingLoans]);
-
-  useEffect(() => {
-    refreshBorrowingLoans().catch((error) => {
-      console.error("Failed to retrieve pending lending loans", error);
-    });
-  }, [
-    loanService,
-    refreshBorrowingLoans,
-    setPendingLoans,
-    chainId,
-    userAddress,
-  ]);
 
   const acceptBorrow = async (loanID: string) => {
     if (!loanService) {
@@ -59,8 +25,6 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
     }
 
     await loanService.acceptBorrow(loanID);
-
-    await refreshBorrowingLoans();
 
     props.onAcceptBorrow(loanID);
   };
@@ -72,7 +36,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
 
     await loanService.rejectBorrow(loanID);
 
-    await refreshBorrowingLoans();
+    await props.onRejectLoan(loanID);
   };
 
   return (

@@ -1,51 +1,31 @@
 "use client";
 
-import {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useCallback,
-  useContext,
-  useState,
-} from "react";
+import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
-import { PendingLoan } from "@/models/pending_loan";
+import {
+  PendingLoan,
+  PendingLoanStatus as PendingLoanStatusEnum,
+} from "@/models/pending_loan";
 import { createPortal } from "react-dom";
 import { UserIdentity } from "./user_identity";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 import { AssetAmount } from "./asset_amount";
 import { ProposeLoanModal } from "./propose_loan_modal";
+import { PendingLoanStatus } from "./pending_loan_status";
 
 export interface PendingLendingLoanListProps {
   pendingLoans: PendingLoan[];
   chainId: number;
-  userAddress: string | undefined;
-  setPendingLoans: Dispatch<SetStateAction<PendingLoan[]>>;
+  onLoanCancellation: (loanID: string) => Promise<void>;
+  onLoanExecution: (loanID: string) => Promise<void>;
+  onLoanProposal: () => Promise<void>;
 }
 
 export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
   const pendingLoans = props.pendingLoans;
-  const userAddress = props.userAddress;
-  const setPendingLoans = props.setPendingLoans;
 
   const [proposeLoanModalVisible, setProposeLoanModalVisible] = useState(false);
-
-  const refreshPendingLendingLoans = useCallback(async () => {
-    if (!loanService) {
-      return;
-    }
-
-    const pendingLoans = await loanService.getPendingLendingLoans();
-
-    setPendingLoans(pendingLoans);
-  }, [loanService, setPendingLoans]);
-
-  useEffect(() => {
-    refreshPendingLendingLoans().catch((error) => {
-      console.error("Failed to refresh pending lending loans", error);
-    });
-  }, [loanService, refreshPendingLendingLoans, setPendingLoans, userAddress]);
 
   const cancelLoan = async (
     loanService: PersonalLoanService | null,
@@ -57,7 +37,20 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
 
     await loanService.cancelPendingLoan(loanID);
 
-    await refreshPendingLendingLoans();
+    await props.onLoanCancellation(loanID);
+  };
+
+  const executeLoan = async (
+    loanService: PersonalLoanService | null,
+    loanID: string,
+  ) => {
+    if (!loanService) {
+      return;
+    }
+
+    await loanService.executeLoan(loanID);
+
+    await props.onLoanExecution(loanID);
   };
 
   return (
@@ -73,6 +66,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
           <tr>
             <th>Borrower</th>
             <th>Amount to Lend</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -88,7 +82,17 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
                   amount={pendingLoan.amountLoaned}
                 />
               </td>
+              <td className="status">
+                <PendingLoanStatus loan={pendingLoan} />
+              </td>
               <td className="actions">
+                {pendingLoan.status == PendingLoanStatusEnum.ACCEPTED && (
+                  <button
+                    onClick={() => executeLoan(loanService, pendingLoan.loanID)}
+                  >
+                    Execute Loan
+                  </button>
+                )}
                 <button
                   onClick={() => cancelLoan(loanService, pendingLoan.loanID)}
                 >
@@ -104,7 +108,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
           <ProposeLoanModal
             chainId={props.chainId}
             onClose={async () => setProposeLoanModalVisible(false)}
-            onLoanProposal={async () => refreshPendingLendingLoans()}
+            onLoanProposal={async () => props.onLoanProposal()}
           />,
           document.body,
         )}

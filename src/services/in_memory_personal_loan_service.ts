@@ -4,6 +4,7 @@ import { PersonalLoanService } from "@/services/personal_loan_service";
 import { Identity } from "@/models/identity";
 import { PendingLoan } from "@/models/pending_loan";
 import { EthereumAssetResolverService } from "./ethereum_asset_resolver_service";
+import { PendingLoanStatus } from "@/models/pending_loan";
 
 const usdcAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // Base Sepolia USDC
 const degenAddress = "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed";
@@ -35,28 +36,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
     for (let i = pendingBorrowingLoans.length - 1; i >= 0; i--) {
       if (pendingBorrowingLoans[i].loanID === loanID) {
-        const newLoan = pendingBorrowingLoans[i];
-
-        // create a new array except with pendingLoans[i] removed
-        // this needs to be a new array to trigger a refresh
-        pendingBorrowingLoans = pendingBorrowingLoans
-          .slice(0, i)
-          .concat(pendingBorrowingLoans.slice(i + 1));
-
-        this.pendingLoans = pendingBorrowingLoans;
-
-        const activeLoans = await this.getOrInitActiveLoans();
-        this.activeLoans = activeLoans.concat([
-          new PersonalLoan(
-            newLoan.loanID,
-            newLoan.borrower,
-            newLoan.lender,
-            newLoan.amountLoaned,
-            0n,
-            newLoan.asset,
-            LoanStatus.IN_PROGRESS,
-          ),
-        ]);
+        pendingBorrowingLoans[i].status = PendingLoanStatus.ACCEPTED;
       }
     }
   }
@@ -124,6 +104,37 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     }
 
     this.loanProposalAllowlist.set(this.userAddress, allowlist);
+  }
+
+  async executeLoan(loanID: string): Promise<void> {
+    let pendingBorrowingLoans = await this.getOrInitPendingLoans();
+
+    for (let i = pendingBorrowingLoans.length - 1; i >= 0; i--) {
+      if (pendingBorrowingLoans[i].loanID === loanID) {
+        const newLoan = pendingBorrowingLoans[i];
+
+        // create a new array except with pendingLoans[i] removed
+        // this needs to be a new array to trigger a refresh
+        pendingBorrowingLoans = pendingBorrowingLoans
+          .slice(0, i)
+          .concat(pendingBorrowingLoans.slice(i + 1));
+
+        this.pendingLoans = pendingBorrowingLoans;
+
+        const activeLoans = await this.getOrInitActiveLoans();
+        this.activeLoans = activeLoans.concat([
+          new PersonalLoan(
+            newLoan.loanID,
+            newLoan.borrower,
+            newLoan.lender,
+            newLoan.amountLoaned,
+            0n,
+            newLoan.asset,
+            LoanStatus.IN_PROGRESS,
+          ),
+        ]);
+      }
+    }
   }
 
   async getBorrowingLoans(): Promise<PersonalLoan[]> {
@@ -270,6 +281,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           new Identity(userAddress),
           1000000000n,
           usdcAsset,
+          PendingLoanStatus.WAITING_FOR_ACCEPTANCE,
         ),
         new PendingLoan(
           `${this.idCounter++}`,
@@ -277,6 +289,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           barmstrong,
           1000000000000000000000n,
           degenAsset,
+          PendingLoanStatus.WAITING_FOR_ACCEPTANCE,
         ),
       ];
     }
@@ -357,6 +370,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         new Identity(borrowerAddress),
         amount,
         loanedAsset,
+        PendingLoanStatus.WAITING_FOR_ACCEPTANCE,
       ),
     );
   }
