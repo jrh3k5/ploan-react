@@ -11,11 +11,15 @@ import { UserIdentity } from "./user_identity";
 import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
 import { createPortal } from "react-dom";
 import { PendingLoanStatus } from "./pending_loan_status";
+import { Identity } from "@/models/identity";
 
 export interface PendingBorrowingLoanListProps {
+  allowList: Identity[];
   pendingBorrowingLoans: PendingLoan[];
   onAcceptBorrow: (loanID: string) => Promise<void>;
   onRejectLoan: (loanID: string) => Promise<void>;
+  onAllowlistAddition: (identity: Identity) => Promise<void>;
+  onAllowlistRemoval: (identity: Identity) => Promise<void>;
 }
 
 export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
@@ -98,8 +102,9 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       {showAllowlistModal &&
         createPortal(
           <ProposeLoanAllowlistModal
-            chainId={props.chainId}
-            userAddress={props.userAddress}
+            allowList={props.allowList}
+            onAllowlistAddition={props.onAllowlistAddition}
+            onAllowlistRemoval={props.onAllowlistRemoval}
             onClose={async () => setShowAllowlistModal(false)}
           />,
           document.body,

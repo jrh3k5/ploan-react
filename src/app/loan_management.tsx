@@ -8,6 +8,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
+import { Identity } from "@/models/identity";
 
 type LoanManagementProps = {
   chainId: number;
@@ -27,6 +28,16 @@ export function LoanManagement(props: LoanManagementProps) {
   const [pendingLendingLoans, setPendingLendingLoans] = useState<PendingLoan[]>(
     [],
   );
+  const [loanAllowlist, setLoanAllowlist] = useState<Identity[]>([]);
+
+  const refreshAllowlist = useCallback(async () => {
+    if (!loanService) {
+      return;
+    }
+
+    const allowlist = await loanService.getLoanProposalAllowlist();
+    setLoanAllowlist(allowlist);
+  }, [loanService, setLoanAllowlist]);
 
   const refreshBorrowingLoans = useCallback(async () => {
     if (!loanService) {
@@ -66,6 +77,10 @@ export function LoanManagement(props: LoanManagementProps) {
   }, [loanService, setPendingLendingLoans]);
 
   useEffect(() => {
+    refreshAllowlist();
+  }, [loanService, refreshAllowlist, chainId, userAddress]);
+
+  useEffect(() => {
     refreshBorrowingLoans();
   }, [loanService, refreshBorrowingLoans, chainId, userAddress]);
 
@@ -92,9 +107,12 @@ export function LoanManagement(props: LoanManagementProps) {
   return (
     <div className="loan-management">
       <PendingBorrowingLoanList
+        allowList={loanAllowlist}
         pendingBorrowingLoans={pendingBorrowingLoans}
         onAcceptBorrow={onAcceptBorrow}
         onRejectLoan={onRejectBorrow}
+        onAllowlistAddition={refreshAllowlist}
+        onAllowlistRemoval={refreshAllowlist}
       />
       <PendingLendingLoanList
         chainId={chainId}

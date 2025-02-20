@@ -6,8 +6,9 @@ import { Identity } from "@/models/identity";
 import { UserIdentity } from "./user_identity";
 
 export interface ProposeLoanAllowlistModalProps {
-  chainId: number;
-  userAddress: string | undefined;
+  allowList: Identity[];
+  onAllowlistAddition: (identity: Identity) => Promise<void>;
+  onAllowlistRemoval: (identity: Identity) => Promise<void>;
   onClose: () => Promise<void>;
 }
 
@@ -15,30 +16,6 @@ export function ProposeLoanAllowlistModal(
   props: ProposeLoanAllowlistModalProps,
 ) {
   const loanService = useContext(PersonalLoanContext);
-  const chainId = props.chainId;
-  const userAddress = props.userAddress;
-
-  const [allowlist, setAllowlist] = useState<Identity[]>([]);
-
-  const reloadAllowlist = useCallback(async () => {
-    if (!loanService) {
-      return;
-    }
-
-    const allowlist = await loanService.getLoanProposalAllowlist();
-    setAllowlist(allowlist);
-  }, [loanService]);
-
-  useEffect(() => {
-    if (!loanService) {
-      return;
-    }
-
-    loanService;
-    reloadAllowlist().catch((error) => {
-      console.error("Failed to retrieve loan proposal allowlist", error);
-    });
-  }, [loanService, reloadAllowlist, chainId, userAddress]);
 
   const removeAllowedUser = async (identity: Identity) => {
     if (!loanService) {
@@ -47,7 +24,7 @@ export function ProposeLoanAllowlistModal(
 
     await loanService.disallowLoanProposal(identity);
 
-    await reloadAllowlist();
+    await props.onAllowlistRemoval(identity);
   };
 
   const addToAllowlist = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -58,9 +35,11 @@ export function ProposeLoanAllowlistModal(
     }
 
     const address = e.currentTarget.allowlistedAddress.value;
-    await loanService.allowLoanProposal(new Identity(address));
+    const newIdentity = new Identity(address);
 
-    await reloadAllowlist();
+    await loanService.allowLoanProposal(newIdentity);
+
+    await props.onAllowlistAddition(newIdentity);
   };
 
   return (
@@ -74,7 +53,7 @@ export function ProposeLoanAllowlistModal(
             </tr>
           </thead>
           <tbody>
-            {allowlist.map((identity) => (
+            {props.allowList.map((identity) => (
               <tr key={identity.address}>
                 <td>
                   <UserIdentity identity={identity} />
