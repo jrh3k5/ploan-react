@@ -69,12 +69,16 @@ export function LoanManagement(props: LoanManagementProps) {
   }, [loanService, refreshBorrowingLoans, chainId, userAddress]);
 
   useEffect(() => {
-    refreshPendingLendingLoans();
-  }, [loanService, refreshPendingLendingLoans, chainId, userAddress]);
-
-  useEffect(() => {
     refreshLendingLoans();
   }, [loanService, refreshLendingLoans, chainId, userAddress]);
+
+  useEffect(() => {
+    refreshPendingBorrowLoans();
+  }, [loanService, refreshPendingBorrowLoans, chainId, userAddress]);
+
+  useEffect(() => {
+    refreshPendingLendingLoans();
+  }, [loanService, refreshPendingLendingLoans, chainId, userAddress]);
 
   const onAcceptBorrow = async (loanID: string) => {
     await refreshBorrowingLoans();
