@@ -63,7 +63,6 @@ export function LoanManagement(props: LoanManagementProps) {
     }
 
     const pendingBorrowingLoans = await loanService.getPendingBorrowingLoans();
-    console.log("pendingBorrowLoans", pendingBorrowingLoans);
     setPendingBorrowingLoans(pendingBorrowingLoans);
   }, [loanService, setPendingBorrowingLoans]);
 
