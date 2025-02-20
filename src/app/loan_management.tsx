@@ -52,6 +52,7 @@ export function LoanManagement(props: LoanManagementProps) {
     }
 
     const pendingBorrowingLoans = await loanService.getPendingBorrowingLoans();
+    console.log("pendingBorrowLoans", pendingBorrowingLoans);
     setPendingBorrowingLoans(pendingBorrowingLoans);
   }, [loanService, setPendingBorrowingLoans]);
 
@@ -81,7 +82,7 @@ export function LoanManagement(props: LoanManagementProps) {
   }, [loanService, refreshPendingLendingLoans, chainId, userAddress]);
 
   const onAcceptBorrow = async (loanID: string) => {
-    await refreshBorrowingLoans();
+    await refreshPendingBorrowLoans();
   };
 
   const onRejectBorrow = async (loanID: string) => {

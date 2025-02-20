@@ -2,11 +2,15 @@
 
 import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
-import { PendingLoan } from "@/models/pending_loan";
+import {
+  PendingLoan,
+  PendingLoanStatus as PendingLoanStatusEnum,
+} from "@/models/pending_loan";
 import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
 import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
 import { createPortal } from "react-dom";
+import { PendingLoanStatus } from "./pending_loan_status";
 
 export interface PendingBorrowingLoanListProps {
   pendingBorrowingLoans: PendingLoan[];
@@ -26,7 +30,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
 
     await loanService.acceptBorrow(loanID);
 
-    props.onAcceptBorrow(loanID);
+    await props.onAcceptBorrow(loanID);
   };
 
   const rejectBorrow = async (loanID: string) => {
@@ -57,6 +61,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
           <tr>
             <th>Lender</th>
             <th>Amount to Borrow</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -72,10 +77,16 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                   amount={pendingLoan.amountLoaned}
                 />
               </td>
+              <td className="status">
+                <PendingLoanStatus loan={pendingLoan} />
+              </td>
               <td className="actions">
-                <button onClick={() => acceptBorrow(pendingLoan.loanID)}>
-                  Accept Borrow
-                </button>
+                {pendingLoan.status ==
+                  PendingLoanStatusEnum.WAITING_FOR_ACCEPTANCE && (
+                  <button onClick={() => acceptBorrow(pendingLoan.loanID)}>
+                    Accept Borrow
+                  </button>
+                )}
                 <button onClick={() => rejectBorrow(pendingLoan.loanID)}>
                   Reject Borrow
                 </button>
