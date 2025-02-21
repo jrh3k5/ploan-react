@@ -13,7 +13,7 @@
   "dependencies": {
     "@tanstack/react-query": "5.66.8",
     "@wagmi/core": "^2.16.4",
-    "next": "14.2.21",
+    "next": "^15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "viem": "latest",
@@ -27,7 +27,7 @@
     "@wagmi/cli": "latest",
     "bufferutil": "^4.0.8",
     "encoding": "^0.1.13",
-    "eslint": "^8",
+    "eslint": "^9",
     "eslint-config-next": "15.1.7",
     "jest": "^29.7.0",
     "lokijs": "^1.5.12",

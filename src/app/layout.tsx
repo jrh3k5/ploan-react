@@ -17,8 +17,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout(props: { children: ReactNode }) {
   let initialState;
+
   try {
-    initialState = cookieToInitialState(getConfig(), headers().get("cookie"));
+    headers()
+      .then((headers) => {
+        initialState = cookieToInitialState(getConfig(), headers.get("cookie"));
+      })
+      .catch((e) => {
+        console.warn(
+          "Failed to parse cookie to initial state; it will not be restored",
+          e,
+        );
+      });
   } catch (e) {
     console.warn(
       "Failed to parse cookie to initial state; it will not be restored",
