@@ -1,7 +1,6 @@
 "use client";
 
 import { getUserSelectableChains } from "@/wagmi";
-import { baseSepolia } from "wagmi/chains";
 import { switchChain } from "@wagmi/core";
 import { useConfig } from "wagmi";
 import { defaultChain } from "@/models/chain";

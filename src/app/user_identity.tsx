@@ -1,7 +1,6 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { Identity } from "@/models/identity";
 import { getEnsName } from "@wagmi/core";
-import { useConfig } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { getConfig } from "@/wagmi";
 

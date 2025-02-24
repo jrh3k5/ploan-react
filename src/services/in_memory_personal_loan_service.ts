@@ -1,4 +1,3 @@
-import { EthereumAsset } from "@/models/asset";
 import { PersonalLoan, LoanStatus } from "@/models/personal_loan";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 import { Identity } from "@/models/identity";

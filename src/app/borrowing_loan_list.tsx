@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { UserIdentity } from "./user_identity";
 import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
