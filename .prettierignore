@@ -1,3 +1,7 @@
 # Ignore artifacts:
 build
 coverage
+
+# This can cause Dependanbot PRs from merging due to formatting changes
+# automatically committed, unsigned
+pnpm-lock.yaml
