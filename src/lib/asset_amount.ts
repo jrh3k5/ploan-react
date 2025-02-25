@@ -50,6 +50,12 @@ export function calculateTokenAmount(
   formattedTokenAmount: string,
   decimals: number,
 ): bigint {
+  if (!formattedTokenAmount) {
+    throw new Error(
+      `Invalid token amount with decimals of ${decimals}: ${formattedTokenAmount}`,
+    );
+  }
+
   const splitAmount = formattedTokenAmount.split(".");
   let wholeAmount: bigint;
   if (splitAmount.length == 1) {

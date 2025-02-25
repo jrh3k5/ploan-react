@@ -133,6 +133,15 @@ form input {
   padding: 0.25em;
 }
 
+.input-error {
+  color: rgb(152, 0, 0);
+  background-color: #ffc9c9;
+  border-radius: 0.5em;
+  padding: 0.5em;
+  margin: 0.5em 0 0.5em 0;
+  text-align: left;
+}
+
 ul.details {
   list-style-type: none;
   margin: 0;
