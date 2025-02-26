@@ -12,6 +12,7 @@ import { PersonalLoanService } from "@/services/personal_loan_service";
 import { AssetAmount } from "./asset_amount";
 import { ProposeLoanModal } from "./propose_loan_modal";
 import { PendingLoanStatus } from "./pending_loan_status";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 export interface PendingLendingLoanListProps {
   pendingLoans: PendingLoan[];
@@ -21,8 +22,11 @@ export interface PendingLendingLoanListProps {
   onLoanProposal: () => Promise<void>;
 }
 
+// PendingLendingLoanList provides a component to show what offers of loans a user has to other users that have not yet been executed
 export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
+  const errorReporter = useContext(ErrorReporterContext);
+
   const pendingLoans = props.pendingLoans;
 
   const [proposeLoanModalVisible, setProposeLoanModalVisible] = useState(false);
@@ -35,9 +39,13 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
       return;
     }
 
-    await loanService.cancelPendingLoan(loanID);
+    try {
+      await loanService.cancelPendingLoan(loanID);
 
-    await props.onLoanCancellation(loanID);
+      await props.onLoanCancellation(loanID);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
   };
 
   const executeLoan = async (
@@ -48,9 +56,13 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
       return;
     }
 
-    await loanService.executeLoan(loanID);
+    try {
+      await loanService.executeLoan(loanID);
 
-    await props.onLoanExecution(loanID);
+      await props.onLoanExecution(loanID);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
   };
 
   return (

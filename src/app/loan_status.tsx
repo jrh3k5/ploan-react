@@ -3,6 +3,7 @@
 import { PersonalLoan } from "@/models/personal_loan";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 
+// LoanStatus is a component that provides human-readable descriptors of loan states
 export function LoanStatus(props: { loan: PersonalLoan }) {
   let statusText: string;
   switch (props.loan.status) {

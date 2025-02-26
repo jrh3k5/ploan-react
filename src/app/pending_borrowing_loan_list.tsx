@@ -12,6 +12,7 @@ import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
 import { createPortal } from "react-dom";
 import { PendingLoanStatus } from "./pending_loan_status";
 import { Identity } from "@/models/identity";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 export interface PendingBorrowingLoanListProps {
   allowList: Identity[];
@@ -22,8 +23,11 @@ export interface PendingBorrowingLoanListProps {
   onAllowlistRemoval: (identity: Identity) => Promise<void>;
 }
 
+// PendingBorrowingLoanList provides a component to show what offers of loans to the user has received that have not yet been executed
 export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
+  const errorReporter = useContext(ErrorReporterContext);
+
   const pendingBorrowingLoans = props.pendingBorrowingLoans;
   const [showAllowlistModal, setShowAllowlistModal] = useState(false);
 
@@ -32,9 +36,13 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       return;
     }
 
-    await loanService.acceptBorrow(loanID);
+    try {
+      await loanService.acceptBorrow(loanID);
 
-    await props.onAcceptBorrow(loanID);
+      await props.onAcceptBorrow(loanID);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
   };
 
   const rejectBorrow = async (loanID: string) => {
@@ -42,9 +50,13 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       return;
     }
 
-    await loanService.rejectBorrow(loanID);
+    try {
+      await loanService.rejectBorrow(loanID);
 
-    await props.onRejectLoan(loanID);
+      await props.onRejectLoan(loanID);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
   };
 
   return (

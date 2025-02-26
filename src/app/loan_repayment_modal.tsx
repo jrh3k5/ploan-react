@@ -2,13 +2,15 @@
 
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { UserIdentity } from "./user_identity";
 import { AssetAmount } from "./asset_amount";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { calculateTokenAmount } from "@/lib/asset_amount";
 import { InputError } from "./input_error";
+import { InMemoryErrorReporter } from "@/services/error_reporter";
+import { ErrorMessage } from "./error_message";
 
 export interface LoanRepaymentModalProps {
   loan: PersonalLoan | undefined;
@@ -16,8 +18,19 @@ export interface LoanRepaymentModalProps {
   onPaymentSubmission: (loanID: string) => Promise<void>;
 }
 
+const errorReporter = new InMemoryErrorReporter();
+
 export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const loanService = useContext(PersonalLoanContext);
+
+  const [capturedError, setCapturedError] = useState<Error | undefined>(
+    undefined,
+  );
+  errorReporter.registerErrorListener(async (error) => {
+    console.error(error);
+
+    setCapturedError(error);
+  });
 
   const {
     register,
@@ -38,27 +51,31 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
     loan: PersonalLoan,
   ) => {
     if (!loanService) {
-      console.warn("Unable to submit repayment; no loan service found");
       return;
     }
 
-    const enteredAmount = fieldValues.amount;
-    const wholeAmount = calculateTokenAmount(
-      enteredAmount,
-      loan.asset.decimals,
-    );
+    try {
+      const enteredAmount = fieldValues.amount;
+      const wholeAmount = calculateTokenAmount(
+        enteredAmount,
+        loan.asset.decimals,
+      );
 
-    await loanService.repayLoan(loan.loanID, wholeAmount);
+      await loanService.repayLoan(loan.loanID, wholeAmount);
 
-    await props.onPaymentSubmission(loan.loanID);
+      await props.onPaymentSubmission(loan.loanID);
 
-    await props.onClose();
+      await props.onClose();
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
   };
 
   const remainingBalance = props.loan.amountLoaned - props.loan.amountRepaid;
 
   return (
     <div className="modal">
+      {capturedError && <ErrorMessage error={capturedError} />}
       <h3 className="section-title">Repay Loan</h3>
       <ul className="details">
         <li>

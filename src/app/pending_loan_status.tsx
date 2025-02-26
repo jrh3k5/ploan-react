@@ -9,6 +9,7 @@ export interface PendingLoanStatusProps {
   loan: PendingLoan;
 }
 
+// PendingLoanStatus is a component that provides human-readable descriptors of pendig loan states
 export function PendingLoanStatus(props: PendingLoanStatusProps) {
   let statusText: string;
   switch (props.loan.status) {

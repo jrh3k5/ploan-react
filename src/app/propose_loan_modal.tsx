@@ -8,6 +8,8 @@ import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { SupportedAssetResolverContext } from "@/services/supported_asset_resolver_provider";
 import { EthereumAsset } from "@/models/asset";
 import { calculateTokenAmount } from "@/lib/asset_amount";
+import { InMemoryErrorReporter } from "@/services/error_reporter";
+import { ErrorMessage } from "./error_message";
 
 export interface ProposeLoanModalProps {
   chainId: number;
@@ -15,8 +17,20 @@ export interface ProposeLoanModalProps {
   onLoanProposal: () => Promise<void>;
 }
 
+const errorReporter = new InMemoryErrorReporter();
+
 export function ProposeLoanModal(props: ProposeLoanModalProps) {
   const loanService = useContext(PersonalLoanContext);
+
+  const [capturedError, setCapturedError] = useState<Error | undefined>(
+    undefined,
+  );
+  errorReporter.registerErrorListener(async (error) => {
+    console.error(error);
+
+    setCapturedError(error);
+  });
+
   const supportedAssetResolver = useContext(SupportedAssetResolverContext);
   const chainId = props.chainId;
 
@@ -38,23 +52,15 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         );
         setSupportedAssets(sortedAssets);
       })
-      .catch((error) => {
-        console.error("Failed to retrieve supported assets", error);
-      });
+      .catch(errorReporter.reportAny);
   }, [chainId, supportedAssetResolver]);
 
   const proposeLoan = async (fieldValues: FieldValues): Promise<void> => {
-    console.log("Proposing loan", fieldValues);
-
     if (!loanService) {
-      console.warn("Cannot propose loan; loan service not yet set");
-
       return;
     }
 
     if (supportedAssets.length === 0) {
-      console.warn("Cannot propose loan; no supported assets found");
-
       return;
     }
 
@@ -68,28 +74,31 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
       (asset) => asset.address === chosenAssetAddress,
     );
     if (!chosenAsset) {
-      console.error(
-        "Failed to find chosen asset for contract address among supported assets: ",
-        chosenAssetAddress,
+      errorReporter.reportErrorMessage(
+        `Failed to find chosen asset for contract address: ${chosenAssetAddress}`,
       );
 
       return;
     }
 
-    const tokenAmount = calculateTokenAmount(
-      fieldValues.amount,
-      chosenAsset.decimals,
-    );
+    try {
+      const tokenAmount = calculateTokenAmount(
+        fieldValues.amount,
+        chosenAsset.decimals,
+      );
 
-    await loanService.proposeLoan(
-      fieldValues.borrower,
-      tokenAmount,
-      chosenAssetAddress,
-    );
+      await loanService.proposeLoan(
+        fieldValues.borrower,
+        tokenAmount,
+        chosenAssetAddress,
+      );
 
-    await props.onLoanProposal();
+      await props.onLoanProposal();
 
-    await props.onClose();
+      await props.onClose();
+    } catch (error) {
+      errorReporter.reportAny(error);
+    }
   };
 
   const {
@@ -102,6 +111,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
 
   return (
     <div className="modal">
+      {capturedError && <ErrorMessage error={capturedError} />}
       <form onSubmit={handleSubmit(proposeLoan)}>
         <h3 className="section-title">Propose Loan</h3>
         <ul className="details">

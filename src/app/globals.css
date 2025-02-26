@@ -52,12 +52,6 @@ div.app {
   font-size: x-small;
 }
 
-div.error {
-  color: red;
-  background-color: #fa9b9b;
-  padding: 0.35em;
-}
-
 .section-title {
   text-align: center;
 }
@@ -134,7 +128,7 @@ form input {
   padding: 0.25em;
 }
 
-.input-error {
+.error {
   color: rgb(152, 0, 0);
   background-color: #ffc9c9;
   border-radius: 0.5em;
