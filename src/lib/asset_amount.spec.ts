@@ -58,6 +58,12 @@ describe("calculateTokenAmount", () => {
       );
     });
 
+    describe("there are no trailing numbers after the decimals", () => {
+      it("returns the token amount as a bigint", () => {
+        expect(calculateTokenAmount("10.", 18)).toBe(10n * 10n ** 18n);
+      });
+    });
+
     describe("there is a trailing zero", () => {
       it("correctly parses the token amount", () => {
         expect(calculateTokenAmount("10.10", 18)).toBe(
@@ -79,6 +85,12 @@ describe("calculateTokenAmount", () => {
         describe("there are leading zeroes", () => {
           it("returns the token amount as a bigint", () => {
             expect(calculateTokenAmount(".01", 18)).toBe(1n * 10n ** 16n);
+          });
+
+          describe("with a trailing zero", () => {
+            it("returns the token amount as a bigint", () => {
+              expect(calculateTokenAmount(".010", 18)).toBe(1n * 10n ** 16n);
+            });
           });
         });
       });

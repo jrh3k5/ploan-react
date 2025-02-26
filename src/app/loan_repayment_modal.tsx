@@ -1,11 +1,14 @@
 "use client";
 
+import { useForm } from "react-hook-form";
+import { FieldValues } from "react-hook-form";
 import { useContext } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { UserIdentity } from "./user_identity";
 import { AssetAmount } from "./asset_amount";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { calculateTokenAmount } from "@/lib/asset_amount";
+import { InputError } from "./input_error";
 
 export interface LoanRepaymentModalProps {
   loan: PersonalLoan | undefined;
@@ -16,6 +19,14 @@ export interface LoanRepaymentModalProps {
 export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const loanService = useContext(PersonalLoanContext);
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    reValidateMode: "onChange",
+  });
+
   if (!props.loan) {
     return (
       <div className="modal">There doesn&apos;t appear to be a loan set</div>
@@ -23,17 +34,15 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   }
 
   const submitRepayment = async (
-    e: React.FormEvent<HTMLFormElement>,
+    fieldValues: FieldValues,
     loan: PersonalLoan,
   ) => {
-    e.preventDefault();
-
     if (!loanService) {
       console.warn("Unable to submit repayment; no loan service found");
       return;
     }
 
-    const enteredAmount = e.currentTarget.amount.value;
+    const enteredAmount = fieldValues.amount;
     const wholeAmount = calculateTokenAmount(
       enteredAmount,
       loan.asset.decimals,
@@ -83,9 +92,30 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
           </span>
         </li>
       </ul>
-      <form onSubmit={(e) => submitRepayment(e, props.loan as PersonalLoan)}>
+      <form
+        onSubmit={handleSubmit((data: FieldValues) =>
+          submitRepayment(data, props.loan as PersonalLoan),
+        )}
+      >
         <label>Repayment Amount:</label>
-        <input type="text" name="amount" />
+        <input
+          type="text"
+          {...register("amount", {
+            required: true,
+            pattern: /^[0-9]+(\.[0-9]{1,2})?$/,
+            min: 0,
+            validate: (value: string) => {
+              const loan = props.loan as PersonalLoan;
+              const repaymentAmount = calculateTokenAmount(
+                value,
+                loan.asset.decimals,
+              );
+
+              return loan.amountRepaid + repaymentAmount <= loan.amountLoaned;
+            },
+          })}
+        />
+        {errors.amount && <InputError message="Invalid repayment amount" />}
         <div className="form-buttons">
           <button type="submit">Submit Repayment</button>
           <button onClick={() => props.onClose()}>Cancel</button>

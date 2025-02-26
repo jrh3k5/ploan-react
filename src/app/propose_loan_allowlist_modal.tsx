@@ -1,5 +1,8 @@
 "use client";
 
+import { InputError } from "./input_error";
+import { useForm } from "react-hook-form";
+import { FieldValues } from "react-hook-form";
 import { useContext } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { Identity } from "@/models/identity";
@@ -27,14 +30,12 @@ export function ProposeLoanAllowlistModal(
     await props.onAllowlistRemoval(identity);
   };
 
-  const addToAllowlist = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const addToAllowlist = async (fieldValues: FieldValues) => {
     if (!loanService) {
       return;
     }
 
-    const address = e.currentTarget.allowlistedAddress.value;
+    const address = fieldValues.allowlistedAddress;
     const newIdentity = new Identity(address);
 
     await loanService.allowLoanProposal(newIdentity);
@@ -42,9 +43,17 @@ export function ProposeLoanAllowlistModal(
     await props.onAllowlistAddition(newIdentity);
   };
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    reValidateMode: "onChange",
+  });
+
   return (
     <div className="modal">
-      <form onSubmit={(e) => addToAllowlist(e)}>
+      <form onSubmit={handleSubmit(addToAllowlist)}>
         <table>
           <thead>
             <tr>
@@ -68,10 +77,16 @@ export function ProposeLoanAllowlistModal(
             <tr>
               <td>
                 <input
-                  name="allowlistedAddress"
+                  {...register("allowlistedAddress", {
+                    required: true,
+                    pattern: /^0x[a-fA-F0-9]{40}$/,
+                  })}
                   type="text"
                   placeholder="Enter user address"
                 ></input>
+                {errors.allowlistedAddress && (
+                  <InputError message="An address must be provided" />
+                )}
               </td>
               <td className="actions">
                 <button type="submit">Add to Allowlist</button>
