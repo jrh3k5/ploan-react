@@ -4,8 +4,11 @@ import { getUserSelectableChains } from "@/wagmi";
 import { switchChain } from "@wagmi/core";
 import { useConfig } from "wagmi";
 import { defaultChain } from "@/models/chain";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { useContext } from "react";
 
 export interface ChainSelectorProps {
+  // onChainSelection is invoked whenever a user selects a chain
   onChainSelection: (chainId: number) => Promise<void>;
 }
 
@@ -13,6 +16,7 @@ export function ChainSelector(props: ChainSelectorProps) {
   const wagmiConfig = useConfig();
   const currentChainId = wagmiConfig.state.chainId;
   const userSelectableChains = getUserSelectableChains();
+  const errorReporter = useContext(ErrorReporterContext);
 
   let isSelectableChain = false;
   for (const selectableChain of userSelectableChains) {
@@ -35,9 +39,7 @@ export function ChainSelector(props: ChainSelectorProps) {
           );
         });
       })
-      .catch((e) => {
-        console.warn("Failed to switch chain to Base on initialization", e);
-      });
+      .catch(errorReporter.reportError);
   }
 
   const changeSelectedChain = async (chainId: number) => {

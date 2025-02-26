@@ -9,6 +9,7 @@ import { PersonalLoan } from "@/models/personal_loan";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
 import { Identity } from "@/models/identity";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 type LoanManagementProps = {
   chainId: number;
@@ -17,6 +18,8 @@ type LoanManagementProps = {
 
 export function LoanManagement(props: LoanManagementProps) {
   const loanService = useContext(PersonalLoanContext);
+  const errorReporter = useContext(ErrorReporterContext);
+
   const chainId = props.chainId;
   const userAddress = props.userAddress;
 
@@ -35,45 +38,66 @@ export function LoanManagement(props: LoanManagementProps) {
       return;
     }
 
-    const allowlist = await loanService.getLoanProposalAllowlist();
-    setLoanAllowlist(allowlist);
-  }, [loanService, setLoanAllowlist]);
+    try {
+      const allowlist = await loanService.getLoanProposalAllowlist();
+      setLoanAllowlist(allowlist);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
+  }, [loanService, setLoanAllowlist, errorReporter]);
 
   const refreshBorrowingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
-    const borrowingLoans = await loanService.getBorrowingLoans();
-    setBorrowingLoans(borrowingLoans);
-  }, [loanService, setBorrowingLoans]);
+    try {
+      const borrowingLoans = await loanService.getBorrowingLoans();
+      setBorrowingLoans(borrowingLoans);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
+  }, [loanService, setBorrowingLoans, errorReporter]);
 
   const refreshLendingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
-    const lendingLoans = await loanService.getLendingLoans();
-    setLendingLoans(lendingLoans);
-  }, [loanService, setLendingLoans]);
+    try {
+      const lendingLoans = await loanService.getLendingLoans();
+      setLendingLoans(lendingLoans);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
+  }, [loanService, setLendingLoans, errorReporter]);
 
   const refreshPendingBorrowLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
-    const pendingBorrowingLoans = await loanService.getPendingBorrowingLoans();
-    setPendingBorrowingLoans(pendingBorrowingLoans);
-  }, [loanService, setPendingBorrowingLoans]);
+    try {
+      const pendingBorrowingLoans =
+        await loanService.getPendingBorrowingLoans();
+      setPendingBorrowingLoans(pendingBorrowingLoans);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
+  }, [loanService, setPendingBorrowingLoans, errorReporter]);
 
   const refreshPendingLendingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
-    const pendingLendingLoans = await loanService.getPendingLendingLoans();
-    setPendingLendingLoans(pendingLendingLoans);
-  }, [loanService, setPendingLendingLoans]);
+    try {
+      const pendingLendingLoans = await loanService.getPendingLendingLoans();
+      setPendingLendingLoans(pendingLendingLoans);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
+  }, [loanService, setPendingLendingLoans, errorReporter]);
 
   useEffect(() => {
     refreshAllowlist();

@@ -7,6 +7,7 @@ import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 export interface LendingLoanListProps {
   lendingLoans: PersonalLoan[];
@@ -15,6 +16,7 @@ export interface LendingLoanListProps {
 
 export function LendingLoanList(props: LendingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
+  const errorReporter = useContext(ErrorReporterContext);
   const lendingLoans = props.lendingLoans;
 
   const cancelLoan = async (loanID: string) => {
@@ -22,9 +24,13 @@ export function LendingLoanList(props: LendingLoanListProps) {
       return;
     }
 
-    await loanService.cancelLendingLoan(loanID);
+    try {
+      await loanService.cancelLendingLoan(loanID);
 
-    await props.onLoanCancelation(loanID);
+      await props.onLoanCancelation(loanID);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
   };
 
   return (

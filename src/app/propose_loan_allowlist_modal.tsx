@@ -7,6 +7,7 @@ import { useContext } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { Identity } from "@/models/identity";
 import { UserIdentity } from "./user_identity";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 export interface ProposeLoanAllowlistModalProps {
   allowList: Identity[];
@@ -19,15 +20,20 @@ export function ProposeLoanAllowlistModal(
   props: ProposeLoanAllowlistModalProps,
 ) {
   const loanService = useContext(PersonalLoanContext);
+  const errorReporter = useContext(ErrorReporterContext);
 
   const removeAllowedUser = async (identity: Identity) => {
     if (!loanService) {
       return;
     }
 
-    await loanService.disallowLoanProposal(identity);
+    try {
+      await loanService.disallowLoanProposal(identity);
 
-    await props.onAllowlistRemoval(identity);
+      await props.onAllowlistRemoval(identity);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
   };
 
   const addToAllowlist = async (fieldValues: FieldValues) => {
@@ -35,12 +41,16 @@ export function ProposeLoanAllowlistModal(
       return;
     }
 
-    const address = fieldValues.allowlistedAddress;
-    const newIdentity = new Identity(address);
+    try {
+      const address = fieldValues.allowlistedAddress;
+      const newIdentity = new Identity(address);
 
-    await loanService.allowLoanProposal(newIdentity);
+      await loanService.allowLoanProposal(newIdentity);
 
-    await props.onAllowlistAddition(newIdentity);
+      await props.onAllowlistAddition(newIdentity);
+    } catch (error) {
+      errorReporter.reportAny(error);
+    }
   };
 
   const {

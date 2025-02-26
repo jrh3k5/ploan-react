@@ -1,6 +1,7 @@
 import { formatAssetAmount } from "@/lib/asset_amount";
 import { PersonalLoan } from "@/models/personal_loan";
 
+// LoanProgress is a progress bar showing how much a loan has been repaid
 export function LoanProgress(props: { loan: PersonalLoan }) {
   const progressRatioBigInt =
     (props.loan.amountRepaid * 100n * (2n ** 53n - 1n)) /

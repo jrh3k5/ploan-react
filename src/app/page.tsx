@@ -14,12 +14,16 @@ import { UserIdentity } from "./user_identity";
 import { Identity } from "@/models/identity";
 import { SupportedAssetResolverImpl } from "@/services/supported_asset_resolver";
 import { defaultChain } from "@/models/chain";
+import { InMemoryErrorReporter } from "@/services/error_reporter";
+import { ErrorReporterProvider } from "@/services/error_reporter_provider";
+import { ErrorMessage } from "./error_message";
 
 // Declare outside of app so that it's not constantly building new instances
 const wagmiResolver = new WagmiEthereumAssetResolverService();
 const cachingResolver = new CachingEthereumAssetResolver(wagmiResolver);
 const loanService = new InMemoryPersonalLoanService(cachingResolver);
 const supportedAssetResolver = new SupportedAssetResolverImpl(cachingResolver);
+const errorReporter = new InMemoryErrorReporter();
 
 function App() {
   const account = useAccount();
@@ -28,6 +32,9 @@ function App() {
   const [chainId, setChainId] = useState<number>(defaultChain.id);
   const [userAddress, setUserAddress] = useState<string | undefined>(
     account.address,
+  );
+  const [capturedError, setCapturedError] = useState<Error | undefined>(
+    undefined,
   );
 
   loanService.setChainId(chainId);
@@ -40,43 +47,57 @@ function App() {
     }
   }, [account]);
 
+  errorReporter.registerErrorListener(async (error: Error) => {
+    console.error(error);
+
+    setCapturedError(error);
+
+    // clear the error from the screen
+    setTimeout(() => {
+      setCapturedError(undefined);
+    }, 5000);
+  });
+
   return (
     <>
       <div className="app">
-        {account.status === "connected" ? (
-          <div>
-            <div className="wallet-info">
-              <span className="identity">
-                Connected as{" "}
-                <UserIdentity identity={new Identity(account.address)} />
-              </span>
-              <button type="button" onClick={() => disconnect()}>
-                Disconnect
-              </button>
+        {capturedError && <ErrorMessage error={capturedError} />}
+        <ErrorReporterProvider errorReporter={errorReporter}>
+          {account.status === "connected" ? (
+            <div>
+              <div className="wallet-info">
+                <span className="identity">
+                  Connected as{" "}
+                  <UserIdentity identity={new Identity(account.address)} />
+                </span>
+                <button type="button" onClick={() => disconnect()}>
+                  Disconnect
+                </button>
+              </div>
+
+              <PersonalLoanServiceProvider loanService={loanService}>
+                <SupportedAssetResolverProvider
+                  supportedAssetResolver={supportedAssetResolver}
+                >
+                  <LoanManagement chainId={chainId} userAddress={userAddress} />
+                </SupportedAssetResolverProvider>
+              </PersonalLoanServiceProvider>
+
+              <div className="chain-selector">
+                Select chain:
+                <ChainSelector
+                  onChainSelection={async (chainId) => {
+                    await loanService.setChainId(chainId);
+
+                    setChainId(chainId);
+                  }}
+                />
+              </div>
             </div>
-
-            <PersonalLoanServiceProvider loanService={loanService}>
-              <SupportedAssetResolverProvider
-                supportedAssetResolver={supportedAssetResolver}
-              >
-                <LoanManagement chainId={chainId} userAddress={userAddress} />
-              </SupportedAssetResolverProvider>
-            </PersonalLoanServiceProvider>
-
-            <div className="chain-selector">
-              Select chain:
-              <ChainSelector
-                onChainSelection={async (chainId) => {
-                  await loanService.setChainId(chainId);
-
-                  setChainId(chainId);
-                }}
-              />
-            </div>
-          </div>
-        ) : (
-          <WelcomePage />
-        )}
+          ) : (
+            <WelcomePage />
+          )}
+        </ErrorReporterProvider>
       </div>
     </>
   );

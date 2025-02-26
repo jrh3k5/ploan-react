@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Identity } from "@/models/identity";
 import { getEnsName } from "@wagmi/core";
 import { mainnet } from "wagmi/chains";
 import { getConfig } from "@/wagmi";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 const ensCache = new Map<string, string>();
 
 export function UserIdentity(props: { identity: Identity }) {
   const [ensName, setEnsName] = useState<string | null>(null);
+  const errorReporter = useContext(ErrorReporterContext);
 
   useEffect(() => {
     const chainId = mainnet.id;
@@ -27,14 +29,12 @@ export function UserIdentity(props: { identity: Identity }) {
           setEnsName(name);
         })
         .catch((e) => {
-          console.warn(
-            "Failed to resolve ENS name; caching as a blank ENS name",
-            e,
-          );
+          errorReporter.reportAny(e);
+
           ensCache.set(cacheKey, "");
         });
     }
-  }, [props.identity.address]);
+  }, [props.identity.address, errorReporter]);
 
   return <span>{ensName ?? props.identity.address}</span>;
 }

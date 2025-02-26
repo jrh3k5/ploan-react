@@ -1,9 +1,19 @@
 "use client";
 
 import { useConnect } from "wagmi";
+import { useContext, useEffect } from "react";
+import { ErrorReporter } from "@/services/error_reporter";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 export function ConnectWallet() {
   const { connectors, connect, error } = useConnect();
+  const errorReporter = useContext(ErrorReporterContext);
+
+  useEffect(() => {
+    if (error) {
+      errorReporter.reportError(error);
+    }
+  }, [error, errorReporter]);
 
   return (
     <div>
@@ -21,7 +31,6 @@ export function ConnectWallet() {
           </button>
         </div>
       ))}
-      {error?.message && <div className="error">{error?.message}</div>}
     </div>
   );
 }
