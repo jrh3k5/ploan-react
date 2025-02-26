@@ -62,7 +62,7 @@ export function ProposeLoanAllowlistModal(
   });
 
   return (
-    <div className="modal">
+    <>
       <form onSubmit={handleSubmit(addToAllowlist)}>
         <table>
           <thead>
@@ -108,6 +108,6 @@ export function ProposeLoanAllowlistModal(
       <div className="form-buttons">
         <button onClick={props.onClose}>Close</button>
       </div>
-    </div>
+    </>
   );
 }

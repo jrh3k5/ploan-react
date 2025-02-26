@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import { PendingLoanStatus } from "./pending_loan_status";
 import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { Modal } from "./modal";
 
 export interface PendingBorrowingLoanListProps {
   allowList: Identity[];
@@ -113,12 +114,14 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       </table>
       {showAllowlistModal &&
         createPortal(
-          <ProposeLoanAllowlistModal
-            allowList={props.allowList}
-            onAllowlistAddition={props.onAllowlistAddition}
-            onAllowlistRemoval={props.onAllowlistRemoval}
-            onClose={async () => setShowAllowlistModal(false)}
-          />,
+          <Modal onClose={async () => setShowAllowlistModal(false)}>
+            <ProposeLoanAllowlistModal
+              allowList={props.allowList}
+              onAllowlistAddition={props.onAllowlistAddition}
+              onAllowlistRemoval={props.onAllowlistRemoval}
+              onClose={async () => setShowAllowlistModal(false)}
+            />
+          </Modal>,
           document.body,
         )}
     </div>

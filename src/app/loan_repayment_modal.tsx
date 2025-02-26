@@ -9,28 +9,17 @@ import { AssetAmount } from "./asset_amount";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { calculateTokenAmount } from "@/lib/asset_amount";
 import { InputError } from "./input_error";
-import { InMemoryErrorReporter } from "@/services/error_reporter";
-import { ErrorMessage } from "./error_message";
+import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 export interface LoanRepaymentModalProps {
   loan: PersonalLoan | undefined;
   onClose: () => Promise<void>;
-  onPaymentSubmission: (loanID: string) => Promise<void>;
+  onPaymentSubmission: (amount: bigint) => Promise<void>;
 }
-
-const errorReporter = new InMemoryErrorReporter();
 
 export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const loanService = useContext(PersonalLoanContext);
-
-  const [capturedError, setCapturedError] = useState<Error | undefined>(
-    undefined,
-  );
-  errorReporter.registerErrorListener(async (error) => {
-    console.error(error);
-
-    setCapturedError(error);
-  });
+  const errorReporter = useContext(ErrorReporterContext);
 
   const {
     register,
@@ -41,9 +30,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   });
 
   if (!props.loan) {
-    return (
-      <div className="modal">There doesn&apos;t appear to be a loan set</div>
-    );
+    return <div>There doesn&apos;t appear to be a loan set</div>;
   }
 
   const submitRepayment = async (
@@ -61,9 +48,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
         loan.asset.decimals,
       );
 
-      await loanService.repayLoan(loan.loanID, wholeAmount);
-
-      await props.onPaymentSubmission(loan.loanID);
+      await props.onPaymentSubmission(wholeAmount);
 
       await props.onClose();
     } catch (error) {
@@ -74,8 +59,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const remainingBalance = props.loan.amountLoaned - props.loan.amountRepaid;
 
   return (
-    <div className="modal">
-      {capturedError && <ErrorMessage error={capturedError} />}
+    <>
       <h3 className="section-title">Repay Loan</h3>
       <ul className="details">
         <li>
@@ -138,6 +122,6 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
           <button onClick={() => props.onClose()}>Cancel</button>
         </div>
       </form>
-    </div>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { Identity } from "@/models/identity";
 import { PendingLoan } from "@/models/pending_loan";
 import { EthereumAssetResolverService } from "./ethereum_asset_resolver_service";
 import { PendingLoanStatus } from "@/models/pending_loan";
+import { EthereumAsset } from "@/models/asset";
 
 const usdcAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // Base Sepolia USDC
 const degenAddress = "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed";
@@ -22,6 +23,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   private activeLoans: PersonalLoan[] | undefined = undefined;
   private idCounter: number;
   private loanProposalAllowlist: Map<string, string[]> = new Map();
+  private tokenApprovals: Map<string, Map<string, bigint>> = new Map(); // asset address -> recipient address -> amount
 
   constructor(ethereumAssetResolverService: EthereumAssetResolverService) {
     this.idCounter = 0;
@@ -52,6 +54,27 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     }
 
     this.loanProposalAllowlist.get(this.userAddress)?.push(identity.address);
+  }
+
+  async approveTokenTransfer(
+    recipient: Identity,
+    asset: EthereumAsset,
+    ammount: bigint,
+  ): Promise<void> {
+    if (!asset.address) {
+      throw new Error("Asset must have an address");
+    }
+
+    let tokenApprovals: Map<string, bigint>;
+    if (this.tokenApprovals.has(asset.address)) {
+      tokenApprovals = this.tokenApprovals.get(asset.address)!;
+    } else {
+      tokenApprovals = new Map();
+      this.tokenApprovals.set(asset.address, tokenApprovals);
+    }
+
+    console.log(`allowing a transfer of ${ammount} to ${recipient.address}`);
+    tokenApprovals.set(recipient.address, ammount);
   }
 
   async cancelLendingLoan(loanID: string): Promise<void> {
@@ -111,6 +134,29 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     for (let i = pendingBorrowingLoans.length - 1; i >= 0; i--) {
       if (pendingBorrowingLoans[i].loanID === loanID) {
         const newLoan = pendingBorrowingLoans[i];
+
+        if (!newLoan.asset.address) {
+          throw new Error("Asset must have an address");
+        }
+
+        // Verify that the approval has been executed
+        const tokenApprovals = this.tokenApprovals.get(newLoan.asset.address);
+        if (!tokenApprovals) {
+          throw new Error("User has not approved token transfer");
+        } else {
+          const approvalAmount = tokenApprovals.get(newLoan.borrower.address);
+          if (!approvalAmount) {
+            throw new Error(
+              "User has not approved token transfer to the recipient",
+            );
+          }
+
+          if (approvalAmount < newLoan.amountLoaned) {
+            throw new Error(
+              "User has not approved enough token transfer to the recipient",
+            );
+          }
+        }
 
         // create a new array except with pendingLoans[i] removed
         // this needs to be a new array to trigger a refresh
@@ -397,6 +443,28 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
     if (!repayableLoan) {
       throw new Error("Loan not found for ID: " + loanID);
+    }
+
+    const tokenApprovals = this.tokenApprovals.get(
+      repayableLoan.asset.address as string,
+    );
+    if (!tokenApprovals) {
+      throw new Error(
+        `User has not approved any token transfer on ${repayableLoan.asset.address}`,
+      );
+    } else {
+      const approvalAmount = tokenApprovals.get(repayableLoan.lender.address);
+      if (!approvalAmount) {
+        throw new Error(
+          `User has not approved token transfer to the recipient ${repayableLoan.lender.address}`,
+        );
+      }
+
+      if (approvalAmount < amount) {
+        throw new Error(
+          `User has not approved enough token transfer to the recipient ${repayableLoan.lender.address} (${approvalAmount} < ${amount})`,
+        );
+      }
     }
 
     if (repayableLoan.amountRepaid + amount > repayableLoan.amountLoaned) {
