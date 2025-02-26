@@ -84,6 +84,7 @@ td.status {
 
 td.actions {
   text-align: center;
+  vertical-align: top;
 }
 
 button {
@@ -131,6 +132,15 @@ form input {
   margin-top: 0.25em;
   margin-bottom: 0.25em;
   padding: 0.25em;
+}
+
+.input-error {
+  color: rgb(152, 0, 0);
+  background-color: #ffc9c9;
+  border-radius: 0.5em;
+  padding: 0.5em;
+  margin: 0.5em 0 0.5em 0;
+  text-align: left;
 }
 
 ul.details {

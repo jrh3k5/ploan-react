@@ -1,5 +1,8 @@
 "use client";
 
+import { InputError } from "./input_error";
+import { useForm } from "react-hook-form";
+import { FieldValues } from "react-hook-form";
 import { useContext, useEffect, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { SupportedAssetResolverContext } from "@/services/supported_asset_resolver_provider";
@@ -29,17 +32,19 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
     supportedAssetResolver
       .getSupportedEthereumAssets()
       .then((assets) => {
-        setSupportedAssets(assets);
+        // Sort the assets so they are displayed in a consistent order
+        const sortedAssets = assets.sort((a, b) =>
+          a.symbol.localeCompare(b.symbol),
+        );
+        setSupportedAssets(sortedAssets);
       })
       .catch((error) => {
         console.error("Failed to retrieve supported assets", error);
       });
   }, [chainId, supportedAssetResolver]);
 
-  const proposeLoan = async (
-    e: React.FormEvent<HTMLFormElement>,
-  ): Promise<void> => {
-    e.preventDefault();
+  const proposeLoan = async (fieldValues: FieldValues): Promise<void> => {
+    console.log("Proposing loan", fieldValues);
 
     if (!loanService) {
       console.warn("Cannot propose loan; loan service not yet set");
@@ -47,7 +52,18 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
       return;
     }
 
-    const chosenAssetAddress = e.currentTarget.asset.value;
+    if (supportedAssets.length === 0) {
+      console.warn("Cannot propose loan; no supported assets found");
+
+      return;
+    }
+
+    let chosenAssetAddress = fieldValues.asset;
+    if (!chosenAssetAddress) {
+      // The form won't fill in a value on load, so assume it's the first supported asset
+      chosenAssetAddress = supportedAssets[0].address as string;
+    }
+
     const chosenAsset = supportedAssets.find(
       (asset) => asset.address === chosenAssetAddress,
     );
@@ -61,14 +77,14 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
     }
 
     const tokenAmount = calculateTokenAmount(
-      e.currentTarget.amount.value,
+      fieldValues.amount,
       chosenAsset.decimals,
     );
 
     await loanService.proposeLoan(
-      e.currentTarget.borrower.value,
+      fieldValues.borrower,
       tokenAmount,
-      e.currentTarget.asset.value,
+      chosenAssetAddress,
     );
 
     await props.onLoanProposal();
@@ -76,37 +92,62 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
     await props.onClose();
   };
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    reValidateMode: "onChange",
+  });
+
   return (
     <div className="modal">
-      <form onSubmit={(e) => proposeLoan(e)}>
+      <form onSubmit={handleSubmit(proposeLoan)}>
         <h3 className="section-title">Propose Loan</h3>
         <ul className="details">
           <li>
             <span className="label">Borrower</span>
             <span className="value">
-              <input name="borrower" type="text" />
+              <input
+                type="text"
+                {...register("borrower", {
+                  required: true,
+                  pattern: /^0x[a-fA-F0-9]{40}$/,
+                })}
+              />
+              {errors.borrower && <InputError message="Invalid address" />}
             </span>
           </li>
           <li>
             <span className="label">Asset</span>
             <span className="value">
-              <select name="asset">
-                {supportedAssets
-                  .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                  .map((asset) => {
-                    return (
-                      <option key={asset.address} value={asset.address}>
-                        {asset.symbol}
-                      </option>
-                    );
-                  })}
+              <select
+                {...register("asset", {
+                  value: supportedAssets[0]?.address,
+                })}
+              >
+                {supportedAssets.map((asset) => {
+                  return (
+                    <option key={asset.address} value={asset.address}>
+                      {asset.symbol}
+                    </option>
+                  );
+                })}
               </select>
             </span>
           </li>
           <li>
             <span className="label">Amount</span>
             <span className="value">
-              <input name="amount" type="text" />
+              <input
+                type="text"
+                {...register("amount", {
+                  required: true,
+                  pattern: /^[0-9]*\.?[0-9]*$/,
+                  min: 0,
+                })}
+              />
+              {errors.amount && <InputError message="Invalid amount" />}
             </span>
           </li>
         </ul>
