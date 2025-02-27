@@ -1,6 +1,7 @@
 import { PersonalLoan } from "@/models/personal_loan";
 import { PendingLoan } from "@/models/pending_loan";
 import { Identity } from "@/models/identity";
+import { EthereumAsset } from "@/models/asset";
 
 // PloanService is the interface for the personal loan service.
 export interface PersonalLoanService {
@@ -9,6 +10,14 @@ export interface PersonalLoanService {
 
   // allowLoanProposal allows a user to propose a loan.
   allowLoanProposal(identity: Identity): Promise<void>;
+
+  // approveTransfer approves a token transfer to a recipient from the current user to be executed
+  // by this application.
+  approveTokenTransfer(
+    recipient: Identity,
+    asset: EthereumAsset,
+    ammount: bigint,
+  ): Promise<void>;
 
   // cancelLoan cancels a personal loan where the user is the lender.
   cancelLendingLoan(loanID: string): Promise<void>;
