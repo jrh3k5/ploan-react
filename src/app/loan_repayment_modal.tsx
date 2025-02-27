@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { UserIdentity } from "./user_identity";
 import { AssetAmount } from "./asset_amount";
