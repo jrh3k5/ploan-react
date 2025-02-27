@@ -6,23 +6,29 @@ export class PendingLoan {
   lender: Identity;
   borrower: Identity;
   amountLoaned: bigint;
+  amountPaid: bigint;
   asset: EthereumAsset;
   status: PendingLoanStatus;
+  imported: boolean;
 
   constructor(
     loanID: string,
     lender: Identity,
     borrower: Identity,
     amountLoaned: bigint,
+    amountPaid: bigint, // for imported loans, specify how much of the loan has been paid so far
     asset: EthereumAsset,
     status: PendingLoanStatus,
+    imported: boolean,
   ) {
     this.loanID = loanID;
     this.lender = lender;
     this.borrower = borrower;
     this.amountLoaned = amountLoaned;
+    this.amountPaid = amountPaid;
     this.asset = asset;
     this.status = status;
+    this.imported = imported;
   }
 }
 

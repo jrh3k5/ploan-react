@@ -24,6 +24,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
   const chainId = props.chainId;
 
   const [supportedAssets, setSupportedAssets] = useState<EthereumAsset[]>([]);
+  const [isImportedLoan, setImportedLoan] = useState<boolean>(false);
 
   useEffect(() => {
     if (!supportedAssetResolver) {
@@ -76,11 +77,25 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         chosenAsset.decimals,
       );
 
-      await loanService.proposeLoan(
-        fieldValues.borrower,
-        tokenAmount,
-        chosenAssetAddress,
-      );
+      if (isImportedLoan) {
+        const paidAmount = calculateTokenAmount(
+          fieldValues.amountPaid,
+          chosenAsset.decimals,
+        );
+
+        await loanService.proposeLoanImport(
+          fieldValues.borrower,
+          tokenAmount,
+          paidAmount,
+          chosenAssetAddress,
+        );
+      } else {
+        await loanService.proposeLoan(
+          fieldValues.borrower,
+          tokenAmount,
+          chosenAssetAddress,
+        );
+      }
 
       await props.onLoanProposal();
 
@@ -145,6 +160,34 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
               })}
             />
             {errors.amount && <InputError message="Invalid amount" />}
+          </span>
+        </li>
+        <li>
+          <input
+            type="checkbox"
+            {...register("isImported")}
+            onClick={() => setImportedLoan(!isImportedLoan)}
+          />
+          <label htmlFor="isImported">
+            This loan is being imported from a pre-existing agreement and does
+            not require the transmission of any funds upon execution.
+          </label>
+        </li>
+        <li>
+          <span className={"label" + (!isImportedLoan ? " disabled" : "")}>
+            Amount Already Paid
+          </span>
+          <span className="value">
+            <input
+              type="text"
+              disabled={!isImportedLoan}
+              {...register("amountPaid", {
+                required: isImportedLoan,
+                pattern: /^[0-9]*\.?[0-9]*$/,
+                min: 0,
+              })}
+            />
+            {errors.amountPaid && <InputError message="Invalid amount" />}
           </span>
         </li>
       </ul>

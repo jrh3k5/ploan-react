@@ -14,6 +14,7 @@ import { PendingLoanStatus } from "./pending_loan_status";
 import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { Modal } from "./modal";
+import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 
 export interface PendingBorrowingLoanListProps {
   allowList: Identity[];
@@ -93,6 +94,12 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                   asset={pendingLoan.asset}
                   amount={pendingLoan.amountLoaned}
                 />
+                {pendingLoan.imported && (
+                  <AssetAmountPrepaid
+                    asset={pendingLoan.asset}
+                    amount={pendingLoan.amountPaid}
+                  />
+                )}
               </td>
               <td className="status">
                 <PendingLoanStatus loan={pendingLoan} />

@@ -115,10 +115,6 @@ progress {
   width: 100%;
 }
 
-form label {
-  display: block;
-}
-
 form input {
   box-sizing: border-box;
   display: block;
@@ -126,6 +122,12 @@ form input {
   margin-top: 0.25em;
   margin-bottom: 0.25em;
   padding: 0.25em;
+}
+
+/* Override default input styles so that checkboxes operate as expected */
+form input[type="checkbox"] {
+  display: inline;
+  width: auto;
 }
 
 .error {
@@ -146,6 +148,10 @@ ul.details {
 ul.details span.label {
   display: block;
   font-weight: bold;
+}
+
+.disabled {
+  color: gray;
 }
 
 ul.details span.value {
