@@ -42,6 +42,61 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     }
   }
 
+  // addPendingLoan adds a new pending loan
+  async addPendingLoan(
+    borrowerAddress: string,
+    loanAmount: bigint,
+    paidAmount: bigint,
+    assetAddress: string,
+    imported: boolean,
+  ): Promise<void> {
+    if (!this.userAddress) {
+      throw new Error(
+        "A user address is required to be set to propose a loan.",
+      );
+    }
+
+    if (!this.chainId) {
+      throw new Error("A chain ID is required to be set to propose a loan.");
+    }
+
+    const borrowerAllowlist = this.loanProposalAllowlist.get(borrowerAddress);
+    if (!borrowerAllowlist) {
+      throw new Error(
+        "Borrower has no allowlist set; lender cannot propose a loan",
+      );
+    } else if (!borrowerAllowlist.includes(this.userAddress)) {
+      throw new Error(
+        "Borrower is not on the allowlist; lender cannot propose a loan",
+      );
+    }
+
+    const loanedAsset = await this.ethereumAssetResolverService.getAsset(
+      this.chainId,
+      assetAddress,
+    );
+    if (!loanedAsset) {
+      throw new Error(
+        "Failed to resolve loaned asset during loan proposal: " + assetAddress,
+      );
+    }
+
+    const pendingLoans = await this.getOrInitPendingLoans();
+
+    this.pendingLoans = pendingLoans.concat(
+      new PendingLoan(
+        `${this.idCounter++}`,
+        new Identity(this.userAddress),
+        new Identity(borrowerAddress),
+        loanAmount,
+        paidAmount,
+        loanedAsset,
+        PendingLoanStatus.WAITING_FOR_ACCEPTANCE,
+        imported,
+      ),
+    );
+  }
+
   async allowLoanProposal(identity: Identity): Promise<void> {
     if (!this.userAddress) {
       throw new Error(
@@ -139,22 +194,24 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           throw new Error("Asset must have an address");
         }
 
-        // Verify that the approval has been executed
-        const tokenApprovals = this.tokenApprovals.get(newLoan.asset.address);
-        if (!tokenApprovals) {
-          throw new Error("User has not approved token transfer");
-        } else {
-          const approvalAmount = tokenApprovals.get(newLoan.borrower.address);
-          if (!approvalAmount) {
-            throw new Error(
-              "User has not approved token transfer to the recipient",
-            );
-          }
+        // Verify that the approval has been executed (only for non-imported loans)
+        if (!newLoan.imported) {
+          const tokenApprovals = this.tokenApprovals.get(newLoan.asset.address);
+          if (!tokenApprovals) {
+            throw new Error("User has not approved token transfer");
+          } else {
+            const approvalAmount = tokenApprovals.get(newLoan.borrower.address);
+            if (!approvalAmount) {
+              throw new Error(
+                "User has not approved token transfer to the recipient",
+              );
+            }
 
-          if (approvalAmount < newLoan.amountLoaned) {
-            throw new Error(
-              "User has not approved enough token transfer to the recipient",
-            );
+            if (approvalAmount < newLoan.amountLoaned) {
+              throw new Error(
+                "User has not approved enough token transfer to the recipient",
+              );
+            }
           }
         }
 
@@ -173,7 +230,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
             newLoan.borrower,
             newLoan.lender,
             newLoan.amountLoaned,
-            0n,
+            newLoan.amountPaid,
             newLoan.asset,
             LoanStatus.IN_PROGRESS,
           ),
@@ -325,16 +382,20 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
           vbuterin,
           new Identity(userAddress),
           1000000000n,
+          0n,
           usdcAsset,
           PendingLoanStatus.WAITING_FOR_ACCEPTANCE,
+          false,
         ),
         new PendingLoan(
           `${this.idCounter++}`,
           new Identity(userAddress),
           barmstrong,
           1000000000000000000000n,
+          0n,
           degenAsset,
           PendingLoanStatus.WAITING_FOR_ACCEPTANCE,
+          false,
         ),
       ];
     }
@@ -375,48 +436,27 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     amount: bigint,
     assetAddress: string,
   ): Promise<void> {
-    if (!this.userAddress) {
-      throw new Error(
-        "A user address is required to be set to propose a loan.",
-      );
-    }
-
-    if (!this.chainId) {
-      throw new Error("A chain ID is required to be set to propose a loan.");
-    }
-
-    const borrowerAllowlist = this.loanProposalAllowlist.get(borrowerAddress);
-    if (!borrowerAllowlist) {
-      throw new Error(
-        "Borrower has no allowlist set; lender cannot propose a loan",
-      );
-    } else if (!borrowerAllowlist.includes(this.userAddress)) {
-      throw new Error(
-        "Borrower is not on the allowlist; lender cannot propose a loan",
-      );
-    }
-
-    const loanedAsset = await this.ethereumAssetResolverService.getAsset(
-      this.chainId,
+    return this.addPendingLoan(
+      borrowerAddress,
+      amount,
+      0n,
       assetAddress,
+      false,
     );
-    if (!loanedAsset) {
-      throw new Error(
-        "Failed to resolve loaned asset during loan proposal: " + assetAddress,
-      );
-    }
+  }
 
-    const pendingLoans = await this.getOrInitPendingLoans();
-
-    this.pendingLoans = pendingLoans.concat(
-      new PendingLoan(
-        `${this.idCounter++}`,
-        new Identity(this.userAddress),
-        new Identity(borrowerAddress),
-        amount,
-        loanedAsset,
-        PendingLoanStatus.WAITING_FOR_ACCEPTANCE,
-      ),
+  async proposeLoanImport(
+    borrowerAddress: string,
+    loanAmount: bigint,
+    paidAmount: bigint,
+    assetAddress: string,
+  ): Promise<void> {
+    return this.addPendingLoan(
+      borrowerAddress,
+      loanAmount,
+      paidAmount,
+      assetAddress,
+      true,
     );
   }
 

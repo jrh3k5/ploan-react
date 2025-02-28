@@ -50,10 +50,21 @@ export interface PersonalLoanService {
   // as the lender and have not yet been accepted by the borrower.
   getPendingLendingLoans(): Promise<PendingLoan[]>;
 
-  // proposeoan proposes a new loan
+  // proposeoan proposes a new loan.
+  // Use importLoan to import an existing loan.
   proposeLoan(
     borrowerAddress: string,
     amount: bigint,
+    assetAddress: string,
+  ): Promise<void>;
+
+  // proposeLoanImport is used to import a pre-existing loan as a proposal.
+  // No funds will be transmitted upon execution.
+  // Use proposeLoan to create a new loan.
+  proposeLoanImport(
+    borrowerAddress: string,
+    loanAmount: bigint,
+    paidAmount: bigint,
     assetAddress: string,
   ): Promise<void>;
 

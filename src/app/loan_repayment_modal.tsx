@@ -92,36 +92,42 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
             <AssetAmount amount={remainingBalance} asset={props.loan.asset} />
           </span>
         </li>
-      </ul>
-      <form
-        onSubmit={handleSubmit((data: FieldValues) =>
-          submitRepayment(data, props.loan as PersonalLoan),
-        )}
-      >
-        <label>Repayment Amount:</label>
-        <input
-          type="text"
-          {...register("amount", {
-            required: true,
-            pattern: /^[0-9]+(\.[0-9]{1,2})?$/,
-            min: 0,
-            validate: (value: string) => {
-              const loan = props.loan as PersonalLoan;
-              const repaymentAmount = calculateTokenAmount(
-                value,
-                loan.asset.decimals,
-              );
+        <li>
+          <form
+            onSubmit={handleSubmit((data: FieldValues) =>
+              submitRepayment(data, props.loan as PersonalLoan),
+            )}
+          >
+            <span className="label">Repayment Amount:</span>
+            <span className="value">
+              <input
+                type="text"
+                {...register("amount", {
+                  required: true,
+                  pattern: /^[0-9]+(\.[0-9]{1,2})?$/,
+                  min: 0,
+                  validate: (value: string) => {
+                    const loan = props.loan as PersonalLoan;
+                    const repaymentAmount = calculateTokenAmount(
+                      value,
+                      loan.asset.decimals,
+                    );
 
-              return loan.amountRepaid + repaymentAmount <= loan.amountLoaned;
-            },
-          })}
-        />
-        {errors.amount && <InputError message="Invalid repayment amount" />}
-        <div className="form-buttons">
-          <button type="submit">Submit Repayment</button>
-          <button onClick={() => props.onClose()}>Cancel</button>
-        </div>
-      </form>
+                    return (
+                      loan.amountRepaid + repaymentAmount <= loan.amountLoaned
+                    );
+                  },
+                })}
+              />
+            </span>
+            {errors.amount && <InputError message="Invalid repayment amount" />}
+            <div className="form-buttons">
+              <button type="submit">Submit Repayment</button>
+              <button onClick={() => props.onClose()}>Cancel</button>
+            </div>
+          </form>
+        </li>
+      </ul>
     </>
   );
 }

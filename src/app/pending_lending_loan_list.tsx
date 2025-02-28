@@ -15,6 +15,7 @@ import { PendingLoanStatus } from "./pending_loan_status";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { Modal } from "./modal";
 import { TokenApproval } from "./token_approval";
+import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 
 export interface PendingLendingLoanListProps {
   pendingLoans: PendingLoan[];
@@ -111,13 +112,27 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
                   asset={pendingLoan.asset}
                   amount={pendingLoan.amountLoaned}
                 />
+                {pendingLoan.imported && (
+                  <AssetAmountPrepaid
+                    asset={pendingLoan.asset}
+                    amount={pendingLoan.amountPaid}
+                  />
+                )}
               </td>
               <td className="status">
                 <PendingLoanStatus loan={pendingLoan} />
               </td>
               <td className="actions">
                 {pendingLoan.status == PendingLoanStatusEnum.ACCEPTED && (
-                  <button onClick={() => showTokenApproval(pendingLoan)}>
+                  <button
+                    onClick={() => {
+                      if (pendingLoan.imported) {
+                        return executeLoan(loanService, pendingLoan.loanID);
+                      }
+
+                      return showTokenApproval(pendingLoan);
+                    }}
+                  >
                     Execute Loan
                   </button>
                 )}
