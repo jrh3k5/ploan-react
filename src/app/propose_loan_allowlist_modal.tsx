@@ -10,7 +10,6 @@ import { UserIdentity } from "./user_identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { useConfig } from "wagmi";
 import { normalize } from "viem/ens";
-import { usePublicClient } from "wagmi";
 import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 
