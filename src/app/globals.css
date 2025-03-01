@@ -19,6 +19,23 @@
     background-color: #f8f8f8;
     padding: 0.25em;
   }
+
+  .modal {
+    top: 70px;
+    position: absolute;
+    left: calc(30%);
+    width: 40%;
+  }
+}
+
+@media screen and (max-width: 30rem) {
+  .modal {
+    top: 0;
+    left: 0;
+    position: absolute;
+    z-index: 100;
+    width: 100vw;
+  }
 }
 
 table {
@@ -114,10 +131,6 @@ progress {
   background-color: white;
   border: 2px solid rgb(240, 240, 240);
   border-radius: 12px;
-  position: absolute;
-  top: 70px;
-  left: calc(30%);
-  width: 40%;
   padding: 2em;
 }
 
