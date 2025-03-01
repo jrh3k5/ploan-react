@@ -9,6 +9,9 @@ import { SupportedAssetResolverContext } from "@/services/supported_asset_resolv
 import { EthereumAsset } from "@/models/asset";
 import { calculateTokenAmount } from "@/lib/asset_amount";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { mainnet } from "viem/chains";
+import { getEnsAddress } from "@wagmi/core";
+import { useConfig } from "wagmi";
 
 export interface ProposeLoanModalProps {
   chainId: number;
@@ -19,12 +22,22 @@ export interface ProposeLoanModalProps {
 export function ProposeLoanModal(props: ProposeLoanModalProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const wagmiConfig = useConfig();
 
   const supportedAssetResolver = useContext(SupportedAssetResolverContext);
   const chainId = props.chainId;
 
   const [supportedAssets, setSupportedAssets] = useState<EthereumAsset[]>([]);
   const [isImportedLoan, setImportedLoan] = useState<boolean>(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm({
+    reValidateMode: "onChange",
+  });
 
   useEffect(() => {
     if (!supportedAssetResolver) {
@@ -77,6 +90,25 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         chosenAsset.decimals,
       );
 
+      let borrowerAddress = fieldValues.borrower;
+      if (!borrowerAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+        const ensAddress = await getEnsAddress(wagmiConfig, {
+          name: fieldValues.borrower,
+          chainId: mainnet.id,
+        });
+
+        if (ensAddress) {
+          borrowerAddress = ensAddress;
+        } else {
+          setError("borrower", {
+            type: "custom",
+            message: "Invalid address or ENS name",
+          });
+
+          return;
+        }
+      }
+
       if (isImportedLoan) {
         const paidAmount = calculateTokenAmount(
           fieldValues.amountPaid,
@@ -105,14 +137,6 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
     }
   };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    reValidateMode: "onChange",
-  });
-
   return (
     <form onSubmit={handleSubmit(proposeLoan)}>
       <h3 className="section-title">Propose Loan</h3>
@@ -124,7 +148,6 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
               type="text"
               {...register("borrower", {
                 required: true,
-                pattern: /^0x[a-fA-F0-9]{40}$/,
               })}
             />
             {errors.borrower && <InputError message="Invalid address" />}

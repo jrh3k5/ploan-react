@@ -8,6 +8,10 @@ import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { Identity } from "@/models/identity";
 import { UserIdentity } from "./user_identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { useConfig } from "wagmi";
+import { normalize } from "viem/ens";
+import { mainnet } from "viem/chains";
+import { getEnsAddress } from "@wagmi/core";
 
 export interface ProposeLoanAllowlistModalProps {
   allowList: Identity[];
@@ -21,6 +25,17 @@ export function ProposeLoanAllowlistModal(
 ) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const wagmiConfig = useConfig();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    setError,
+  } = useForm({
+    reValidateMode: "onChange",
+  });
 
   const removeAllowedUser = async (identity: Identity) => {
     if (!loanService) {
@@ -42,24 +57,36 @@ export function ProposeLoanAllowlistModal(
     }
 
     try {
-      const address = fieldValues.allowlistedAddress;
+      let address = fieldValues.allowlistedAddress;
+      if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
+        const ensAddress = await getEnsAddress(wagmiConfig, {
+          name: fieldValues.allowlistedAddress,
+          chainId: mainnet.id,
+        });
+
+        if (ensAddress) {
+          address = normalize(ensAddress);
+        } else {
+          setError("allowlistedAddress", {
+            type: "custom",
+            message: "Invalid address or ENS name",
+          });
+
+          return;
+        }
+      }
+
       const newIdentity = new Identity(address);
 
       await loanService.allowLoanProposal(newIdentity);
+
+      setValue("allowlistedAddress", "");
 
       await props.onAllowlistAddition(newIdentity);
     } catch (error) {
       errorReporter.reportAny(error);
     }
   };
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    reValidateMode: "onChange",
-  });
 
   return (
     <>
@@ -89,13 +116,12 @@ export function ProposeLoanAllowlistModal(
                 <input
                   {...register("allowlistedAddress", {
                     required: true,
-                    pattern: /^0x[a-fA-F0-9]{40}$/,
                   })}
                   type="text"
                   placeholder="Enter user address"
                 ></input>
                 {errors.allowlistedAddress && (
-                  <InputError message="An address must be provided" />
+                  <InputError message="Invalid allowlist address provided" />
                 )}
               </td>
               <td className="actions">
