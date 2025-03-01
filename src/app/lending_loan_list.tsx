@@ -48,7 +48,7 @@ export function LendingLoanList(props: LendingLoanListProps) {
         <tbody>
           {lendingLoans.map((lendingLoan) => (
             <tr key={lendingLoan.loanID}>
-              <td>
+              <td className="address-container">
                 <UserIdentity identity={lendingLoan.borrower} />
               </td>
               <td>

@@ -86,7 +86,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
         <tbody>
           {pendingBorrowingLoans.map((pendingLoan) => (
             <tr key={pendingLoan.loanID}>
-              <td>
+              <td className="address-container">
                 <UserIdentity identity={pendingLoan.lender} />
               </td>
               <td className="amount">
@@ -108,11 +108,11 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                 {pendingLoan.status ==
                   PendingLoanStatusEnum.WAITING_FOR_ACCEPTANCE && (
                   <button onClick={() => acceptBorrow(pendingLoan.loanID)}>
-                    Accept Borrow
+                    Accept Offer
                   </button>
                 )}
                 <button onClick={() => rejectBorrow(pendingLoan.loanID)}>
-                  Reject Borrow
+                  Reject Offer
                 </button>
               </td>
             </tr>
