@@ -1,21 +1,54 @@
-:root {
-  background-color: #1c55a5;
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  font-synthesis: none;
-  font-weight: 400;
-  line-height: 1.5;
-  text-rendering: optimizeLegibility;
+@media screen and (min-width: 30rem) {
+  :root {
+    background-color: #1c55a5;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    font-synthesis: none;
+    font-weight: 400;
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
 
-  margin-left: 25%;
-  width: 50%;
+    margin-left: 25%;
+    width: 50%;
 
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  div.app {
+    background-color: #f8f8f8;
+    padding: 0.25em;
+  }
+
+  .modal {
+    top: 70px;
+    position: absolute;
+    left: calc(30%);
+    width: 40%;
+  }
+}
+
+@media screen and (max-width: 30rem) {
+  .modal {
+    top: 0;
+    left: 0;
+    position: absolute;
+    z-index: 100;
+    width: 100vw;
+  }
 }
 
 table {
   width: 100%;
+  table-layout: fixed;
+}
+
+th {
+  vertical-align: top;
+}
+
+.address-container {
+  word-wrap: break-word;
 }
 
 div.loan-management {
@@ -35,11 +68,6 @@ div.wallet-info {
 }
 
 div.wallet-info > span.identity {
-  padding: 0.25em;
-}
-
-div.app {
-  background-color: #f8f8f8;
   padding: 0.25em;
 }
 
@@ -103,10 +131,6 @@ progress {
   background-color: white;
   border: 2px solid rgb(240, 240, 240);
   border-radius: 12px;
-  position: absolute;
-  top: 70px;
-  left: calc(30%);
-  width: 40%;
   padding: 2em;
 }
 
