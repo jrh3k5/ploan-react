@@ -12,7 +12,7 @@ import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
 type LoanManagementProps = {
-  chainId: number;
+  chainId: number | undefined;
   userAddress: string | undefined;
 };
 

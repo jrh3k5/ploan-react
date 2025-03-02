@@ -14,7 +14,7 @@ import { getEnsAddress } from "@wagmi/core";
 import { useConfig } from "wagmi";
 
 export interface ProposeLoanModalProps {
-  chainId: number;
+  chainId: number | undefined;
   onClose: () => Promise<void>;
   onLoanProposal: () => Promise<void>;
 }
