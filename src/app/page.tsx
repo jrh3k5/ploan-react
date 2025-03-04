@@ -26,6 +26,8 @@ import { InMemoryContractResolver } from "@/services/contract_resolver";
 import { OnchainPersonalLoanService } from "@/services/onchain_personal_loan_service";
 import { PublicClient, WalletClient } from "viem";
 import { switchChain } from "@wagmi/core";
+import { ModalContainer, ModalController } from "react-modal-global";
+import { Modal } from "@/lib/modal";
 
 // Declare outside of app so that it's not constantly building new instances
 const wagmiResolver = new WagmiEthereumAssetResolverService();
@@ -117,6 +119,7 @@ function App() {
                     chainId={walletClient?.chain?.id}
                     userAddress={userAddress}
                   />
+                  <ModalContainer controller={Modal} />
                 </SupportedAssetResolverProvider>
               </PersonalLoanServiceProvider>
 

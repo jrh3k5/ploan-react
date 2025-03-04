@@ -1,19 +1,18 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import {
   PendingLoan,
   PendingLoanStatus as PendingLoanStatusEnum,
 } from "@/models/pending_loan";
-import { createPortal } from "react-dom";
 import { UserIdentity } from "./user_identity";
 import { PersonalLoanService } from "@/services/personal_loan_service";
 import { AssetAmount } from "./asset_amount";
 import { ProposeLoanModal } from "./propose_loan_modal";
 import { PendingLoanStatus } from "./pending_loan_status";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
-import { Modal } from "./modal";
+import { Modal } from "@/lib/modal";
 import { TokenApproval } from "./token_approval";
 import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 
@@ -31,13 +30,6 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   const errorReporter = useContext(ErrorReporterContext);
 
   const pendingLoans = props.pendingLoans;
-
-  const [proposeLoanModalVisible, setProposeLoanModalVisible] = useState(false);
-  const [tokenApprovalVisible, setTokenApprovalVisible] =
-    useState<boolean>(false);
-  const [activeLoan, setActiveLoan] = useState<PendingLoan | undefined>(
-    undefined,
-  );
 
   const cancelLoan = async (
     loanService: PersonalLoanService | null,
@@ -58,8 +50,13 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
 
   const showTokenApproval = async (pendingLoan: PendingLoan) => {
     try {
-      setActiveLoan(pendingLoan);
-      setTokenApprovalVisible(true);
+      Modal.open(TokenApproval, {
+        onCancel: async () => {},
+        onApprove: async () => executeLoan(loanService, pendingLoan.loanID),
+        amount: `${pendingLoan.amountLoaned}`,
+        asset: pendingLoan.asset,
+        recipient: pendingLoan.borrower,
+      });
     } catch (error) {
       errorReporter.reportAny(error);
     }
@@ -77,8 +74,6 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
       await loanService.executeLoan(loanID);
 
       await props.onLoanExecution(loanID);
-
-      setTokenApprovalVisible(false);
     } catch (error) {
       await errorReporter.reportAny(error);
     }
@@ -88,7 +83,15 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
     <div className="loan-grouping">
       <h3>Loans You&apos;ve Offered Others ({pendingLoans.length})</h3>
       <div>
-        <button onClick={() => setProposeLoanModalVisible(true)}>
+        <button
+          onClick={() => {
+            Modal.open(ProposeLoanModal, {
+              chainId: props.chainId,
+              onLoanProposal: async () => props.onLoanProposal(),
+              onClose: async () => {},
+            });
+          }}
+        >
           Propose Loan
         </button>
       </div>
@@ -146,30 +149,6 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
           ))}
         </tbody>
       </table>
-      {proposeLoanModalVisible &&
-        createPortal(
-          <Modal onClose={async () => setProposeLoanModalVisible(false)}>
-            <ProposeLoanModal
-              chainId={props.chainId}
-              onClose={async () => setProposeLoanModalVisible(false)}
-              onLoanProposal={async () => props.onLoanProposal()}
-            />
-          </Modal>,
-          document.body,
-        )}
-      {tokenApprovalVisible && (
-        <Modal onClose={async () => setTokenApprovalVisible(false)}>
-          <TokenApproval
-            onCancel={async () => {
-              setTokenApprovalVisible(false);
-            }}
-            onApprove={async () => executeLoan(loanService, activeLoan!.loanID)}
-            amount={activeLoan!.amountLoaned}
-            asset={activeLoan!.asset}
-            recipient={activeLoan!.borrower}
-          ></TokenApproval>
-        </Modal>
-      )}
     </div>
   );
 }

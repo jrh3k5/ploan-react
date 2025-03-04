@@ -30,6 +30,19 @@ export class PendingLoan {
     this.status = status;
     this.imported = imported;
   }
+
+  toJSON() {
+    return {
+      loanID: this.loanID,
+      lender: this.lender,
+      borrower: this.borrower,
+      amountLoaned: `${this.amountLoaned}`, // convert to string because JSON.strinify does not support bigint
+      amountPaid: `${this.amountPaid}`,
+      asset: this.asset,
+      status: this.status,
+      imported: this.imported,
+    };
+  }
 }
 
 export enum PendingLoanStatus {

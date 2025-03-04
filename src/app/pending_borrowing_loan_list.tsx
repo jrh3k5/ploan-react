@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import {
   PendingLoan,
@@ -9,11 +9,10 @@ import {
 import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
 import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
-import { createPortal } from "react-dom";
 import { PendingLoanStatus } from "./pending_loan_status";
 import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
-import { Modal } from "./modal";
+import { Modal } from "@/lib/modal";
 import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 
 export interface PendingBorrowingLoanListProps {
@@ -31,7 +30,6 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   const errorReporter = useContext(ErrorReporterContext);
 
   const pendingBorrowingLoans = props.pendingBorrowingLoans;
-  const [showAllowlistModal, setShowAllowlistModal] = useState(false);
 
   const acceptBorrow = async (loanID: string) => {
     if (!loanService) {
@@ -66,7 +64,16 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       <h3>Loans Offered to You ({pendingBorrowingLoans.length})</h3>
       <div>
         <div>
-          <button onClick={() => setShowAllowlistModal(true)}>
+          <button
+            onClick={() =>
+              Modal.open(ProposeLoanAllowlistModal, {
+                allowList: props.allowList,
+                onAllowlistAddition: props.onAllowlistAddition,
+                onAllowlistRemoval: props.onAllowlistRemoval,
+                onClose: async () => {},
+              })
+            }
+          >
             Manage Allowlist
           </button>
         </div>
@@ -119,18 +126,6 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
           ))}
         </tbody>
       </table>
-      {showAllowlistModal &&
-        createPortal(
-          <Modal onClose={async () => setShowAllowlistModal(false)}>
-            <ProposeLoanAllowlistModal
-              allowList={props.allowList}
-              onAllowlistAddition={props.onAllowlistAddition}
-              onAllowlistRemoval={props.onAllowlistRemoval}
-              onClose={async () => setShowAllowlistModal(false)}
-            />
-          </Modal>,
-          document.body,
-        )}
     </div>
   );
 }

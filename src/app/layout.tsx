@@ -1,4 +1,7 @@
 import "./globals.css";
+import "./popup-layout.scss";
+import "react-modal-global/styles/modal.scss";
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { headers } from "next/headers";

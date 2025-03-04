@@ -12,6 +12,7 @@ import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 import { useConfig } from "wagmi";
+import { useModalWindow } from "react-modal-global";
 
 export interface ProposeLoanModalProps {
   chainId: number | undefined;
@@ -29,6 +30,8 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
 
   const [supportedAssets, setSupportedAssets] = useState<EthereumAsset[]>([]);
   const [isImportedLoan, setImportedLoan] = useState<boolean>(false);
+
+  const modal = useModalWindow();
 
   const {
     register,
@@ -138,88 +141,96 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(proposeLoan)}>
-      <h3 className="section-title">Propose Loan</h3>
-      <ul className="details">
-        <li>
-          <span className="label">Borrower</span>
-          <span className="value">
+    <div className="popup-layout">
+      <form onSubmit={handleSubmit(proposeLoan)}>
+        <h3 className="section-title">Propose Loan</h3>
+        <ul className="details">
+          <li>
+            <span className="label">Borrower</span>
+            <span className="value">
+              <input
+                type="text"
+                {...register("borrower", {
+                  required: true,
+                })}
+              />
+              {errors.borrower && <InputError message="Invalid address" />}
+            </span>
+          </li>
+          <li>
+            <span className="label">Asset</span>
+            <span className="value">
+              <select
+                {...register("asset", {
+                  value: supportedAssets[0]?.address,
+                })}
+              >
+                {supportedAssets.map((asset) => {
+                  return (
+                    <option key={asset.address} value={asset.address}>
+                      {asset.symbol}
+                    </option>
+                  );
+                })}
+              </select>
+            </span>
+          </li>
+          <li>
+            <span className="label">Amount</span>
+            <span className="value">
+              <input
+                type="text"
+                {...register("amount", {
+                  required: true,
+                  pattern: /^[0-9]*\.?[0-9]*$/,
+                  min: 0,
+                })}
+              />
+              {errors.amount && <InputError message="Invalid amount" />}
+            </span>
+          </li>
+          <li>
             <input
-              type="text"
-              {...register("borrower", {
-                required: true,
-              })}
+              type="checkbox"
+              {...register("isImported")}
+              onClick={() => setImportedLoan(!isImportedLoan)}
             />
-            {errors.borrower && <InputError message="Invalid address" />}
-          </span>
-        </li>
-        <li>
-          <span className="label">Asset</span>
-          <span className="value">
-            <select
-              {...register("asset", {
-                value: supportedAssets[0]?.address,
-              })}
-            >
-              {supportedAssets.map((asset) => {
-                return (
-                  <option key={asset.address} value={asset.address}>
-                    {asset.symbol}
-                  </option>
-                );
-              })}
-            </select>
-          </span>
-        </li>
-        <li>
-          <span className="label">Amount</span>
-          <span className="value">
-            <input
-              type="text"
-              {...register("amount", {
-                required: true,
-                pattern: /^[0-9]*\.?[0-9]*$/,
-                min: 0,
-              })}
-            />
-            {errors.amount && <InputError message="Invalid amount" />}
-          </span>
-        </li>
-        <li>
-          <input
-            type="checkbox"
-            {...register("isImported")}
-            onClick={() => setImportedLoan(!isImportedLoan)}
-          />
-          <label htmlFor="isImported">
-            This loan is being imported from a pre-existing agreement and does
-            not require the transmission of any funds upon execution.
-          </label>
-        </li>
-        <li>
-          <span className={"label" + (!isImportedLoan ? " disabled" : "")}>
-            Amount Already Paid
-          </span>
-          <span className="value">
-            <input
-              type="text"
-              disabled={!isImportedLoan}
-              {...register("amountPaid", {
-                required: isImportedLoan,
-                pattern: /^[0-9]*\.?[0-9]*$/,
-                min: 0,
-              })}
-            />
-            {errors.amountPaid && <InputError message="Invalid amount" />}
-          </span>
-        </li>
-      </ul>
-      <div className="form-buttons">
-        <button type="submit">Propose</button>
-        <button type="button" onClick={() => props.onClose()}>
-          Cancel
-        </button>
-      </div>
-    </form>
+            <label htmlFor="isImported">
+              This loan is being imported from a pre-existing agreement and does
+              not require the transmission of any funds upon execution.
+            </label>
+          </li>
+          <li>
+            <span className={"label" + (!isImportedLoan ? " disabled" : "")}>
+              Amount Already Paid
+            </span>
+            <span className="value">
+              <input
+                type="text"
+                disabled={!isImportedLoan}
+                {...register("amountPaid", {
+                  required: isImportedLoan,
+                  pattern: /^[0-9]*\.?[0-9]*$/,
+                  min: 0,
+                })}
+              />
+              {errors.amountPaid && <InputError message="Invalid amount" />}
+            </span>
+          </li>
+        </ul>
+        <div className="form-buttons">
+          <button type="submit">Propose</button>
+          <button
+            type="button"
+            onClick={() => {
+              modal.close();
+              props.onClose();
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
