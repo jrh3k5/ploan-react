@@ -16,7 +16,7 @@ export interface PersonalLoanService {
   approveTokenTransfer(
     recipient: Identity,
     asset: EthereumAsset,
-    ammount: bigint,
+    amount: bigint,
   ): Promise<void>;
 
   // cancelLoan cancels a personal loan where the user is the lender.

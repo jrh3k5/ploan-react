@@ -19,7 +19,7 @@ import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 
 export interface PendingLendingLoanListProps {
   pendingLoans: PendingLoan[];
-  chainId: number;
+  chainId: number | undefined;
   onLoanCancellation: (loanID: string) => Promise<void>;
   onLoanExecution: (loanID: string) => Promise<void>;
   onLoanProposal: () => Promise<void>;

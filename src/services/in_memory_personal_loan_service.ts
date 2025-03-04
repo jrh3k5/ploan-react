@@ -114,7 +114,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   async approveTokenTransfer(
     recipient: Identity,
     asset: EthereumAsset,
-    ammount: bigint,
+    amount: bigint,
   ): Promise<void> {
     if (!asset.address) {
       throw new Error("Asset must have an address");
@@ -128,8 +128,8 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       this.tokenApprovals.set(asset.address, tokenApprovals);
     }
 
-    console.log(`allowing a transfer of ${ammount} to ${recipient.address}`);
-    tokenApprovals.set(recipient.address, ammount);
+    console.log(`allowing a transfer of ${amount} to ${recipient.address}`);
+    tokenApprovals.set(recipient.address, amount);
   }
 
   async cancelLendingLoan(loanID: string): Promise<void> {
