@@ -27,6 +27,18 @@ export class PersonalLoan {
     this.asset = asset;
     this.status = status;
   }
+
+  toJSON() {
+    return {
+      loanID: this.loanID,
+      borrower: this.borrower,
+      lender: this.lender,
+      amountLoaned: `${this.amountLoaned}`, // convert to string because JSON.strinify does not support bigint
+      amountRepaid: `${this.amountRepaid}`,
+      asset: this.asset,
+      status: this.status,
+    };
+  }
 }
 
 export enum LoanStatus {

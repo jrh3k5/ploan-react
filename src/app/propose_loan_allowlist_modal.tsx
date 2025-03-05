@@ -12,6 +12,7 @@ import { useConfig } from "wagmi";
 import { normalize } from "viem/ens";
 import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
+import { useModalWindow } from "react-modal-global";
 
 export interface ProposeLoanAllowlistModalProps {
   allowList: Identity[];
@@ -26,6 +27,7 @@ export function ProposeLoanAllowlistModal(
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
   const wagmiConfig = useConfig();
+  const modal = useModalWindow();
 
   const {
     register,
@@ -89,7 +91,7 @@ export function ProposeLoanAllowlistModal(
   };
 
   return (
-    <>
+    <div className="popup-layout">
       <form onSubmit={handleSubmit(addToAllowlist)}>
         <table>
           <thead>
@@ -132,8 +134,15 @@ export function ProposeLoanAllowlistModal(
         </table>
       </form>
       <div className="form-buttons">
-        <button onClick={props.onClose}>Close</button>
+        <button
+          onClick={async () => {
+            modal.close();
+            await props.onClose();
+          }}
+        >
+          Close
+        </button>
       </div>
-    </>
+    </div>
   );
 }

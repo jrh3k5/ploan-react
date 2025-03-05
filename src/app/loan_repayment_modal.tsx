@@ -10,6 +10,7 @@ import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { calculateTokenAmount } from "@/lib/asset_amount";
 import { InputError } from "./input_error";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { useModalWindow } from "react-modal-global";
 
 export interface LoanRepaymentModalProps {
   loan: PersonalLoan | undefined;
@@ -20,6 +21,7 @@ export interface LoanRepaymentModalProps {
 export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const modal = useModalWindow();
 
   const {
     register,
@@ -59,12 +61,12 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const remainingBalance = props.loan.amountLoaned - props.loan.amountRepaid;
 
   return (
-    <>
+    <div className="popup-layout">
       <h3 className="section-title">Repay Loan</h3>
       <ul className="details">
         <li>
           <span className="label">Lender</span>
-          <span className="value">
+          <span className="value address-container">
             <UserIdentity identity={props.loan?.lender} />
           </span>
         </li>
@@ -123,11 +125,18 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
             {errors.amount && <InputError message="Invalid repayment amount" />}
             <div className="form-buttons">
               <button type="submit">Submit Repayment</button>
-              <button onClick={() => props.onClose()}>Cancel</button>
+              <button
+                onClick={async () => {
+                  modal.close();
+                  await props.onClose();
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </form>
         </li>
       </ul>
-    </>
+    </div>
   );
 }

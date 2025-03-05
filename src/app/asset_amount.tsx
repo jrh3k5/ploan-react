@@ -6,12 +6,18 @@ import { formatAssetAmount } from "@/lib/asset_amount";
 
 export interface AssetAmountProps {
   asset: EthereumAsset;
-  amount: bigint;
+  amount: bigint | string; // have to support string in case this is a result of JSON.stringify
 }
 
 export function AssetAmount(props: AssetAmountProps) {
+  let amountBigInt = 0n;
+  if (typeof props.amount === "string") {
+    amountBigInt = BigInt(props.amount);
+  } else {
+    amountBigInt = props.amount as bigint;
+  }
   const formattedAssetAmount = formatAssetAmount(
-    props.amount,
+    amountBigInt,
     props.asset.decimals,
   );
   return (
