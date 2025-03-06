@@ -3,7 +3,7 @@
 import { InputError } from "./input_error";
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { Identity } from "@/models/identity";
 import { UserIdentity } from "./user_identity";
@@ -13,6 +13,7 @@ import { normalize } from "viem/ens";
 import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 import { useModalWindow } from "react-modal-global";
+import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 
 export interface ProposeLoanAllowlistModalProps {
   allowList: Identity[];
@@ -26,8 +27,23 @@ export function ProposeLoanAllowlistModal(
 ) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const appStateService = useContext(ApplicationStateServiceContext);
   const wagmiConfig = useConfig();
   const modal = useModalWindow();
+
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  if (appStateService) {
+    appStateService
+      .subscribe(async (appState) => {
+        setIsProcessing(appState.processing);
+      })
+      .then((unsubFn) => {
+        modal.on("close", () => {
+          unsubFn();
+        });
+      });
+  }
 
   const {
     register,
@@ -44,12 +60,18 @@ export function ProposeLoanAllowlistModal(
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "propose_loan_allowlist_modal:removeAllowedUser",
+    );
+
     try {
       await loanService.disallowLoanProposal(identity);
 
       await props.onAllowlistRemoval(identity);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
   };
 
@@ -57,6 +79,10 @@ export function ProposeLoanAllowlistModal(
     if (!loanService) {
       return;
     }
+
+    const token = await appStateService?.startProcessing(
+      "propose_loan_allowlist_modal:addToAllowlist",
+    );
 
     try {
       let address = fieldValues.allowlistedAddress;
@@ -87,6 +113,8 @@ export function ProposeLoanAllowlistModal(
       await props.onAllowlistAddition(newIdentity);
     } catch (error) {
       errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
   };
 
@@ -107,7 +135,10 @@ export function ProposeLoanAllowlistModal(
                   <UserIdentity identity={identity} />
                 </td>
                 <td className="actions">
-                  <button onClick={() => removeAllowedUser(identity)}>
+                  <button
+                    onClick={() => removeAllowedUser(identity)}
+                    disabled={isProcessing}
+                  >
                     Remove
                   </button>
                 </td>
@@ -116,6 +147,7 @@ export function ProposeLoanAllowlistModal(
             <tr>
               <td>
                 <input
+                  disabled={isProcessing}
                   {...register("allowlistedAddress", {
                     required: true,
                   })}
@@ -127,7 +159,9 @@ export function ProposeLoanAllowlistModal(
                 )}
               </td>
               <td className="actions">
-                <button type="submit">Add to Allowlist</button>
+                <button type="submit" disabled={isProcessing}>
+                  Add to Allowlist
+                </button>
               </td>
             </tr>
           </tbody>
@@ -135,6 +169,7 @@ export function ProposeLoanAllowlistModal(
       </form>
       <div className="form-buttons">
         <button
+          disabled={isProcessing}
           onClick={async () => {
             modal.close();
             await props.onClose();

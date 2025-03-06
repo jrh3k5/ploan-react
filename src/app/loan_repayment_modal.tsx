@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { UserIdentity } from "./user_identity";
 import { AssetAmount } from "./asset_amount";
@@ -11,6 +11,7 @@ import { calculateTokenAmount } from "@/lib/asset_amount";
 import { InputError } from "./input_error";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { useModalWindow } from "react-modal-global";
+import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 
 export interface LoanRepaymentModalProps {
   loan: PersonalLoan | undefined;
@@ -21,7 +22,22 @@ export interface LoanRepaymentModalProps {
 export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const appStateService = useContext(ApplicationStateServiceContext);
   const modal = useModalWindow();
+
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  if (appStateService) {
+    appStateService
+      .subscribe(async (appState) => {
+        setIsProcessing(appState.processing);
+      })
+      .then((unsubFn) => {
+        modal.on("close", async () => {
+          await unsubFn();
+        });
+      });
+  }
 
   const {
     register,
@@ -43,6 +59,10 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "loan_repayment_modal:submitRepayment",
+    );
+
     try {
       const enteredAmount = fieldValues.amount;
       const wholeAmount = calculateTokenAmount(
@@ -53,8 +73,13 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
       await props.onPaymentSubmission(wholeAmount);
 
       await props.onClose();
+
+      // Close the modal so that the user isn't presented the payment modal while signing for payments
+      modal.close();
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
   };
 
@@ -103,6 +128,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
             <span className="label">Repayment Amount:</span>
             <span className="value">
               <input
+                disabled={isProcessing}
                 type="text"
                 {...register("amount", {
                   required: true,
@@ -124,8 +150,11 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
             </span>
             {errors.amount && <InputError message="Invalid repayment amount" />}
             <div className="form-buttons">
-              <button type="submit">Submit Repayment</button>
+              <button type="submit" disabled={isProcessing}>
+                Submit Repayment
+              </button>
               <button
+                disabled={isProcessing}
                 onClick={async () => {
                   modal.close();
                   await props.onClose();

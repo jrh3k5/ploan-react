@@ -10,11 +10,12 @@ import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
 import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { ProcessingAwareProps } from "./processing_aware_props";
 
-type LoanManagementProps = {
+export interface LoanManagementProps extends ProcessingAwareProps {
   chainId: number | undefined;
   userAddress: string | undefined;
-};
+}
 
 export function LoanManagement(props: LoanManagementProps) {
   const loanService = useContext(PersonalLoanContext);
@@ -136,6 +137,7 @@ export function LoanManagement(props: LoanManagementProps) {
         onRejectLoan={onRejectBorrow}
         onAllowlistAddition={refreshAllowlist}
         onAllowlistRemoval={refreshAllowlist}
+        isProcessing={props.isProcessing}
       />
       <PendingLendingLoanList
         chainId={chainId}
@@ -148,14 +150,17 @@ export function LoanManagement(props: LoanManagementProps) {
           ]);
         }}
         onLoanProposal={refreshPendingLendingLoans}
+        isProcessing={props.isProcessing}
       />
       <BorrowingLoanList
         borrowingLoans={borrowingLoans}
         onPaymentSubmission={refreshBorrowingLoans}
+        isProcessing={props.isProcessing}
       />
       <LendingLoanList
         lendingLoans={lendingLoans}
         onLoanCancelation={refreshLendingLoans}
+        isProcessing={props.isProcessing}
       />
     </div>
   );

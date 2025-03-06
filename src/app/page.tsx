@@ -28,6 +28,8 @@ import { PublicClient, WalletClient } from "viem";
 import { switchChain } from "@wagmi/core";
 import { ModalContainer, ModalController } from "react-modal-global";
 import { Modal } from "@/lib/modal";
+import { InMemoryApplicationStateService } from "@/services/application_state_service";
+import { ApplicationStateServiceProvider } from "@/services/application_state_service_provider";
 
 // Declare outside of app so that it's not constantly building new instances
 const wagmiResolver = new WagmiEthereumAssetResolverService();
@@ -39,6 +41,7 @@ const loanService = new OnchainPersonalLoanService(
 );
 const supportedAssetResolver = new SupportedAssetResolverImpl(cachingResolver);
 const errorReporter = new InMemoryErrorReporter();
+const appStateService = new InMemoryApplicationStateService();
 
 function App() {
   const account = useAccount();
@@ -56,6 +59,7 @@ function App() {
   const [capturedError, setCapturedError] = useState<Error | undefined>(
     undefined,
   );
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const wagmiConfig = useConfig();
 
@@ -92,50 +96,58 @@ function App() {
     }, 5000);
   });
 
+  appStateService.subscribe(async (state) => {
+    await setIsProcessing(state.processing);
+  });
+
   return (
     <>
       <div className="app">
-        {capturedError && <ErrorMessage error={capturedError} />}
-        <ErrorReporterProvider errorReporter={errorReporter}>
-          {account.status === "connected" && walletClient ? (
-            <div>
-              <div className="wallet-info">
-                <span className="identity">
-                  Connected as{" "}
-                  <UserIdentity
-                    identity={new Identity(walletClient!.account.address)}
-                  />
-                </span>
-                <button type="button" onClick={() => disconnect()}>
-                  Disconnect
-                </button>
-              </div>
+        <ApplicationStateServiceProvider appStateService={appStateService}>
+          {capturedError && <ErrorMessage error={capturedError} />}
+          <ErrorReporterProvider errorReporter={errorReporter}>
+            {account.status === "connected" && walletClient ? (
+              <div>
+                <div className="wallet-info">
+                  <span className="identity">
+                    Connected as{" "}
+                    <UserIdentity
+                      identity={new Identity(walletClient!.account.address)}
+                    />
+                  </span>
+                  <button type="button" onClick={() => disconnect()}>
+                    Disconnect
+                  </button>
+                </div>
 
-              <PersonalLoanServiceProvider loanService={loanService}>
-                <SupportedAssetResolverProvider
-                  supportedAssetResolver={supportedAssetResolver}
-                >
-                  <LoanManagement
-                    chainId={walletClient?.chain?.id}
-                    userAddress={userAddress}
-                  />
-                  <ModalContainer controller={Modal} />
-                </SupportedAssetResolverProvider>
-              </PersonalLoanServiceProvider>
+                <PersonalLoanServiceProvider loanService={loanService}>
+                  <SupportedAssetResolverProvider
+                    supportedAssetResolver={supportedAssetResolver}
+                  >
+                    <LoanManagement
+                      chainId={walletClient?.chain?.id}
+                      userAddress={userAddress}
+                      isProcessing={isProcessing}
+                    />
+                    <ModalContainer controller={Modal} />
+                  </SupportedAssetResolverProvider>
+                </PersonalLoanServiceProvider>
 
-              <div className="chain-selector">
-                Select chain:
-                <ChainSelector
-                  onChainSelection={async (chainId) =>
-                    await setActiveChain(chainId)
-                  }
-                />
+                <div className="chain-selector">
+                  Select chain:
+                  <ChainSelector
+                    onChainSelection={async (chainId) =>
+                      await setActiveChain(chainId)
+                    }
+                    isProcessing={isProcessing}
+                  />
+                </div>
               </div>
-            </div>
-          ) : (
-            <WelcomePage />
-          )}
-        </ErrorReporterProvider>
+            ) : (
+              <WelcomePage />
+            )}
+          </ErrorReporterProvider>
+        </ApplicationStateServiceProvider>
       </div>
     </>
   );
