@@ -5,7 +5,7 @@ import { PersonalLoan, LoanStatus } from "@/models/personal_loan";
 import { ContractResolver } from "./contract_resolver";
 import { PersonalLoanService } from "./personal_loan_service";
 import { PublicClient, WalletClient } from "viem";
-import { ploanABI } from "./abi/ploan/abi_v0.5.0";
+import { ploanABI } from "./abi/ploan/abi_v0.6.0";
 import { Account, Chain } from "viem";
 import { poll } from "./poller";
 import { EthereumAssetResolverService } from "./ethereum_asset_resolver_service";
