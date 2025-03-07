@@ -15,8 +15,9 @@ import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { Modal } from "@/lib/modal";
 import { TokenApproval } from "./token_approval";
 import { AssetAmountPrepaid } from "./asset_amount_prepaid";
+import { ProcessingAwareProps } from "./processing_aware_props";
 
-export interface PendingLendingLoanListProps {
+export interface PendingLendingLoanListProps extends ProcessingAwareProps {
   pendingLoans: PendingLoan[];
   chainId: number | undefined;
   onLoanCancellation: (loanID: string) => Promise<void>;
@@ -91,6 +92,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
               onClose: async () => {},
             });
           }}
+          disabled={props.isProcessing}
         >
           Propose Loan
         </button>
@@ -128,6 +130,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
               <td className="actions">
                 {pendingLoan.status == PendingLoanStatusEnum.ACCEPTED && (
                   <button
+                    disabled={props.isProcessing}
                     onClick={() => {
                       if (pendingLoan.imported) {
                         return executeLoan(loanService, pendingLoan.loanID);
@@ -141,6 +144,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
                 )}
                 <button
                   onClick={() => cancelLoan(loanService, pendingLoan.loanID)}
+                  disabled={props.isProcessing}
                 >
                   Cancel Pending Lend
                 </button>

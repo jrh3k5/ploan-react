@@ -13,6 +13,7 @@ import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 import { useConfig } from "wagmi";
 import { useModalWindow } from "react-modal-global";
+import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 
 export interface ProposeLoanModalProps {
   chainId: number | undefined;
@@ -23,6 +24,7 @@ export interface ProposeLoanModalProps {
 export function ProposeLoanModal(props: ProposeLoanModalProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const appStateService = useContext(ApplicationStateServiceContext);
   const wagmiConfig = useConfig();
 
   const supportedAssetResolver = useContext(SupportedAssetResolverContext);
@@ -30,8 +32,21 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
 
   const [supportedAssets, setSupportedAssets] = useState<EthereumAsset[]>([]);
   const [isImportedLoan, setImportedLoan] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const modal = useModalWindow();
+
+  if (appStateService) {
+    appStateService
+      .subscribe(async (appState) => {
+        setIsProcessing(appState.processing);
+      })
+      .then((unsubFn) => {
+        modal.on("close", () => {
+          unsubFn();
+        });
+      });
+  }
 
   const {
     register,
@@ -70,73 +85,81 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
       return;
     }
 
-    let chosenAssetAddress = fieldValues.asset;
-    if (!chosenAssetAddress) {
-      // The form won't fill in a value on load, so assume it's the first supported asset
-      chosenAssetAddress = supportedAssets[0].address as string;
-    }
-
-    const chosenAsset = supportedAssets.find(
-      (asset) => asset.address === chosenAssetAddress,
+    const processingToken = await appStateService?.startProcessing(
+      "propose_loan_modal:proposeLoan",
     );
-    if (!chosenAsset) {
-      errorReporter.reportErrorMessage(
-        `Failed to find chosen asset for contract address: ${chosenAssetAddress}`,
-      );
-
-      return;
-    }
 
     try {
-      const tokenAmount = calculateTokenAmount(
-        fieldValues.amount,
-        chosenAsset.decimals,
-      );
-
-      let borrowerAddress = fieldValues.borrower;
-      if (!borrowerAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-        const ensAddress = await getEnsAddress(wagmiConfig, {
-          name: fieldValues.borrower,
-          chainId: mainnet.id,
-        });
-
-        if (ensAddress) {
-          borrowerAddress = ensAddress;
-        } else {
-          setError("borrower", {
-            type: "custom",
-            message: "Invalid address or ENS name",
-          });
-
-          return;
-        }
+      let chosenAssetAddress = fieldValues.asset;
+      if (!chosenAssetAddress) {
+        // The form won't fill in a value on load, so assume it's the first supported asset
+        chosenAssetAddress = supportedAssets[0].address as string;
       }
 
-      if (isImportedLoan) {
-        const paidAmount = calculateTokenAmount(
-          fieldValues.amountPaid,
+      const chosenAsset = supportedAssets.find(
+        (asset) => asset.address === chosenAssetAddress,
+      );
+      if (!chosenAsset) {
+        errorReporter.reportErrorMessage(
+          `Failed to find chosen asset for contract address: ${chosenAssetAddress}`,
+        );
+
+        return;
+      }
+
+      try {
+        const tokenAmount = calculateTokenAmount(
+          fieldValues.amount,
           chosenAsset.decimals,
         );
 
-        await loanService.proposeLoanImport(
-          fieldValues.borrower,
-          tokenAmount,
-          paidAmount,
-          chosenAssetAddress,
-        );
-      } else {
-        await loanService.proposeLoan(
-          fieldValues.borrower,
-          tokenAmount,
-          chosenAssetAddress,
-        );
+        let borrowerAddress = fieldValues.borrower;
+        if (!borrowerAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+          const ensAddress = await getEnsAddress(wagmiConfig, {
+            name: fieldValues.borrower,
+            chainId: mainnet.id,
+          });
+
+          if (ensAddress) {
+            borrowerAddress = ensAddress;
+          } else {
+            setError("borrower", {
+              type: "custom",
+              message: "Invalid address or ENS name",
+            });
+
+            return;
+          }
+        }
+
+        if (isImportedLoan) {
+          const paidAmount = calculateTokenAmount(
+            fieldValues.amountPaid,
+            chosenAsset.decimals,
+          );
+
+          await loanService.proposeLoanImport(
+            fieldValues.borrower,
+            tokenAmount,
+            paidAmount,
+            chosenAssetAddress,
+          );
+        } else {
+          await loanService.proposeLoan(
+            fieldValues.borrower,
+            tokenAmount,
+            chosenAssetAddress,
+          );
+        }
+
+        await props.onLoanProposal();
+
+        await props.onClose();
+      } catch (error) {
+        errorReporter.reportAny(error);
       }
-
-      await props.onLoanProposal();
-
-      await props.onClose();
-    } catch (error) {
-      errorReporter.reportAny(error);
+    } finally {
+      processingToken?.complete();
     }
   };
 
@@ -149,6 +172,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
             <span className="label">Borrower</span>
             <span className="value">
               <input
+                disabled={isProcessing}
                 type="text"
                 {...register("borrower", {
                   required: true,
@@ -161,6 +185,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
             <span className="label">Asset</span>
             <span className="value">
               <select
+                disabled={isProcessing}
                 {...register("asset", {
                   value: supportedAssets[0]?.address,
                 })}
@@ -180,6 +205,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
             <span className="value">
               <input
                 type="text"
+                disabled={isProcessing}
                 {...register("amount", {
                   required: true,
                   pattern: /^[0-9]*\.?[0-9]*$/,
@@ -191,6 +217,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
           </li>
           <li>
             <input
+              disabled={isProcessing}
               type="checkbox"
               {...register("isImported")}
               onClick={() => setImportedLoan(!isImportedLoan)}
@@ -201,13 +228,11 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
             </label>
           </li>
           <li>
-            <span className={"label" + (!isImportedLoan ? " disabled" : "")}>
-              Amount Already Paid
-            </span>
+            <span className="label">Amount Already Paid</span>
             <span className="value">
               <input
                 type="text"
-                disabled={!isImportedLoan}
+                disabled={isProcessing || !isImportedLoan}
                 {...register("amountPaid", {
                   required: isImportedLoan,
                   pattern: /^[0-9]*\.?[0-9]*$/,
@@ -219,9 +244,12 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
           </li>
         </ul>
         <div className="form-buttons">
-          <button type="submit">Propose</button>
+          <button type="submit" disabled={isProcessing}>
+            Propose
+          </button>
           <button
             type="button"
+            disabled={isProcessing}
             onClick={() => {
               modal.close();
               props.onClose();

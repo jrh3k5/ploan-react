@@ -2,10 +2,11 @@ import { EthereumAsset } from "@/models/asset";
 import { Identity } from "@/models/identity";
 import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { useModalWindow } from "react-modal-global";
+import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 
 export interface TokenApprovalProps {
   onCancel: () => Promise<void>;
@@ -19,13 +20,30 @@ export interface TokenApprovalProps {
 export function TokenApproval(props: TokenApprovalProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const appStateService = useContext(ApplicationStateServiceContext);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const modal = useModalWindow();
+
+  if (appStateService) {
+    appStateService
+      .subscribe(async (appState) => {
+        setIsProcessing(appState.processing);
+      })
+      .then((unsubFn) => {
+        modal.on("close", () => {
+          unsubFn();
+        });
+      });
+  }
 
   const approveTransfer = async () => {
     if (!loanService) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "token_approval:approveTransfer",
+    );
     try {
       let amountBigInt = 0n;
       if (typeof props.amount === "string") {
@@ -45,6 +63,8 @@ export function TokenApproval(props: TokenApprovalProps) {
       await props.onApprove();
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
   };
 
@@ -59,6 +79,7 @@ export function TokenApproval(props: TokenApprovalProps) {
       </div>
       <div className="form-buttons">
         <button
+          disabled={isProcessing}
           onClick={() => {
             modal.close();
             props.onCancel();
@@ -66,7 +87,9 @@ export function TokenApproval(props: TokenApprovalProps) {
         >
           Cancel Transfer
         </button>
-        <button onClick={() => approveTransfer()}>Approve Transfer</button>
+        <button onClick={() => approveTransfer()} disabled={isProcessing}>
+          Approve Transfer
+        </button>
       </div>
     </div>
   );

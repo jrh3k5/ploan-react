@@ -6,12 +6,15 @@ import { useConfig } from "wagmi";
 import { defaultChain } from "@/models/chain";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { useContext } from "react";
+import { ProcessingAwareProps } from "./processing_aware_props";
 
-export interface ChainSelectorProps {
+// ChainSelectorProps defines the properties needed by the ChainSelector component.
+export interface ChainSelectorProps extends ProcessingAwareProps {
   // onChainSelection is invoked whenever a user selects a chain
   onChainSelection: (chainId: number) => Promise<void>;
 }
 
+// ChainSelector is a component allowing a user to select the active chain.
 export function ChainSelector(props: ChainSelectorProps) {
   const wagmiConfig = useConfig();
   const currentChainId = wagmiConfig.state.chainId;
@@ -28,31 +31,27 @@ export function ChainSelector(props: ChainSelectorProps) {
     }
   }
 
+  const changeSelectedChain = async (chainId: number) => {
+    try {
+      await switchChain(wagmiConfig, { chainId: chainId as 8453 | 84532 });
+      await props.onChainSelection(chainId);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
+  };
+
   if (!isSelectableChain) {
     // Switch the user to Base by default
-    switchChain(wagmiConfig, { chainId: defaultChain.id })
-      .then(() => {
-        props.onChainSelection(defaultChain.id).catch((e) => {
-          console.warn(
-            "Failed to invoke onChainSelection on initialization to switch to default chain",
-            e,
-          );
-        });
-      })
-      .catch(errorReporter.reportError);
+    changeSelectedChain(defaultChain.id).catch(errorReporter.reportError);
   }
-
-  const changeSelectedChain = async (chainId: number) => {
-    await switchChain(wagmiConfig, { chainId: chainId as 8453 | 84532 });
-    await props.onChainSelection(chainId);
-  };
 
   return (
     <select
       id="chain-select"
-      onChange={(event) => {
+      disabled={props.isProcessing}
+      onChange={async (event) => {
         const selectedChainId = parseInt(event.target.value);
-        changeSelectedChain(selectedChainId);
+        await changeSelectedChain(selectedChainId);
       }}
       value={currentChainId.toString()}
     >

@@ -8,12 +8,15 @@ import { PersonalLoan } from "@/models/personal_loan";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { ProcessingAwareProps } from "./processing_aware_props";
 
-export interface LendingLoanListProps {
+// LendingLoanListProps describes the properties needed by the lending loan list.
+export interface LendingLoanListProps extends ProcessingAwareProps {
   lendingLoans: PersonalLoan[];
   onLoanCancelation: (loanID: string) => Promise<void>;
 }
 
+// LendingLoanList displays a list of loans that the user is the lender for
 export function LendingLoanList(props: LendingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
@@ -59,7 +62,10 @@ export function LendingLoanList(props: LendingLoanListProps) {
               </td>
               <td className="actions">
                 {lendingLoan.status === LoanStatusEnum.IN_PROGRESS && (
-                  <button onClick={() => cancelLoan(lendingLoan.loanID)}>
+                  <button
+                    disabled={props.isProcessing}
+                    onClick={() => cancelLoan(lendingLoan.loanID)}
+                  >
                     Cancel
                   </button>
                 )}

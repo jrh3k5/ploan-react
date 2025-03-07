@@ -4,10 +4,17 @@ import { getEnsName } from "@wagmi/core";
 import { mainnet } from "wagmi/chains";
 import { getConfig } from "@/wagmi";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { ProcessingAwareProps } from "./processing_aware_props";
 
 const ensCache = new Map<string, string>();
 
-export function UserIdentity(props: { identity: Identity }) {
+// UserIdentityProps describes the properties required by a UserIdentity component.
+export interface UserIdentityProps {
+  identity: Identity;
+}
+
+// UserIdentity is a component used to render out information about a user.
+export function UserIdentity(props: UserIdentityProps) {
   const [ensName, setEnsName] = useState<string | null>(null);
   const errorReporter = useContext(ErrorReporterContext);
 

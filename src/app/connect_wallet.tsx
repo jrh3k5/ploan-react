@@ -2,9 +2,9 @@
 
 import { useConnect } from "wagmi";
 import { useContext, useEffect } from "react";
-import { ErrorReporter } from "@/services/error_reporter";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 
+// ConnectWallet is a component used to offer the user options of what wallets to choose to connect with
 export function ConnectWallet() {
   const { connectors, connect, error } = useConnect();
   const errorReporter = useContext(ErrorReporterContext);

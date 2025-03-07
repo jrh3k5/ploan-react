@@ -68,7 +68,7 @@ export class OnchainPersonalLoanService implements PersonalLoanService {
 
     const thisAddress = await this.resolveContractAddress();
 
-    const approveResult = this.writeContract(
+    const approveResult = await this.writeContract(
       asset.address,
       "approve",
       [
@@ -87,7 +87,7 @@ export class OnchainPersonalLoanService implements PersonalLoanService {
         return [thisAddress, amount];
       },
       async (results) => {
-        return !!results[0];
+        return results === true;
       },
     );
 

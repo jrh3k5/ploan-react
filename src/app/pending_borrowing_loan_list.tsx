@@ -14,8 +14,9 @@ import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { Modal } from "@/lib/modal";
 import { AssetAmountPrepaid } from "./asset_amount_prepaid";
+import { ProcessingAwareProps } from "./processing_aware_props";
 
-export interface PendingBorrowingLoanListProps {
+export interface PendingBorrowingLoanListProps extends ProcessingAwareProps {
   allowList: Identity[];
   pendingBorrowingLoans: PendingLoan[];
   onAcceptBorrow: (loanID: string) => Promise<void>;
@@ -114,11 +115,17 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
               <td className="actions">
                 {pendingLoan.status ==
                   PendingLoanStatusEnum.WAITING_FOR_ACCEPTANCE && (
-                  <button onClick={() => acceptBorrow(pendingLoan.loanID)}>
+                  <button
+                    onClick={() => acceptBorrow(pendingLoan.loanID)}
+                    disabled={props.isProcessing}
+                  >
                     Accept Offer
                   </button>
                 )}
-                <button onClick={() => rejectBorrow(pendingLoan.loanID)}>
+                <button
+                  onClick={() => rejectBorrow(pendingLoan.loanID)}
+                  disabled={props.isProcessing}
+                >
                   Reject Offer
                 </button>
               </td>
