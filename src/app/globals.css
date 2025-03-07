@@ -21,6 +21,13 @@
   }
 }
 
+div.popup-layout {
+  /* override what's provided by the react-modal-global library */
+  /* it is influenced by the depth of the modal in the DOM, resulting */
+  /* in inconsistent modal widths */
+  max-width: 40vw;
+}
+
 table {
   width: 100%;
   table-layout: fixed;
