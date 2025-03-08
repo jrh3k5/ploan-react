@@ -8,12 +8,19 @@ import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { SupportedAssetResolverContext } from "@/services/supported_asset_resolver_provider";
 import { EthereumAsset } from "@/models/asset";
 import { calculateTokenAmount } from "@/lib/asset_amount";
-import { ErrorReporterContext } from "@/services/error_reporter_provider";
+import { ErrorReporterProvider } from "@/services/error_reporter_provider";
 import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 import { useConfig } from "wagmi";
 import { useModalWindow } from "react-modal-global";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
+import {
+  InMemoryErrorReporter,
+  registerErrorListener,
+} from "@/services/error_reporter";
+import { ErrorMessage } from "./error_message";
+
+const errorReporter = new InMemoryErrorReporter();
 
 export interface ProposeLoanModalProps {
   chainId: number | undefined;
@@ -23,7 +30,6 @@ export interface ProposeLoanModalProps {
 
 export function ProposeLoanModal(props: ProposeLoanModalProps) {
   const loanService = useContext(PersonalLoanContext);
-  const errorReporter = useContext(ErrorReporterContext);
   const appStateService = useContext(ApplicationStateServiceContext);
   const wagmiConfig = useConfig();
 
@@ -33,6 +39,11 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
   const [supportedAssets, setSupportedAssets] = useState<EthereumAsset[]>([]);
   const [isImportedLoan, setImportedLoan] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [capturedError, setCapturedError] = useState<Error | undefined>(
+    undefined,
+  );
+
+  registerErrorListener(errorReporter, setCapturedError);
 
   const modal = useModalWindow();
 
@@ -74,7 +85,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         setSupportedAssets(sortedAssets);
       })
       .catch(errorReporter.reportAny);
-  }, [chainId, supportedAssetResolver, errorReporter]);
+  }, [chainId, supportedAssetResolver]);
 
   const proposeLoan = async (fieldValues: FieldValues): Promise<void> => {
     if (!loanService) {
@@ -165,100 +176,103 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
 
   return (
     <div className="popup-layout">
-      <form onSubmit={handleSubmit(proposeLoan)}>
-        <h3 className="section-title">Propose Loan</h3>
-        <ul className="details">
-          <li>
-            <span className="label">Borrower</span>
-            <span className="value">
+      <ErrorReporterProvider errorReporter={errorReporter}>
+        {capturedError && <ErrorMessage error={capturedError} />}
+        <form onSubmit={handleSubmit(proposeLoan)}>
+          <h3 className="section-title">Propose Loan</h3>
+          <ul className="details">
+            <li>
+              <span className="label">Borrower</span>
+              <span className="value">
+                <input
+                  disabled={isProcessing}
+                  type="text"
+                  {...register("borrower", {
+                    required: true,
+                  })}
+                />
+                {errors.borrower && <InputError message="Invalid address" />}
+              </span>
+            </li>
+            <li>
+              <span className="label">Asset</span>
+              <span className="value">
+                <select
+                  disabled={isProcessing}
+                  {...register("asset", {
+                    value: supportedAssets[0]?.address,
+                  })}
+                >
+                  {supportedAssets.map((asset) => {
+                    return (
+                      <option key={asset.address} value={asset.address}>
+                        {asset.symbol}
+                      </option>
+                    );
+                  })}
+                </select>
+              </span>
+            </li>
+            <li>
+              <span className="label">Amount</span>
+              <span className="value">
+                <input
+                  type="text"
+                  disabled={isProcessing}
+                  {...register("amount", {
+                    required: true,
+                    pattern: /^[0-9]*\.?[0-9]*$/,
+                    min: 0,
+                  })}
+                />
+                {errors.amount && <InputError message="Invalid amount" />}
+              </span>
+            </li>
+            <li>
               <input
                 disabled={isProcessing}
-                type="text"
-                {...register("borrower", {
-                  required: true,
-                })}
+                type="checkbox"
+                {...register("isImported")}
+                onClick={() => setImportedLoan(!isImportedLoan)}
               />
-              {errors.borrower && <InputError message="Invalid address" />}
-            </span>
-          </li>
-          <li>
-            <span className="label">Asset</span>
-            <span className="value">
-              <select
-                disabled={isProcessing}
-                {...register("asset", {
-                  value: supportedAssets[0]?.address,
-                })}
-              >
-                {supportedAssets.map((asset) => {
-                  return (
-                    <option key={asset.address} value={asset.address}>
-                      {asset.symbol}
-                    </option>
-                  );
-                })}
-              </select>
-            </span>
-          </li>
-          <li>
-            <span className="label">Amount</span>
-            <span className="value">
-              <input
-                type="text"
-                disabled={isProcessing}
-                {...register("amount", {
-                  required: true,
-                  pattern: /^[0-9]*\.?[0-9]*$/,
-                  min: 0,
-                })}
-              />
-              {errors.amount && <InputError message="Invalid amount" />}
-            </span>
-          </li>
-          <li>
-            <input
+              <label htmlFor="isImported">
+                This loan is being imported from a pre-existing agreement and
+                does not require the transmission of any funds upon execution.
+              </label>
+            </li>
+            <li>
+              <span className="label">Amount Already Paid</span>
+              <span className="value">
+                <input
+                  type="text"
+                  disabled={isProcessing || !isImportedLoan}
+                  {...register("amountPaid", {
+                    required: isImportedLoan,
+                    pattern: /^[0-9]*\.?[0-9]*$/,
+                    min: 0,
+                  })}
+                />
+                {errors.amountPaid && <InputError message="Invalid amount" />}
+              </span>
+            </li>
+          </ul>
+          <div className="form-buttons">
+            <button type="submit" disabled={isProcessing}>
+              Propose
+            </button>
+            <button
+              type="button"
               disabled={isProcessing}
-              type="checkbox"
-              {...register("isImported")}
-              onClick={() => setImportedLoan(!isImportedLoan)}
-            />
-            <label htmlFor="isImported">
-              This loan is being imported from a pre-existing agreement and does
-              not require the transmission of any funds upon execution.
-            </label>
-          </li>
-          <li>
-            <span className="label">Amount Already Paid</span>
-            <span className="value">
-              <input
-                type="text"
-                disabled={isProcessing || !isImportedLoan}
-                {...register("amountPaid", {
-                  required: isImportedLoan,
-                  pattern: /^[0-9]*\.?[0-9]*$/,
-                  min: 0,
-                })}
-              />
-              {errors.amountPaid && <InputError message="Invalid amount" />}
-            </span>
-          </li>
-        </ul>
-        <div className="form-buttons">
-          <button type="submit" disabled={isProcessing}>
-            Propose
-          </button>
-          <button
-            type="button"
-            disabled={isProcessing}
-            onClick={() => {
-              modal.close();
-              props.onClose();
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+              onClick={() => {
+                modal.close();
+                props.onClose();
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </ErrorReporterProvider>
     </div>
   );
 }
