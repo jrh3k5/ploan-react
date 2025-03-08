@@ -7,13 +7,20 @@ import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { Identity } from "@/models/identity";
 import { UserIdentity } from "./user_identity";
-import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { useConfig } from "wagmi";
 import { normalize } from "viem/ens";
 import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 import { useModalWindow } from "react-modal-global";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
+import { ErrorReporterProvider } from "@/services/error_reporter_provider";
+import {
+  InMemoryErrorReporter,
+  registerErrorListener,
+} from "@/services/error_reporter";
+import { ErrorMessage } from "./error_message";
+
+const errorReporter = new InMemoryErrorReporter();
 
 export interface ProposeLoanAllowlistModalProps {
   allowList: Identity[];
@@ -26,12 +33,16 @@ export function ProposeLoanAllowlistModal(
   props: ProposeLoanAllowlistModalProps,
 ) {
   const loanService = useContext(PersonalLoanContext);
-  const errorReporter = useContext(ErrorReporterContext);
   const appStateService = useContext(ApplicationStateServiceContext);
   const wagmiConfig = useConfig();
   const modal = useModalWindow();
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [capturedError, setCapturedError] = useState<Error | undefined>(
+    undefined,
+  );
+
+  registerErrorListener(errorReporter, setCapturedError);
 
   if (appStateService) {
     appStateService
@@ -120,64 +131,67 @@ export function ProposeLoanAllowlistModal(
 
   return (
     <div className="popup-layout">
-      <form onSubmit={handleSubmit(addToAllowlist)}>
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {props.allowList.map((identity) => (
-              <tr key={identity.address}>
-                <td className="address-container">
-                  <UserIdentity identity={identity} />
+      <ErrorReporterProvider errorReporter={errorReporter}>
+        {capturedError && <ErrorMessage error={capturedError} />}
+        <form onSubmit={handleSubmit(addToAllowlist)}>
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {props.allowList.map((identity) => (
+                <tr key={identity.address}>
+                  <td className="address-container">
+                    <UserIdentity identity={identity} />
+                  </td>
+                  <td className="actions">
+                    <button
+                      onClick={() => removeAllowedUser(identity)}
+                      disabled={isProcessing}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              <tr>
+                <td>
+                  <input
+                    disabled={isProcessing}
+                    {...register("allowlistedAddress", {
+                      required: true,
+                    })}
+                    type="text"
+                    placeholder="Enter user address"
+                  ></input>
+                  {errors.allowlistedAddress && (
+                    <InputError message="Invalid allowlist address provided" />
+                  )}
                 </td>
                 <td className="actions">
-                  <button
-                    onClick={() => removeAllowedUser(identity)}
-                    disabled={isProcessing}
-                  >
-                    Remove
+                  <button type="submit" disabled={isProcessing}>
+                    Add to Allowlist
                   </button>
                 </td>
               </tr>
-            ))}
-            <tr>
-              <td>
-                <input
-                  disabled={isProcessing}
-                  {...register("allowlistedAddress", {
-                    required: true,
-                  })}
-                  type="text"
-                  placeholder="Enter user address"
-                ></input>
-                {errors.allowlistedAddress && (
-                  <InputError message="Invalid allowlist address provided" />
-                )}
-              </td>
-              <td className="actions">
-                <button type="submit" disabled={isProcessing}>
-                  Add to Allowlist
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-      <div className="form-buttons">
-        <button
-          disabled={isProcessing}
-          onClick={async () => {
-            modal.close();
-            await props.onClose();
-          }}
-        >
-          Close
-        </button>
-      </div>
+            </tbody>
+          </table>
+        </form>
+        <div className="form-buttons">
+          <button
+            disabled={isProcessing}
+            onClick={async () => {
+              modal.close();
+              await props.onClose();
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </ErrorReporterProvider>
     </div>
   );
 }

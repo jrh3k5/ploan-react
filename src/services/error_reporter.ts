@@ -1,3 +1,23 @@
+import { SetStateAction } from "react";
+
+// registerErrorListener provides a common means of subscribing to an error, with a timeout to eventually clear the error.
+export function registerErrorListener(
+  errorReporter: ErrorReportListenerRegistry,
+  errorSetter: (error: Error | undefined) => void,
+) {
+  errorReporter.registerErrorListener(async (error: Error) => {
+    console.error(error);
+
+    errorSetter(error);
+
+    // clear the error from the screen
+    setTimeout(() => {
+      errorSetter(undefined);
+    }, 5000);
+  });
+}
+
+// ErrorReporter defines a means of reporting errors to subscribers.
 export interface ErrorReporter {
   // reportAny attempts to report an unknown object as an error
   reportAny(error: any): Promise<void>;

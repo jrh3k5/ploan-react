@@ -19,7 +19,10 @@ import { UserIdentity } from "./user_identity";
 import { Identity } from "@/models/identity";
 import { SupportedAssetResolverImpl } from "@/services/supported_asset_resolver";
 import { defaultChain } from "@/models/chain";
-import { InMemoryErrorReporter } from "@/services/error_reporter";
+import {
+  InMemoryErrorReporter,
+  registerErrorListener,
+} from "@/services/error_reporter";
 import { ErrorReporterProvider } from "@/services/error_reporter_provider";
 import { ErrorMessage } from "./error_message";
 import { InMemoryContractResolver } from "@/services/contract_resolver";
@@ -85,16 +88,7 @@ function App() {
     }
   }, [walletClient?.account.address]);
 
-  errorReporter.registerErrorListener(async (error: Error) => {
-    console.error(error);
-
-    setCapturedError(error);
-
-    // clear the error from the screen
-    setTimeout(() => {
-      setCapturedError(undefined);
-    }, 5000);
-  });
+  registerErrorListener(errorReporter, setCapturedError);
 
   appStateService.subscribe(async (state) => {
     await setIsProcessing(state.processing);
