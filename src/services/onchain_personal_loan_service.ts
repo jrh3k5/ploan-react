@@ -614,7 +614,7 @@ export class OnchainPersonalLoanService implements PersonalLoanService {
 
   // waitForLoanExistence waits for a loan to pass an existence or non-existence check.
   async waitForLoanExistence(loanID: string, exists: boolean) {
-    await this.waitForLoanState(loanID, (loan) => (exists ? !!loan : !!loan));
+    await this.waitForLoanState(loanID, (loan) => (exists ? !!loan : !loan));
   }
 
   async waitForLoanState(

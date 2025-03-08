@@ -11,6 +11,7 @@ import { PendingLoan } from "@/models/pending_loan";
 import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { ProcessingAwareProps } from "./processing_aware_props";
+import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 
 export interface LoanManagementProps extends ProcessingAwareProps {
   chainId: number | undefined;
@@ -20,6 +21,7 @@ export interface LoanManagementProps extends ProcessingAwareProps {
 export function LoanManagement(props: LoanManagementProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const appStateService = useContext(ApplicationStateServiceContext);
 
   const chainId = props.chainId;
   const userAddress = props.userAddress;
@@ -39,66 +41,91 @@ export function LoanManagement(props: LoanManagementProps) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "loan_management:refreshAllowlist",
+    );
     try {
       const allowlist = await loanService.getLoanProposalAllowlist();
       setLoanAllowlist(allowlist);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
-  }, [loanService, setLoanAllowlist, errorReporter]);
+  }, [loanService, setLoanAllowlist, errorReporter, appStateService]);
 
   const refreshBorrowingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "loan_management:refreshBorrowingLoans",
+    );
     try {
       const borrowingLoans = await loanService.getBorrowingLoans();
       setBorrowingLoans(borrowingLoans);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
-  }, [loanService, setBorrowingLoans, errorReporter]);
+  }, [loanService, setBorrowingLoans, errorReporter, appStateService]);
 
   const refreshLendingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "loan_management:refreshLendingLoans",
+    );
     try {
       const lendingLoans = await loanService.getLendingLoans();
       setLendingLoans(lendingLoans);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
-  }, [loanService, setLendingLoans, errorReporter]);
+  }, [loanService, setLendingLoans, errorReporter, appStateService]);
 
   const refreshPendingBorrowLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "loan_management:refreshPendingBorrowLoans",
+    );
     try {
       const pendingBorrowingLoans =
         await loanService.getPendingBorrowingLoans();
       setPendingBorrowingLoans(pendingBorrowingLoans);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
-  }, [loanService, setPendingBorrowingLoans, errorReporter]);
+  }, [loanService, setPendingBorrowingLoans, errorReporter, appStateService]);
 
   const refreshPendingLendingLoans = useCallback(async () => {
     if (!loanService) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "loan_management:refreshPendingLendingLoans",
+    );
     try {
       const pendingLendingLoans = await loanService.getPendingLendingLoans();
       setPendingLendingLoans(pendingLendingLoans);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
-  }, [loanService, setPendingLendingLoans, errorReporter]);
+  }, [loanService, setPendingLendingLoans, errorReporter, appStateService]);
 
   useEffect(() => {
     refreshAllowlist();
@@ -142,7 +169,9 @@ export function LoanManagement(props: LoanManagementProps) {
       <PendingLendingLoanList
         chainId={chainId}
         pendingLoans={pendingLendingLoans}
-        onLoanCancellation={refreshPendingLendingLoans}
+        onLoanCancellation={async () => {
+          await refreshPendingLendingLoans();
+        }}
         onLoanExecution={async () => {
           await Promise.all([
             refreshPendingLendingLoans(),

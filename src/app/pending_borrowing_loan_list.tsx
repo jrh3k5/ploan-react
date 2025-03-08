@@ -66,6 +66,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       <div>
         <div>
           <button
+            disabled={props.isProcessing}
             onClick={() =>
               Modal.open(ProposeLoanAllowlistModal, {
                 allowList: props.allowList,
