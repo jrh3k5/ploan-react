@@ -16,6 +16,7 @@ import { Modal } from "@/lib/modal";
 import { TokenApproval } from "./token_approval";
 import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 import { ProcessingAwareProps } from "./processing_aware_props";
+import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 
 export interface PendingLendingLoanListProps extends ProcessingAwareProps {
   pendingLoans: PendingLoan[];
@@ -29,6 +30,7 @@ export interface PendingLendingLoanListProps extends ProcessingAwareProps {
 export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const appStateService = useContext(ApplicationStateServiceContext);
 
   const pendingLoans = props.pendingLoans;
 
@@ -40,12 +42,17 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "pending_lending_loan_list:cancelLoan",
+    );
     try {
       await loanService.cancelPendingLoan(loanID);
 
       await props.onLoanCancellation(loanID);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
   };
 
@@ -71,12 +78,17 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "pending_lending_loan_list:executeLoan",
+    );
     try {
       await loanService.executeLoan(loanID);
 
       await props.onLoanExecution(loanID);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
   };
 
@@ -143,8 +155,8 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
                   </button>
                 )}
                 <button
-                  onClick={() => cancelLoan(loanService, pendingLoan.loanID)}
                   disabled={props.isProcessing}
+                  onClick={() => cancelLoan(loanService, pendingLoan.loanID)}
                 >
                   Cancel Pending Lend
                 </button>
