@@ -1,7 +1,7 @@
 import { EthereumAsset } from "@/models/asset";
 import { Identity } from "@/models/identity";
-import { AssetAmount } from "./asset_amount";
-import { UserIdentity } from "./user_identity";
+import { AssetAmount } from "../asset_amount";
+import { UserIdentity } from "../user_identity";
 import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
@@ -12,7 +12,7 @@ import {
   InMemoryErrorReporter,
   registerErrorListener,
 } from "@/services/error_reporter";
-import { ErrorMessage } from "./error_message";
+import { ErrorMessage } from "../error_message";
 
 const errorReporter = new InMemoryErrorReporter();
 

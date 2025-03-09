@@ -1,12 +1,12 @@
 "use client";
 
-import { InputError } from "./input_error";
+import { InputError } from "../input_error";
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
 import { useContext, useEffect, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { Identity } from "@/models/identity";
-import { UserIdentity } from "./user_identity";
+import { UserIdentity } from "../user_identity";
 import { useConfig } from "wagmi";
 import { normalize } from "viem/ens";
 import { mainnet } from "viem/chains";
@@ -18,7 +18,7 @@ import {
   InMemoryErrorReporter,
   registerErrorListener,
 } from "@/services/error_reporter";
-import { ErrorMessage } from "./error_message";
+import { ErrorMessage } from "../error_message";
 
 const errorReporter = new InMemoryErrorReporter();
 

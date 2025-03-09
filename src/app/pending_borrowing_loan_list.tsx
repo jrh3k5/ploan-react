@@ -8,7 +8,7 @@ import {
 } from "@/models/pending_loan";
 import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
-import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
+import { ProposeLoanAllowlistModal } from "./modal/propose_loan_allowlist_modal";
 import { PendingLoanStatus } from "./pending_loan_status";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { Modal } from "@/lib/modal";

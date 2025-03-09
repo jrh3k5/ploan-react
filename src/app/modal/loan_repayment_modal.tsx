@@ -4,11 +4,11 @@ import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
 import { useContext, useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
-import { UserIdentity } from "./user_identity";
-import { AssetAmount } from "./asset_amount";
+import { UserIdentity } from "../user_identity";
+import { AssetAmount } from "../asset_amount";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { calculateTokenAmount } from "@/lib/asset_amount";
-import { InputError } from "./input_error";
+import { InputError } from "../input_error";
 import { useModalWindow } from "react-modal-global";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 import { ErrorReporterProvider } from "@/services/error_reporter_provider";
@@ -16,7 +16,7 @@ import {
   InMemoryErrorReporter,
   registerErrorListener,
 } from "@/services/error_reporter";
-import { ErrorMessage } from "./error_message";
+import { ErrorMessage } from "../error_message";
 
 const errorReporter = new InMemoryErrorReporter();
 
