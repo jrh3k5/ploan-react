@@ -84,7 +84,9 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         );
         setSupportedAssets(sortedAssets);
       })
-      .catch(errorReporter.reportAny);
+      .catch((error) => {
+        errorReporter.reportAny(error);
+      });
   }, [chainId, supportedAssetResolver]);
 
   const proposeLoan = async (fieldValues: FieldValues): Promise<void> => {

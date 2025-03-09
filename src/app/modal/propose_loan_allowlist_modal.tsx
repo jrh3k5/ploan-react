@@ -58,7 +58,9 @@ export function ProposeLoanAllowlistModal(
   };
 
   // Do an initial load of the allowlist into the UI
-  loadAllowlist().catch(errorReporter.reportAny);
+  loadAllowlist().catch((error) => {
+    errorReporter.reportAny(error);
+  });
 
   // Break refreshing away from initial load because that attempts
   // to update components' state at the same time, which React does not like
@@ -97,7 +99,9 @@ export function ProposeLoanAllowlistModal(
 
   useEffect(() => {
     // Reload the allowlist *any* time the chain or address is changed
-    refreshAllowlist().catch(errorReporter.reportAny);
+    refreshAllowlist().catch((error) => {
+      errorReporter.reportAny(error);
+    });
   }, [loanService, errorReporter, props.chainId, props.userAddress]);
 
   const removeAllowedUser = async (identity: Identity) => {

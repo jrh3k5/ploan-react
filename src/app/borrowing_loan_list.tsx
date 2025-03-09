@@ -13,6 +13,7 @@ import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { ProcessingAwareProps } from "./processing_aware_props";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
+import { SubmitPaymentModal } from "./modal/submit_payment_modal";
 
 // BorrowingLoanListProps describes the properties required by BorrowingLoanList
 export interface BorrowingLoanListProps extends ProcessingAwareProps {
@@ -50,18 +51,17 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
     loan: PersonalLoan,
     repaymentAmount: bigint,
   ) => {
-    const token = await appStateService?.startProcessing(
-      "borrowing_loan_list:submitRepayment",
-    );
-
     try {
-      await loanService?.repayLoan(loan.loanID, repaymentAmount);
-
-      await props.onPaymentSubmission(loan.loanID);
+      // TODO: change each modal that accepts bigint | string to just string
+      await Modal.open(SubmitPaymentModal, {
+        loan: loan,
+        amount: `${repaymentAmount}`,
+        onPaymentSubmission: async (_: bigint) => {
+          await props.onPaymentSubmission(loan.loanID);
+        },
+      });
     } catch (error) {
       errorReporter.reportAny(error);
-    } finally {
-      await token?.complete();
     }
   };
 

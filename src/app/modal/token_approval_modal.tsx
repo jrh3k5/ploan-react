@@ -58,12 +58,7 @@ export function TokenApproval(props: TokenApprovalProps) {
       "token_approval:approveTransfer",
     );
     try {
-      let amountBigInt = 0n;
-      if (typeof props.amount === "string") {
-        amountBigInt = BigInt(props.amount);
-      } else {
-        amountBigInt = props.amount as bigint;
-      }
+      const amountBigInt = BigInt(props.amount);
 
       await loanService.approveTokenTransfer(
         props.recipient,
