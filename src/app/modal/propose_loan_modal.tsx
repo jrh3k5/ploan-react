@@ -1,6 +1,6 @@
 "use client";
 
-import { InputError } from "./input_error";
+import { InputError } from "../input_error";
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
 import { useContext, useEffect, useState } from "react";
@@ -18,7 +18,7 @@ import {
   InMemoryErrorReporter,
   registerErrorListener,
 } from "@/services/error_reporter";
-import { ErrorMessage } from "./error_message";
+import { ErrorMessage } from "../error_message";
 
 const errorReporter = new InMemoryErrorReporter();
 
@@ -84,7 +84,9 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         );
         setSupportedAssets(sortedAssets);
       })
-      .catch(errorReporter.reportAny);
+      .catch((error) => {
+        errorReporter.reportAny(error);
+      });
   }, [chainId, supportedAssetResolver]);
 
   const proposeLoan = async (fieldValues: FieldValues): Promise<void> => {

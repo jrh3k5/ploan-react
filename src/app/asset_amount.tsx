@@ -3,6 +3,7 @@
 import { EthereumAsset } from "@/models/asset";
 import { Asset } from "./asset";
 import { formatAssetAmount } from "@/lib/asset_amount";
+import { parseBigInt } from "@/lib/bigint";
 
 export interface AssetAmountProps {
   asset: EthereumAsset;
@@ -10,12 +11,8 @@ export interface AssetAmountProps {
 }
 
 export function AssetAmount(props: AssetAmountProps) {
-  let amountBigInt = 0n;
-  if (typeof props.amount === "string") {
-    amountBigInt = BigInt(props.amount);
-  } else {
-    amountBigInt = props.amount as bigint;
-  }
+  const amountBigInt = BigInt(props.amount);
+
   const formattedAssetAmount = formatAssetAmount(
     amountBigInt,
     props.asset.decimals,
