@@ -166,6 +166,8 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         await props.onLoanProposal();
 
         await props.onClose();
+
+        modal.close();
       } catch (error) {
         errorReporter.reportAny(error);
       }
