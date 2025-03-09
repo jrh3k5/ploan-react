@@ -41,7 +41,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
 
     const token = await appStateService?.startProcessing(
       "pending_borrowing_loan_list:acceptBorrow",
-    )
+    );
     try {
       await loanService.acceptBorrow(loanID);
 
@@ -60,7 +60,7 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
 
     const token = await appStateService?.startProcessing(
       "pending_borrowing_loan_list:rejectBorrow",
-    )
+    );
     try {
       await loanService.rejectBorrow(loanID);
 
