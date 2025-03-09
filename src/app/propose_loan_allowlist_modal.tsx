@@ -3,7 +3,7 @@
 import { InputError } from "./input_error";
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { Identity } from "@/models/identity";
 import { UserIdentity } from "./user_identity";
@@ -23,9 +23,8 @@ import { ErrorMessage } from "./error_message";
 const errorReporter = new InMemoryErrorReporter();
 
 export interface ProposeLoanAllowlistModalProps {
-  allowList: Identity[];
-  onAllowlistAddition: (identity: Identity) => Promise<void>;
-  onAllowlistRemoval: (identity: Identity) => Promise<void>;
+  chainId: number | undefined;
+  userAddress: string | undefined;
   onClose: () => Promise<void>;
 }
 
@@ -41,8 +40,38 @@ export function ProposeLoanAllowlistModal(
   const [capturedError, setCapturedError] = useState<Error | undefined>(
     undefined,
   );
+  const [allowlist, setAllowlist] = useState<Identity[]>([]);
 
   registerErrorListener(errorReporter, setCapturedError);
+
+  const loadAllowlist = async () => {
+    if (!loanService) {
+      return;
+    }
+
+    try {
+      const allowlist = await loanService.getLoanProposalAllowlist();
+      setAllowlist(allowlist);
+    } catch (error) {
+      await errorReporter.reportAny(error);
+    }
+  };
+
+  // Do an initial load of the allowlist into the UI
+  loadAllowlist().catch(errorReporter.reportAny);
+
+  // Break refreshing away from initial load because that attempts
+  // to update components' state at the same time, which React does not like
+  const refreshAllowlist = async () => {
+    const token = await appStateService?.startProcessing(
+      "propose_loan_allowlist_modal:loadAllowlist",
+    );
+    try {
+      await loadAllowlist();
+    } finally {
+      await token?.complete();
+    }
+  };
 
   if (appStateService) {
     appStateService
@@ -66,6 +95,11 @@ export function ProposeLoanAllowlistModal(
     reValidateMode: "onChange",
   });
 
+  useEffect(() => {
+    // Reload the allowlist *any* time the chain or address is changed
+    refreshAllowlist().catch(errorReporter.reportAny);
+  }, [loanService, errorReporter, props.chainId, props.userAddress]);
+
   const removeAllowedUser = async (identity: Identity) => {
     if (!loanService) {
       return;
@@ -78,7 +112,7 @@ export function ProposeLoanAllowlistModal(
     try {
       await loanService.disallowLoanProposal(identity);
 
-      await props.onAllowlistRemoval(identity);
+      await refreshAllowlist();
     } catch (error) {
       await errorReporter.reportAny(error);
     } finally {
@@ -121,7 +155,7 @@ export function ProposeLoanAllowlistModal(
 
       setValue("allowlistedAddress", "");
 
-      await props.onAllowlistAddition(newIdentity);
+      await refreshAllowlist();
     } catch (error) {
       errorReporter.reportAny(error);
     } finally {
@@ -142,7 +176,7 @@ export function ProposeLoanAllowlistModal(
               </tr>
             </thead>
             <tbody>
-              {props.allowList.map((identity) => (
+              {allowlist.map((identity) => (
                 <tr key={identity.address}>
                   <td className="address-container">
                     <UserIdentity identity={identity} />
