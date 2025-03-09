@@ -8,7 +8,6 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { PendingLoan } from "@/models/pending_loan";
-import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { ProcessingAwareProps } from "./processing_aware_props";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
@@ -34,25 +33,6 @@ export function LoanManagement(props: LoanManagementProps) {
   const [pendingLendingLoans, setPendingLendingLoans] = useState<PendingLoan[]>(
     [],
   );
-  const [loanAllowlist, setLoanAllowlist] = useState<Identity[]>([]);
-
-  const refreshAllowlist = useCallback(async () => {
-    if (!loanService) {
-      return;
-    }
-
-    const token = await appStateService?.startProcessing(
-      "loan_management:refreshAllowlist",
-    );
-    try {
-      const allowlist = await loanService.getLoanProposalAllowlist();
-      setLoanAllowlist(allowlist);
-    } catch (error) {
-      await errorReporter.reportAny(error);
-    } finally {
-      await token?.complete();
-    }
-  }, [loanService, setLoanAllowlist, errorReporter, appStateService]);
 
   const refreshBorrowingLoans = useCallback(async () => {
     if (!loanService) {
@@ -128,10 +108,6 @@ export function LoanManagement(props: LoanManagementProps) {
   }, [loanService, setPendingLendingLoans, errorReporter, appStateService]);
 
   useEffect(() => {
-    refreshAllowlist();
-  }, [loanService, refreshAllowlist, chainId, userAddress]);
-
-  useEffect(() => {
     refreshBorrowingLoans();
   }, [loanService, refreshBorrowingLoans, chainId, userAddress]);
 
@@ -158,13 +134,12 @@ export function LoanManagement(props: LoanManagementProps) {
   return (
     <div className="loan-management">
       <PendingBorrowingLoanList
-        allowList={loanAllowlist}
+        chainId={chainId}
         pendingBorrowingLoans={pendingBorrowingLoans}
         onAcceptBorrow={onAcceptBorrow}
         onRejectLoan={onRejectBorrow}
-        onAllowlistAddition={refreshAllowlist}
-        onAllowlistRemoval={refreshAllowlist}
         isProcessing={props.isProcessing}
+        userAddress={userAddress}
       />
       <PendingLendingLoanList
         chainId={chainId}

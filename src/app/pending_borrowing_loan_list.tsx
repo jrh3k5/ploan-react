@@ -10,7 +10,6 @@ import { AssetAmount } from "./asset_amount";
 import { UserIdentity } from "./user_identity";
 import { ProposeLoanAllowlistModal } from "./propose_loan_allowlist_modal";
 import { PendingLoanStatus } from "./pending_loan_status";
-import { Identity } from "@/models/identity";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { Modal } from "@/lib/modal";
 import { AssetAmountPrepaid } from "./asset_amount_prepaid";
@@ -18,12 +17,11 @@ import { ProcessingAwareProps } from "./processing_aware_props";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 
 export interface PendingBorrowingLoanListProps extends ProcessingAwareProps {
-  allowList: Identity[];
+  chainId: number | undefined;
   pendingBorrowingLoans: PendingLoan[];
+  userAddress: string | undefined;
   onAcceptBorrow: (loanID: string) => Promise<void>;
   onRejectLoan: (loanID: string) => Promise<void>;
-  onAllowlistAddition: (identity: Identity) => Promise<void>;
-  onAllowlistRemoval: (identity: Identity) => Promise<void>;
 }
 
 // PendingBorrowingLoanList provides a component to show what offers of loans to the user has received that have not yet been executed
@@ -81,10 +79,9 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
             disabled={props.isProcessing}
             onClick={() =>
               Modal.open(ProposeLoanAllowlistModal, {
-                allowList: props.allowList,
-                onAllowlistAddition: props.onAllowlistAddition,
-                onAllowlistRemoval: props.onAllowlistRemoval,
+                chainId: props.chainId,
                 onClose: async () => {},
+                userAddress: props.userAddress,
               })
             }
           >
