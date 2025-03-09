@@ -15,6 +15,7 @@ import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { Modal } from "@/lib/modal";
 import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 import { ProcessingAwareProps } from "./processing_aware_props";
+import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 
 export interface PendingBorrowingLoanListProps extends ProcessingAwareProps {
   allowList: Identity[];
@@ -29,6 +30,7 @@ export interface PendingBorrowingLoanListProps extends ProcessingAwareProps {
 export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
+  const appStateService = useContext(ApplicationStateServiceContext);
 
   const pendingBorrowingLoans = props.pendingBorrowingLoans;
 
@@ -37,12 +39,17 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "pending_borrowing_loan_list:acceptBorrow",
+    );
     try {
       await loanService.acceptBorrow(loanID);
 
       await props.onAcceptBorrow(loanID);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
   };
 
@@ -51,12 +58,17 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
       return;
     }
 
+    const token = await appStateService?.startProcessing(
+      "pending_borrowing_loan_list:rejectBorrow",
+    );
     try {
       await loanService.rejectBorrow(loanID);
 
       await props.onRejectLoan(loanID);
     } catch (error) {
       await errorReporter.reportAny(error);
+    } finally {
+      await token?.complete();
     }
   };
 
