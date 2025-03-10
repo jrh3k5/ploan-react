@@ -70,7 +70,7 @@ export function SubmitPaymentModal(props: SubmitPaymentModalProps) {
   return (
     <div className="popup-layout">
       {capturedError && <ErrorMessage error={capturedError} />}
-      Clicking "Send" will send send{" "}
+      Clicking &quot;Send&quot; will send send{" "}
       <AssetAmount amount={props.amount} asset={props.loan.asset} /> to{" "}
       <UserIdentity identity={props.loan.lender} /> for this loan.
       <div className="form-buttons">

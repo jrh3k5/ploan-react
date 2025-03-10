@@ -3,7 +3,7 @@
 import { InputError } from "../input_error";
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { Identity } from "@/models/identity";
 import { UserIdentity } from "../user_identity";
@@ -44,7 +44,7 @@ export function ProposeLoanAllowlistModal(
 
   registerErrorListener(errorReporter, setCapturedError);
 
-  const loadAllowlist = async () => {
+  const loadAllowlist = useCallback(async () => {
     if (!loanService) {
       return;
     }
@@ -55,16 +55,22 @@ export function ProposeLoanAllowlistModal(
     } catch (error) {
       await errorReporter.reportAny(error);
     }
-  };
+  }, [loanService]);
 
-  // Do an initial load of the allowlist into the UI
-  loadAllowlist().catch((error) => {
-    errorReporter.reportAny(error);
-  });
+  // Do an initial load of the allowlist into the UI.
+  // Use useEffect so that this only fires when the component
+  // mounts and not every time it renders.
+  useEffect(() => {
+    loadAllowlist();
+    // The linter is disabled because if the dependency array is removed,
+    // this is fired every time the component renders. The linter flags the
+    // empty dependency array every time, however.
+    // eslint-disable-next-line
+  }, []);
 
   // Break refreshing away from initial load because that attempts
   // to update components' state at the same time, which React does not like
-  const refreshAllowlist = async () => {
+  const refreshAllowlist = useCallback(async () => {
     const token = await appStateService?.startProcessing(
       "propose_loan_allowlist_modal:loadAllowlist",
     );
@@ -73,7 +79,7 @@ export function ProposeLoanAllowlistModal(
     } finally {
       await token?.complete();
     }
-  };
+  }, [appStateService, loadAllowlist]);
 
   if (appStateService) {
     appStateService
@@ -102,7 +108,7 @@ export function ProposeLoanAllowlistModal(
     refreshAllowlist().catch((error) => {
       errorReporter.reportAny(error);
     });
-  }, [loanService, errorReporter, props.chainId, props.userAddress]);
+  }, [loanService, refreshAllowlist, props.chainId, props.userAddress]);
 
   const removeAllowedUser = async (identity: Identity) => {
     if (!loanService) {
