@@ -3,7 +3,6 @@
 import { EthereumAsset } from "@/models/asset";
 import { Asset } from "./asset";
 import { formatAssetAmount } from "@/lib/asset_amount";
-import { parseBigInt } from "@/lib/bigint";
 
 export interface AssetAmountProps {
   asset: EthereumAsset;
