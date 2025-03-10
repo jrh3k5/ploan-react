@@ -93,6 +93,7 @@ class InMemoryProcessingToken implements ProcessingToken {
   parentService: InMemoryApplicationStateService;
   tokenId: string;
   processorId: string;
+  completed: boolean = false;
 
   constructor(
     parentService: InMemoryApplicationStateService,
@@ -104,6 +105,11 @@ class InMemoryProcessingToken implements ProcessingToken {
     this.processorId = processorId;
   }
   async complete(): Promise<void> {
+    if (this.completed) {
+      return;
+    }
+
     this.parentService.popToken(this);
+    this.completed = true;
   }
 }

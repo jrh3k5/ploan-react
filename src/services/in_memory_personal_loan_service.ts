@@ -128,7 +128,6 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       this.tokenApprovals.set(asset.address, tokenApprovals);
     }
 
-    console.log(`allowing a transfer of ${amount} to ${recipient.address}`);
     tokenApprovals.set(recipient.address, amount);
   }
 

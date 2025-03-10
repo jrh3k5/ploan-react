@@ -6,13 +6,12 @@ import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
 import { LoanStatus } from "./loan_status";
 import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
-import { LoanRepaymentModal } from "./loan_repayment_modal";
+import { LoanRepaymentModal } from "./modal/loan_repayment_modal";
 import { Modal } from "@/lib/modal";
-import { TokenApproval } from "./token_approval";
+import { TokenApproval } from "./modal/token_approval_modal";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
-import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { ProcessingAwareProps } from "./processing_aware_props";
-import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
+import { SubmitPaymentModal } from "./modal/submit_payment_modal";
 
 // BorrowingLoanListProps describes the properties required by BorrowingLoanList
 export interface BorrowingLoanListProps extends ProcessingAwareProps {
@@ -22,9 +21,7 @@ export interface BorrowingLoanListProps extends ProcessingAwareProps {
 
 // BorrowingLoanList shows the user what loans they are the borrower on
 export function BorrowingLoanList(props: BorrowingLoanListProps) {
-  const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
-  const appStateService = useContext(ApplicationStateServiceContext);
 
   const openRepaymentModal = (loan: PersonalLoan) => {
     Modal.open(LoanRepaymentModal, {
@@ -50,18 +47,16 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
     loan: PersonalLoan,
     repaymentAmount: bigint,
   ) => {
-    const token = await appStateService?.startProcessing(
-      "borrowing_loan_list:submitRepayment",
-    );
-
     try {
-      await loanService?.repayLoan(loan.loanID, repaymentAmount);
-
-      await props.onPaymentSubmission(loan.loanID);
+      await Modal.open(SubmitPaymentModal, {
+        loan: loan,
+        amount: `${repaymentAmount}`,
+        onPaymentSubmission: async (_: bigint) => {
+          await props.onPaymentSubmission(loan.loanID);
+        },
+      });
     } catch (error) {
       errorReporter.reportAny(error);
-    } finally {
-      await token?.complete();
     }
   };
 

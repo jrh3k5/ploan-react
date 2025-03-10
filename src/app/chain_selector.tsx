@@ -42,7 +42,9 @@ export function ChainSelector(props: ChainSelectorProps) {
 
   if (!isSelectableChain) {
     // Switch the user to Base by default
-    changeSelectedChain(defaultChain.id).catch(errorReporter.reportError);
+    changeSelectedChain(defaultChain.id).catch((error) => {
+      errorReporter.reportAny(error);
+    });
   }
 
   return (

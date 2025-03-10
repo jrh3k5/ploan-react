@@ -1,10 +1,9 @@
 import { EthereumAsset } from "@/models/asset";
 import { Identity } from "@/models/identity";
-import { AssetAmount } from "./asset_amount";
-import { UserIdentity } from "./user_identity";
+import { AssetAmount } from "../asset_amount";
+import { UserIdentity } from "../user_identity";
 import { useContext, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
-import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { useModalWindow } from "react-modal-global";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 import { ErrorReporterProvider } from "@/services/error_reporter_provider";
@@ -12,7 +11,7 @@ import {
   InMemoryErrorReporter,
   registerErrorListener,
 } from "@/services/error_reporter";
-import { ErrorMessage } from "./error_message";
+import { ErrorMessage } from "../error_message";
 
 const errorReporter = new InMemoryErrorReporter();
 
@@ -58,12 +57,7 @@ export function TokenApproval(props: TokenApprovalProps) {
       "token_approval:approveTransfer",
     );
     try {
-      let amountBigInt = 0n;
-      if (typeof props.amount === "string") {
-        amountBigInt = BigInt(props.amount);
-      } else {
-        amountBigInt = props.amount as bigint;
-      }
+      const amountBigInt = BigInt(props.amount);
 
       await loanService.approveTokenTransfer(
         props.recipient,
@@ -72,6 +66,11 @@ export function TokenApproval(props: TokenApprovalProps) {
       );
 
       modal.close();
+
+      // Manually complete the token so that, when the subsequent
+      // send modal is opened, it's not incorreclty kept disabled
+      // because of the token approval's processing token
+      await token?.complete();
 
       await props.onApprove();
     } catch (error) {
