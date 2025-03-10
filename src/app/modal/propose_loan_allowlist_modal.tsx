@@ -19,6 +19,8 @@ import {
   registerErrorListener,
 } from "@/services/error_reporter";
 import { ErrorMessage } from "../error_message";
+import { Modal } from "@/lib/modal";
+import { ProposeLoanAllowlistRemovalConfirmation } from "./propose_loan_allowlist_removal_confirmation_modal";
 
 const errorReporter = new InMemoryErrorReporter();
 
@@ -72,7 +74,7 @@ export function ProposeLoanAllowlistModal(
   // to update components' state at the same time, which React does not like
   const refreshAllowlist = useCallback(async () => {
     const token = await appStateService?.startProcessing(
-      "propose_loan_allowlist_modal:loadAllowlist",
+      "propose_loan_allowlist_modal:refreshAllowlist",
     );
     try {
       await loadAllowlist();
@@ -115,25 +117,20 @@ export function ProposeLoanAllowlistModal(
       return;
     }
 
-    const token = await appStateService?.startProcessing(
-      "propose_loan_allowlist_modal:removeAllowedUser",
-    );
-
-    try {
-      await loanService.disallowLoanProposal(identity);
-
-      await refreshAllowlist();
-    } catch (error) {
-      await errorReporter.reportAny(error);
-    } finally {
-      await token?.complete();
-    }
+    Modal.open(ProposeLoanAllowlistRemovalConfirmation, {
+      toRemove: identity,
+      onRemoval: async () => {
+        await refreshAllowlist();
+      },
+    });
   };
 
   const addToAllowlist = async (fieldValues: FieldValues) => {
     if (!loanService) {
       return;
     }
+
+    // TODO: add modal dialog for adding a user
 
     const token = await appStateService?.startProcessing(
       "propose_loan_allowlist_modal:addToAllowlist",
