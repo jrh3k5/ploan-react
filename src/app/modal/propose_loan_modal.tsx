@@ -2,7 +2,7 @@
 
 import { InputError } from "../input_error";
 import { useForm } from "react-hook-form";
-import { FieldValues } from "react-hook-form";
+import { FieldValues, useWatch } from "react-hook-form";
 import { useContext, useEffect, useState } from "react";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { SupportedAssetResolverContext } from "@/services/supported_asset_resolver_provider";
@@ -19,6 +19,7 @@ import {
   registerErrorListener,
 } from "@/services/error_reporter";
 import { ErrorMessage } from "../error_message";
+import { AssetAmount } from "../asset_amount";
 
 const errorReporter = new InMemoryErrorReporter();
 
@@ -40,6 +41,10 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
   const [isImportedLoan, setImportedLoan] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [capturedError, setCapturedError] = useState<Error | undefined>(
+    undefined,
+  );
+  const [currentTokenBalance, setCurrentTokenBalance] = useState<bigint>(0n);
+  const [chosenAsset, setChosenAsset] = useState<EthereumAsset | undefined>(
     undefined,
   );
 
@@ -64,6 +69,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
     handleSubmit,
     formState: { errors },
     setError,
+    control,
   } = useForm({
     reValidateMode: "onChange",
   });
@@ -83,11 +89,26 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
           a.symbol.localeCompare(b.symbol),
         );
         setSupportedAssets(sortedAssets);
+
+        // Because this triggers based on the change of the chain,
+        // clear out the previously-selected asset and replace it with the first supported asset
+        const chosenAsset = sortedAssets[0];
+        setChosenAsset(chosenAsset);
+        if (chosenAsset) {
+          loanService
+            ?.getTokenBalance(chosenAsset.address as `0x${string}`)
+            .then((balance) => {
+              setCurrentTokenBalance(balance);
+            })
+            .catch((error) => {
+              errorReporter.reportAny(error);
+            });
+        }
       })
       .catch((error) => {
         errorReporter.reportAny(error);
       });
-  }, [chainId, supportedAssetResolver]);
+  }, [chainId, loanService, supportedAssetResolver]);
 
   const proposeLoan = async (fieldValues: FieldValues): Promise<void> => {
     if (!loanService) {
@@ -178,6 +199,43 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
     }
   };
 
+  const assetWatch = useWatch({
+    name: "asset",
+    control: control,
+    exact: true,
+  });
+
+  useEffect(() => {
+    if (!assetWatch || !loanService || !supportedAssets.length) {
+      setCurrentTokenBalance(0n);
+      return;
+    }
+
+    if (supportedAssets.length === 0) {
+      setCurrentTokenBalance(0n);
+      return;
+    }
+
+    const supportedAsset = supportedAssets.find(
+      (asset) => asset.address === assetWatch,
+    );
+    if (!supportedAsset) {
+      setCurrentTokenBalance(0n);
+      return;
+    }
+
+    setChosenAsset(supportedAsset);
+
+    loanService
+      .getTokenBalance(assetWatch)
+      .then((balance) => {
+        setCurrentTokenBalance(balance);
+      })
+      .catch((error) => {
+        errorReporter.reportAny(error);
+      });
+  }, [assetWatch, loanService, supportedAssets]);
+
   return (
     <div className="popup-layout">
       <ErrorReporterProvider errorReporter={errorReporter}>
@@ -218,7 +276,21 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
               </span>
             </li>
             <li>
-              <span className="label">Amount</span>
+              <span className="label">
+                Amount {chosenAsset && "("}
+                {chosenAsset && (
+                  <AssetAmount
+                    asset={chosenAsset}
+                    amount={currentTokenBalance}
+                  />
+                )}
+                {chosenAsset && " available )"}
+                <div className="contextual-description">
+                  You can enter a value greater than what you currently have;
+                  you will only need enough to cover the loan at time of
+                  execution.
+                </div>
+              </span>
               <span className="value">
                 <input
                   type="text"
@@ -245,10 +317,13 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
               </label>
             </li>
             <li>
-              <span className="label">Amount Already Paid</span>
+              <span className={"label" + (!isImportedLoan ? " disabled" : "")}>
+                Amount Already Paid
+              </span>
               <span className="value">
                 <input
                   type="text"
+                  placeholder="0.00"
                   disabled={isProcessing || !isImportedLoan}
                   {...register("amountPaid", {
                     required: isImportedLoan,

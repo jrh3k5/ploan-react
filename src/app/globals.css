@@ -164,6 +164,14 @@ ul.details span.label {
   color: gray;
 }
 
+input:disabled {
+  color: gray;
+}
+
+input:disabled::placeholder {
+  color: gray;
+}
+
 ul.details span.value {
   display: block;
   padding-bottom: 0.5em;
@@ -171,4 +179,5 @@ ul.details span.value {
 
 .contextual-description {
   font-size: x-small;
+  font-weight: normal;
 }
