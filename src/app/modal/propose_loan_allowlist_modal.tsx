@@ -19,6 +19,9 @@ import {
   registerErrorListener,
 } from "@/services/error_reporter";
 import { ErrorMessage } from "../error_message";
+import { Modal } from "@/lib/modal";
+import { ProposeLoanAllowlistRemovalConfirmation } from "./propose_loan_allowlist_removal_confirmation_modal";
+import { ProposeLoanAllowlistAdditionConfirmation } from "./propose_loan_allowlist_addition_confirmation_modal";
 
 const errorReporter = new InMemoryErrorReporter();
 
@@ -72,7 +75,7 @@ export function ProposeLoanAllowlistModal(
   // to update components' state at the same time, which React does not like
   const refreshAllowlist = useCallback(async () => {
     const token = await appStateService?.startProcessing(
-      "propose_loan_allowlist_modal:loadAllowlist",
+      "propose_loan_allowlist_modal:refreshAllowlist",
     );
     try {
       await loadAllowlist();
@@ -115,19 +118,12 @@ export function ProposeLoanAllowlistModal(
       return;
     }
 
-    const token = await appStateService?.startProcessing(
-      "propose_loan_allowlist_modal:removeAllowedUser",
-    );
-
-    try {
-      await loanService.disallowLoanProposal(identity);
-
-      await refreshAllowlist();
-    } catch (error) {
-      await errorReporter.reportAny(error);
-    } finally {
-      await token?.complete();
-    }
+    Modal.open(ProposeLoanAllowlistRemovalConfirmation, {
+      toRemove: identity,
+      onRemoval: async () => {
+        await refreshAllowlist();
+      },
+    });
   };
 
   const addToAllowlist = async (fieldValues: FieldValues) => {
@@ -135,10 +131,13 @@ export function ProposeLoanAllowlistModal(
       return;
     }
 
+    // TODO: add modal dialog for adding a user
+
     const token = await appStateService?.startProcessing(
       "propose_loan_allowlist_modal:addToAllowlist",
     );
 
+    let toAdd: Identity;
     try {
       let address = fieldValues.allowlistedAddress;
       if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
@@ -159,71 +158,72 @@ export function ProposeLoanAllowlistModal(
         }
       }
 
-      const newIdentity = new Identity(address);
-
-      await loanService.allowLoanProposal(newIdentity);
-
-      setValue("allowlistedAddress", "");
-
-      await refreshAllowlist();
+      toAdd = new Identity(address);
     } catch (error) {
       errorReporter.reportAny(error);
+
+      return;
     } finally {
       await token?.complete();
     }
+
+    Modal.open(ProposeLoanAllowlistAdditionConfirmation, {
+      toAdd: toAdd,
+      onAddition: async () => {
+        setValue("allowlistedAddress", "");
+
+        await refreshAllowlist();
+      },
+    });
   };
 
   return (
     <div className="popup-layout">
       <ErrorReporterProvider errorReporter={errorReporter}>
         {capturedError && <ErrorMessage error={capturedError} />}
-        <form onSubmit={handleSubmit(addToAllowlist)}>
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allowlist.map((identity) => (
-                <tr key={identity.address}>
-                  <td className="address-container">
-                    <UserIdentity identity={identity} />
-                  </td>
-                  <td className="actions">
-                    <button
-                      onClick={() => removeAllowedUser(identity)}
-                      disabled={isProcessing}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td>
-                  <input
-                    disabled={isProcessing}
-                    {...register("allowlistedAddress", {
-                      required: true,
-                    })}
-                    type="text"
-                    placeholder="Enter user address"
-                  ></input>
-                  {errors.allowlistedAddress && (
-                    <InputError message="Invalid allowlist address provided" />
-                  )}
-                </td>
-                <td className="actions">
-                  <button type="submit" disabled={isProcessing}>
-                    Add to Allowlist
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </form>
+        <ul className="details">
+          <li className="details">
+            <form onSubmit={handleSubmit(addToAllowlist)}>
+              <div>
+                <span className="label">Add to Allowlist</span>
+                <span className="value">
+                  <input {...register("allowlistedAddress")} />
+                </span>
+              </div>
+              <div className="form-buttons">
+                <button type="submit" disabled={isProcessing}>
+                  Add to Allowlist
+                </button>
+              </div>
+            </form>
+          </li>
+          <li>
+            <span className="label">Manage Allowlist</span>
+            <span className="value">
+              <div>
+                <table>
+                  <tbody>
+                    {allowlist.map((identity) => (
+                      <tr key={identity.address}>
+                        <td className="address-container">
+                          <UserIdentity identity={identity} />
+                        </td>
+                        <td className="actions single-item">
+                          <button
+                            onClick={() => removeAllowedUser(identity)}
+                            disabled={isProcessing}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </span>
+          </li>
+        </ul>
         <div className="form-buttons">
           <button
             disabled={isProcessing}

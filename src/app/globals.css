@@ -94,6 +94,12 @@ td.status {
   text-align: center;
 }
 
+/* styling of a container of buttons for a single item in a table */
+td.actions.single-item {
+  text-align: right;
+  vertical-align: top;
+}
+
 td.actions {
   text-align: center;
   vertical-align: top;
