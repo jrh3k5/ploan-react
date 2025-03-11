@@ -1,4 +1,4 @@
-import { SetStateAction } from "react";
+import { TransactionExecutionError } from "viem";
 
 // registerErrorListener provides a common means of subscribing to an error, with a timeout to eventually clear the error.
 export function registerErrorListener(
@@ -8,7 +8,12 @@ export function registerErrorListener(
   errorReporter.registerErrorListener(async (error: Error) => {
     console.error(error);
 
-    errorSetter(error);
+    const txError = error as TransactionExecutionError;
+    if (txError?.details === "User rejected the request.") {
+      errorSetter(new Error("Transaction was rejected by the user."));
+    } else {
+      errorSetter(error);
+    }
 
     // clear the error from the screen
     setTimeout(() => {
