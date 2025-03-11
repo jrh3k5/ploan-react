@@ -1,6 +1,5 @@
 "use client";
 
-import { InputError } from "../input_error";
 import { useForm } from "react-hook-form";
 import { FieldValues } from "react-hook-form";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -13,17 +12,10 @@ import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 import { useModalWindow } from "react-modal-global";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
-import { ErrorReporterProvider } from "@/services/error_reporter_provider";
-import {
-  InMemoryErrorReporter,
-  registerErrorListener,
-} from "@/services/error_reporter";
-import { ErrorMessage } from "../error_message";
 import { Modal } from "@/lib/modal";
 import { ProposeLoanAllowlistRemovalConfirmation } from "./propose_loan_allowlist_removal_confirmation_modal";
 import { ProposeLoanAllowlistAdditionConfirmation } from "./propose_loan_allowlist_addition_confirmation_modal";
-
-const errorReporter = new InMemoryErrorReporter();
+import { ModalWrapper } from "./modal_wrapper";
 
 export interface ProposeLoanAllowlistModalProps {
   chainId: number | undefined;
@@ -40,12 +32,8 @@ export function ProposeLoanAllowlistModal(
   const modal = useModalWindow();
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const [capturedError, setCapturedError] = useState<Error | undefined>(
-    undefined,
-  );
+  const [capturedError, setCapturedError] = useState<any>(undefined);
   const [allowlist, setAllowlist] = useState<Identity[]>([]);
-
-  registerErrorListener(errorReporter, setCapturedError);
 
   const loadAllowlist = useCallback(async () => {
     if (!loanService) {
@@ -56,7 +44,7 @@ export function ProposeLoanAllowlistModal(
       const allowlist = await loanService.getLoanProposalAllowlist();
       setAllowlist(allowlist);
     } catch (error) {
-      await errorReporter.reportAny(error);
+      setCapturedError(error);
     }
   }, [loanService]);
 
@@ -109,7 +97,7 @@ export function ProposeLoanAllowlistModal(
   useEffect(() => {
     // Reload the allowlist *any* time the chain or address is changed
     refreshAllowlist().catch((error) => {
-      errorReporter.reportAny(error);
+      setCapturedError(error);
     });
   }, [loanService, refreshAllowlist, props.chainId, props.userAddress]);
 
@@ -160,7 +148,7 @@ export function ProposeLoanAllowlistModal(
 
       toAdd = new Identity(address);
     } catch (error) {
-      errorReporter.reportAny(error);
+      setCapturedError(error);
 
       return;
     } finally {
@@ -178,64 +166,61 @@ export function ProposeLoanAllowlistModal(
   };
 
   return (
-    <div className="popup-layout">
-      <ErrorReporterProvider errorReporter={errorReporter}>
-        {capturedError && <ErrorMessage error={capturedError} />}
-        <ul className="details">
-          <li className="details">
-            <form onSubmit={handleSubmit(addToAllowlist)}>
-              <div>
-                <span className="label">Add to Allowlist</span>
-                <span className="value">
-                  <input {...register("allowlistedAddress")} />
-                </span>
-              </div>
-              <div className="form-buttons">
-                <button type="submit" disabled={isProcessing}>
-                  Add to Allowlist
-                </button>
-              </div>
-            </form>
-          </li>
-          <li>
-            <span className="label">Manage Allowlist</span>
-            <span className="value">
-              <div>
-                <table>
-                  <tbody>
-                    {allowlist.map((identity) => (
-                      <tr key={identity.address}>
-                        <td className="address-container">
-                          <UserIdentity identity={identity} />
-                        </td>
-                        <td className="actions single-item">
-                          <button
-                            onClick={() => removeAllowedUser(identity)}
-                            disabled={isProcessing}
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </span>
-          </li>
-        </ul>
-        <div className="form-buttons">
-          <button
-            disabled={isProcessing}
-            onClick={async () => {
-              modal.close();
-              await props.onClose();
-            }}
-          >
-            Close
-          </button>
-        </div>
-      </ErrorReporterProvider>
-    </div>
+    <ModalWrapper reportedError={capturedError}>
+      <ul className="details">
+        <li className="details">
+          <form onSubmit={handleSubmit(addToAllowlist)}>
+            <div>
+              <span className="label">Add to Allowlist</span>
+              <span className="value">
+                <input {...register("allowlistedAddress")} />
+              </span>
+            </div>
+            <div className="form-buttons">
+              <button type="submit" disabled={isProcessing}>
+                Add to Allowlist
+              </button>
+            </div>
+          </form>
+        </li>
+        <li>
+          <span className="label">Manage Allowlist</span>
+          <span className="value">
+            <div>
+              <table>
+                <tbody>
+                  {allowlist.map((identity) => (
+                    <tr key={identity.address}>
+                      <td className="address-container">
+                        <UserIdentity identity={identity} />
+                      </td>
+                      <td className="actions single-item">
+                        <button
+                          onClick={() => removeAllowedUser(identity)}
+                          disabled={isProcessing}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </span>
+        </li>
+      </ul>
+      <div className="form-buttons">
+        <button
+          disabled={isProcessing}
+          onClick={async () => {
+            modal.close();
+            await props.onClose();
+          }}
+        >
+          Close
+        </button>
+      </div>
+    </ModalWrapper>
   );
 }

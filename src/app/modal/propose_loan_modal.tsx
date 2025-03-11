@@ -20,8 +20,7 @@ import {
 } from "@/services/error_reporter";
 import { ErrorMessage } from "../error_message";
 import { AssetAmount } from "../asset_amount";
-
-const errorReporter = new InMemoryErrorReporter();
+import { ModalWrapper } from "./modal_wrapper";
 
 export interface ProposeLoanModalProps {
   chainId: number | undefined;
@@ -40,15 +39,11 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
   const [supportedAssets, setSupportedAssets] = useState<EthereumAsset[]>([]);
   const [isImportedLoan, setImportedLoan] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [capturedError, setCapturedError] = useState<Error | undefined>(
-    undefined,
-  );
+  const [capturedError, setCapturedError] = useState<any>(undefined);
   const [currentTokenBalance, setCurrentTokenBalance] = useState<bigint>(0n);
   const [chosenAsset, setChosenAsset] = useState<EthereumAsset | undefined>(
     undefined,
   );
-
-  registerErrorListener(errorReporter, setCapturedError);
 
   const modal = useModalWindow();
 
@@ -101,12 +96,12 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
               setCurrentTokenBalance(balance);
             })
             .catch((error) => {
-              errorReporter.reportAny(error);
+              setCapturedError(error);
             });
         }
       })
       .catch((error) => {
-        errorReporter.reportAny(error);
+        setCapturedError(error);
       });
   }, [chainId, loanService, supportedAssetResolver]);
 
@@ -134,7 +129,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         (asset) => asset.address === chosenAssetAddress,
       );
       if (!chosenAsset) {
-        errorReporter.reportErrorMessage(
+        setCapturedError(
           `Failed to find chosen asset for contract address: ${chosenAssetAddress}`,
         );
 
@@ -150,7 +145,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         let borrowerAddress = fieldValues.borrower;
         if (!borrowerAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
           const ensAddress = await getEnsAddress(wagmiConfig, {
-            name: fieldValues.borrower,
+            name: borrowerAddress,
             chainId: mainnet.id,
           });
 
@@ -173,14 +168,14 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
           );
 
           await loanService.proposeLoanImport(
-            fieldValues.borrower,
+            borrowerAddress,
             tokenAmount,
             paidAmount,
             chosenAssetAddress,
           );
         } else {
           await loanService.proposeLoan(
-            fieldValues.borrower,
+            borrowerAddress,
             tokenAmount,
             chosenAssetAddress,
           );
@@ -192,7 +187,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
 
         modal.close();
       } catch (error) {
-        errorReporter.reportAny(error);
+        setCapturedError(error);
       }
     } finally {
       processingToken?.complete();
@@ -232,126 +227,119 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
         setCurrentTokenBalance(balance);
       })
       .catch((error) => {
-        errorReporter.reportAny(error);
+        setCapturedError(error);
       });
   }, [assetWatch, loanService, supportedAssets]);
 
   return (
-    <div className="popup-layout">
-      <ErrorReporterProvider errorReporter={errorReporter}>
-        {capturedError && <ErrorMessage error={capturedError} />}
-        <form onSubmit={handleSubmit(proposeLoan)}>
-          <h3 className="section-title">Propose Loan</h3>
-          <ul className="details">
-            <li>
-              <span className="label">Borrower</span>
-              <span className="value">
-                <input
-                  disabled={isProcessing}
-                  type="text"
-                  {...register("borrower", {
-                    required: true,
-                  })}
-                />
-                {errors.borrower && <InputError message="Invalid address" />}
-              </span>
-            </li>
-            <li>
-              <span className="label">Asset</span>
-              <span className="value">
-                <select
-                  disabled={isProcessing}
-                  {...register("asset", {
-                    value: supportedAssets[0]?.address,
-                  })}
-                >
-                  {supportedAssets.map((asset) => {
-                    return (
-                      <option key={asset.address} value={asset.address}>
-                        {asset.symbol}
-                      </option>
-                    );
-                  })}
-                </select>
-              </span>
-            </li>
-            <li>
-              <span className="label">
-                Amount {chosenAsset && "("}
-                {chosenAsset && (
-                  <AssetAmount
-                    asset={chosenAsset}
-                    amount={currentTokenBalance}
-                  />
-                )}
-                {chosenAsset && " available )"}
-                <div className="contextual-description">
-                  You can enter a value greater than what you currently have;
-                  you will only need enough to cover the loan at time of
-                  execution.
-                </div>
-              </span>
-              <span className="value">
-                <input
-                  type="text"
-                  disabled={isProcessing}
-                  {...register("amount", {
-                    required: true,
-                    pattern: /^[0-9]*\.?[0-9]*$/,
-                    min: 0,
-                  })}
-                />
-                {errors.amount && <InputError message="Invalid amount" />}
-              </span>
-            </li>
-            <li>
+    <ModalWrapper reportedError={capturedError}>
+      <form onSubmit={handleSubmit(proposeLoan)}>
+        <h3 className="section-title">Propose Loan</h3>
+        <ul className="details">
+          <li>
+            <span className="label">Borrower</span>
+            <span className="value">
               <input
                 disabled={isProcessing}
-                type="checkbox"
-                {...register("isImported")}
-                onClick={() => setImportedLoan(!isImportedLoan)}
+                type="text"
+                {...register("borrower", {
+                  required: true,
+                })}
               />
-              <label htmlFor="isImported">
-                This loan is being imported from a pre-existing agreement and
-                does not require the transmission of any funds upon execution.
-              </label>
-            </li>
-            <li>
-              <span className={"label" + (!isImportedLoan ? " disabled" : "")}>
-                Amount Already Paid
-              </span>
-              <span className="value">
-                <input
-                  type="text"
-                  placeholder="0.00"
-                  disabled={isProcessing || !isImportedLoan}
-                  {...register("amountPaid", {
-                    required: isImportedLoan,
-                    pattern: /^[0-9]*\.?[0-9]*$/,
-                    min: 0,
-                  })}
-                />
-                {errors.amountPaid && <InputError message="Invalid amount" />}
-              </span>
-            </li>
-          </ul>
-          <div className="form-buttons">
-            <button type="submit" disabled={isProcessing}>
-              Propose
-            </button>
-            <button
-              type="button"
+              {errors.borrower && <InputError message="Invalid address" />}
+            </span>
+          </li>
+          <li>
+            <span className="label">Asset</span>
+            <span className="value">
+              <select
+                disabled={isProcessing}
+                {...register("asset", {
+                  value: supportedAssets[0]?.address,
+                })}
+              >
+                {supportedAssets.map((asset) => {
+                  return (
+                    <option key={asset.address} value={asset.address}>
+                      {asset.symbol}
+                    </option>
+                  );
+                })}
+              </select>
+            </span>
+          </li>
+          <li>
+            <span className="label">
+              Amount {chosenAsset && "("}
+              {chosenAsset && (
+                <AssetAmount asset={chosenAsset} amount={currentTokenBalance} />
+              )}
+              {chosenAsset && " available )"}
+              <div className="contextual-description">
+                You can enter a value greater than what you currently have; you
+                will only need enough to cover the loan at time of execution.
+              </div>
+            </span>
+            <span className="value">
+              <input
+                type="text"
+                disabled={isProcessing}
+                {...register("amount", {
+                  required: true,
+                  pattern: /^[0-9]*\.?[0-9]*$/,
+                  min: 0,
+                })}
+              />
+              {errors.amount && <InputError message="Invalid amount" />}
+            </span>
+          </li>
+          <li>
+            <input
               disabled={isProcessing}
-              onClick={() => {
-                modal.close();
-                props.onClose();
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </ErrorReporterProvider>
-    </div>
+              type="checkbox"
+              {...register("isImported")}
+              onClick={() => setImportedLoan(!isImportedLoan)}
+            />
+            <label htmlFor="isImported">
+              This loan is being imported from a pre-existing agreement and does
+              not require the transmission of any funds upon execution.
+            </label>
+          </li>
+          <li>
+            <span className={"label" + (!isImportedLoan ? " disabled" : "")}>
+              Amount Already Paid
+            </span>
+            <span className="value">
+              <input
+                type="text"
+                placeholder="0.00"
+                disabled={isProcessing || !isImportedLoan}
+                {...register("amountPaid", {
+                  required: isImportedLoan,
+                  pattern: /^[0-9]*\.?[0-9]*$/,
+                  min: 0,
+                })}
+              />
+              {errors.amountPaid && <InputError message="Invalid amount" />}
+            </span>
+          </li>
+        </ul>
+        <div className="form-buttons">
+          <button
+            type="button"
+            disabled={isProcessing}
+            onClick={() => {
+              modal.close();
+              props.onClose();
+            }}
+          >
+            Cancel
+          </button>
+          <button type="submit" disabled={isProcessing}>
+            Propose
+          </button>
+        </div>
+      </form>
+    </ModalWrapper>
   );
 }

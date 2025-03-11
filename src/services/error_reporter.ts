@@ -8,12 +8,7 @@ export function registerErrorListener(
   errorReporter.registerErrorListener(async (error: Error) => {
     console.error(error);
 
-    const txError = error as TransactionExecutionError;
-    if (txError?.details === "User rejected the request.") {
-      errorSetter(new Error("Transaction was rejected by the user."));
-    } else {
-      errorSetter(error);
-    }
+    errorSetter(error);
 
     // clear the error from the screen
     setTimeout(() => {

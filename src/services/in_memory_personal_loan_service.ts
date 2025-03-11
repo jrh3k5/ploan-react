@@ -157,6 +157,31 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     }
   }
 
+  async deleteLoan(loanID: string): Promise<void> {
+    const loan = await this.activeLoans?.find((loan) => loan.loanID === loanID);
+    if (!loan) {
+      return;
+    }
+
+    if (
+      loan.status !== LoanStatus.COMPLETED &&
+      loan.status !== LoanStatus.CANCELED
+    ) {
+      throw new Error("Loan must be completed or canceled to be deleted");
+    }
+
+    const activeLoans = await this.getOrInitActiveLoans();
+
+    for (let i = activeLoans.length - 1; i >= 0; i--) {
+      if (activeLoans[i].loanID === loanID) {
+        // create a new array except with activeLoans[i] removed
+        // this needs to be a new array to trigger a refresh
+        activeLoans.splice(i, 1);
+        this.activeLoans = activeLoans;
+      }
+    }
+  }
+
   async disallowLoanProposal(identity: Identity): Promise<void> {
     if (!this.userAddress) {
       throw new Error(

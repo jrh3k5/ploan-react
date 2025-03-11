@@ -88,6 +88,31 @@ export const ploanABI = [
         name: "loanId",
         type: "uint256",
       },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "lender",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "borrower",
+        type: "address",
+      },
+    ],
+    name: "LoanDeleted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "loanId",
+        type: "uint256",
+      },
       { indexed: true, internalType: "address", name: "user", type: "address" },
     ],
     name: "LoanDisassociated",
@@ -267,6 +292,13 @@ export const ploanABI = [
   {
     inputs: [{ internalType: "uint256", name: "loanId", type: "uint256" }],
     name: "commitToLoan",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "loanId", type: "uint256" }],
+    name: "deleteLoan",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

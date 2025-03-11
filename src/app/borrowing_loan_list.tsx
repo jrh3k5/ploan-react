@@ -60,6 +60,10 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
     }
   };
 
+  const deleteLoan = async (loan: PersonalLoan) => {
+    // TODO: fill this out
+  };
+
   return (
     <div className="loan-grouping">
       <h3>Loans You Owe On ({props.borrowingLoans.length})</h3>
@@ -85,12 +89,21 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
                 <LoanStatus loan={borrowingLoan} />
               </td>
               <td className="actions">
-                {borrowingLoan.status == LoanStatusEnum.IN_PROGRESS && (
+                {borrowingLoan.status === LoanStatusEnum.IN_PROGRESS && (
                   <button
                     onClick={() => openRepaymentModal(borrowingLoan)}
                     disabled={props.isProcessing}
                   >
                     Repay {borrowingLoan.asset.symbol}
+                  </button>
+                )}
+                {(borrowingLoan.status == LoanStatusEnum.CANCELED ||
+                  borrowingLoan.status === LoanStatusEnum.COMPLETED) && (
+                  <button
+                    onClick={() => openRepaymentModal(borrowingLoan)}
+                    disabled={props.isProcessing}
+                  >
+                    Delete
                   </button>
                 )}
               </td>
