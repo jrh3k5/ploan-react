@@ -50,6 +50,9 @@ export interface PersonalLoanService {
   // as the lender and have not yet been accepted by the borrower.
   getPendingLendingLoans(): Promise<PendingLoan[]>;
 
+  // getTokenBalance gets the balance of the given token.
+  getTokenBalance(contractAddress: `0x${string}`): Promise<bigint>;
+
   // proposeoan proposes a new loan.
   // Use importLoan to import an existing loan.
   proposeLoan(

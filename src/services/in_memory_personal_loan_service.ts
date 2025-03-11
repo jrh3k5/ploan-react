@@ -430,6 +430,11 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     );
   }
 
+  async getTokenBalance(contractAddress: `0x${string}`): Promise<bigint> {
+    // for now, don't support token balances
+    return 0n;
+  }
+
   async proposeLoan(
     borrowerAddress: string,
     amount: bigint,

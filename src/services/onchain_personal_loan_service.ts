@@ -371,6 +371,39 @@ export class OnchainPersonalLoanService implements PersonalLoanService {
       .map((l) => l.asPendingLoan());
   }
 
+  async getTokenBalance(contractAddress: `0x${string}`): Promise<bigint> {
+    const canRead = await this.canRead();
+    if (!canRead) {
+      console.debug(
+        "Not yet in a state to read; returning an empty token balance",
+      );
+
+      return 0n;
+    }
+
+    const currentAccount = await this.getCurrentAccount();
+
+    return await this.readContract(
+      contractAddress,
+      "balanceOf",
+      [
+        {
+          inputs: [{ name: "_owner", type: "address" }],
+          name: "balanceOf",
+          outputs: [{ name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+      async () => {
+        return [currentAccount!.address];
+      },
+      async (result) => {
+        return BigInt(result);
+      },
+    );
+  }
+
   async proposeLoan(
     borrowerAddress: string,
     amount: bigint,
