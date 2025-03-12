@@ -18,7 +18,7 @@ import { DeleteLoanModal } from "./modal/delete_loan_modal";
 export interface BorrowingLoanListProps extends ProcessingAwareProps {
   borrowingLoans: PersonalLoan[]; // the loans to be shown
   onPaymentSubmission: (loanID: string) => Promise<void>; // invoked upon submission of payment for a loan
-  onLoanDeletion: (loanID: string) => Promise<void>;
+  onLoanDeletion: (loanID: string) => Promise<void>; // invoked upon deletion of a loan
 }
 
 // BorrowingLoanList shows the user what loans they are the borrower on

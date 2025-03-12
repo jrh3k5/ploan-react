@@ -165,6 +165,7 @@ export function LoanManagement(props: LoanManagementProps) {
       <LendingLoanList
         lendingLoans={lendingLoans}
         onLoanCancelation={refreshLendingLoans}
+        onLoanDeletion={refreshLendingLoans}
         isProcessing={props.isProcessing}
       />
     </div>

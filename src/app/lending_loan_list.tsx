@@ -10,11 +10,14 @@ import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { ProcessingAwareProps } from "./processing_aware_props";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
+import { Modal } from "@/lib/modal";
+import { DeleteLoanModal } from "./modal/delete_loan_modal";
 
 // LendingLoanListProps describes the properties needed by the lending loan list.
 export interface LendingLoanListProps extends ProcessingAwareProps {
   lendingLoans: PersonalLoan[];
   onLoanCancelation: (loanID: string) => Promise<void>;
+  onLoanDeletion: (loanID: string) => Promise<void>; // invoked upon deletion of a loan
 }
 
 // LendingLoanList displays a list of loans that the user is the lender for
@@ -42,6 +45,15 @@ export function LendingLoanList(props: LendingLoanListProps) {
     } finally {
       await token?.complete();
     }
+  };
+
+  const openLoanDeletionModal = (loan: PersonalLoan) => {
+    Modal.open(DeleteLoanModal, {
+      loan: loan,
+      onDeletion: async () => {
+        await props.onLoanDeletion(loan.loanID);
+      },
+    });
   };
 
   return (
@@ -75,6 +87,15 @@ export function LendingLoanList(props: LendingLoanListProps) {
                     onClick={() => cancelLoan(lendingLoan.loanID)}
                   >
                     Cancel
+                  </button>
+                )}
+                {(lendingLoan.status == LoanStatusEnum.CANCELED ||
+                  lendingLoan.status === LoanStatusEnum.COMPLETED) && (
+                  <button
+                    onClick={() => openLoanDeletionModal(lendingLoan)}
+                    disabled={props.isProcessing}
+                  >
+                    Delete
                   </button>
                 )}
               </td>
