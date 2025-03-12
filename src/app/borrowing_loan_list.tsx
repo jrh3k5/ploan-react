@@ -13,9 +13,7 @@ import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { ProcessingAwareProps } from "./processing_aware_props";
 import { SubmitPaymentModal } from "./modal/submit_payment_modal";
 import { DeleteLoanModal } from "./modal/delete_loan_modal";
-import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
-import { Amarante } from "next/font/google";
 
 // BorrowingLoanListProps describes the properties required by BorrowingLoanList
 export interface BorrowingLoanListProps extends ProcessingAwareProps {
