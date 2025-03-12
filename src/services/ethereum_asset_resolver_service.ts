@@ -5,6 +5,6 @@ export interface EthereumAssetResolverService {
   // getAsset resolves an Ethereum asset by contract address on the given chain.
   getAsset(
     chainId: number,
-    contractAddress: string,
+    contractAddress: `0x${string}`,
   ): Promise<EthereumAsset | undefined>;
 }

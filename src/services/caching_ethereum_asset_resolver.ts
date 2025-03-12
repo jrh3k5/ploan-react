@@ -13,7 +13,7 @@ export class CachingEthereumAssetResolver
 
   async getAsset(
     chainId: number,
-    contractAddress: string,
+    contractAddress: `0x${string}`,
   ): Promise<EthereumAsset | undefined> {
     const cacheKey = `${chainId}:${contractAddress.toLowerCase()}`;
 

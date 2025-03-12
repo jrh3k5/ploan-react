@@ -13,6 +13,7 @@ import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { ProcessingAwareProps } from "./processing_aware_props";
 import { SubmitPaymentModal } from "./modal/submit_payment_modal";
 import { DeleteLoanModal } from "./modal/delete_loan_modal";
+import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 
 // BorrowingLoanListProps describes the properties required by BorrowingLoanList
 export interface BorrowingLoanListProps extends ProcessingAwareProps {
@@ -23,6 +24,7 @@ export interface BorrowingLoanListProps extends ProcessingAwareProps {
 
 // BorrowingLoanList shows the user what loans they are the borrower on
 export function BorrowingLoanList(props: BorrowingLoanListProps) {
+  const loanService = useContext(PersonalLoanContext);
   const errorReporter = useContext(ErrorReporterContext);
 
   const openRepaymentModal = (loan: PersonalLoan) => {
@@ -30,7 +32,20 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
       loan: loan,
       onClose: async () => {},
       onPaymentSubmission: async (repaymentAmount: bigint) => {
-        await showTokenApproval(loan, repaymentAmount);
+        if (!loanService) {
+          throw new Error(
+            "Loan service must be defined in order to submit payment",
+          );
+        }
+
+        const currentAllowance = await loanService.getApplicationAllowance(
+          loan.asset.address!,
+        );
+        if (currentAllowance < repaymentAmount) {
+          await showTokenApproval(loan, repaymentAmount);
+        } else {
+          await submitRepayment(loan, repaymentAmount);
+        }
       },
     });
   };
@@ -60,8 +75,12 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
   ) => {
     try {
       await Modal.open(SubmitPaymentModal, {
-        loan: loan,
+        asset: loan.asset,
         amount: `${repaymentAmount}`,
+        recipient: loan.lender,
+        submitPayment: async (amount: bigint) => {
+          await loanService?.repayLoan(loan.loanID, amount);
+        },
         onPaymentSubmission: async (_: bigint) => {
           await props.onPaymentSubmission(loan.loanID);
         },

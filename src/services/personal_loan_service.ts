@@ -11,13 +11,9 @@ export interface PersonalLoanService {
   // allowLoanProposal allows a user to propose a loan.
   allowLoanProposal(identity: Identity): Promise<void>;
 
-  // approveTransfer approves a token transfer to a recipient from the current user to be executed
-  // by this application.
-  approveTokenTransfer(
-    recipient: Identity,
-    asset: EthereumAsset,
-    amount: bigint,
-  ): Promise<void>;
+  // approveTransfer authorizes this application to spend up to the given amount
+  // for the given asset by this application on behalf of the current user.
+  approveTokenTransfer(asset: EthereumAsset, amount: bigint): Promise<void>;
 
   // cancelLoan cancels a personal loan where the user is the lender.
   cancelLendingLoan(loanID: string): Promise<void>;
@@ -34,6 +30,10 @@ export interface PersonalLoanService {
 
   // executeLoan executes an approved loan, moving the funds from the lender to the borrower.
   executeLoan(loanID: string): Promise<void>;
+
+  // getApplicationAllowance gets the amount of the given token that this application is allowed
+  // to spend on behalf of the current user.
+  getApplicationAllowance(contractAddress: `0x${string}`): Promise<bigint>;
 
   // getPersonalLoans gets all personal loans for the current user
   // where the user is the borrower.

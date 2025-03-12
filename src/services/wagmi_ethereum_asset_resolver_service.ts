@@ -40,7 +40,7 @@ export class WagmiEthereumAssetResolverService
 {
   async getAsset(
     chainId: number,
-    contractAddress: string,
+    contractAddress: `0x${string}`,
   ): Promise<EthereumAsset | undefined> {
     const contract = {
       address: contractAddress as `0x${string}`,
