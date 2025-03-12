@@ -8,17 +8,11 @@ import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { SupportedAssetResolverContext } from "@/services/supported_asset_resolver_provider";
 import { EthereumAsset } from "@/models/asset";
 import { calculateTokenAmount } from "@/lib/asset_amount";
-import { ErrorReporterProvider } from "@/services/error_reporter_provider";
 import { mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 import { useConfig } from "wagmi";
 import { useModalWindow } from "react-modal-global";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
-import {
-  InMemoryErrorReporter,
-  registerErrorListener,
-} from "@/services/error_reporter";
-import { ErrorMessage } from "../error_message";
 import { AssetAmount } from "../asset_amount";
 import { ModalWrapper } from "./modal_wrapper";
 
@@ -65,8 +59,13 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
     formState: { errors },
     setError,
     control,
+    reset,
   } = useForm({
     reValidateMode: "onChange",
+  });
+
+  modal.on("close", () => {
+    reset();
   });
 
   useEffect(() => {

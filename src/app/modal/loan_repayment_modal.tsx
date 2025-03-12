@@ -57,6 +57,7 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     reValidateMode: "onChange",
   });
@@ -64,6 +65,10 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const remainingBalance = props.loan.amountLoaned - props.loan.amountRepaid;
 
   const modal = useModalWindow();
+
+  modal.on("close", () => {
+    reset();
+  });
 
   if (appStateService) {
     appStateService

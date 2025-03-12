@@ -84,14 +84,12 @@ export function ProposeLoanAllowlistModal(
       });
   }
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    setError,
-  } = useForm({
+  const { register, handleSubmit, setValue, setError, reset } = useForm({
     reValidateMode: "onChange",
+  });
+
+  modal.on("close", () => {
+    reset();
   });
 
   useEffect(() => {
