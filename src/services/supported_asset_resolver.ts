@@ -9,7 +9,7 @@ export interface SupportAssetResolver {
 }
 
 export class SupportedAssetResolverImpl implements SupportAssetResolver {
-  private ethChainSupports: Map<number, string[]> = new Map();
+  private ethChainSupports: Map<number, `0x${string}`[]> = new Map();
   private ethereumAssetResolverService: EthereumAssetResolverService;
   private chainId: number | null;
 

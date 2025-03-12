@@ -47,7 +47,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     borrowerAddress: string,
     loanAmount: bigint,
     paidAmount: bigint,
-    assetAddress: string,
+    assetAddress: `0x${string}`,
     imported: boolean,
   ): Promise<void> {
     if (!this.userAddress) {
@@ -478,7 +478,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   async proposeLoan(
     borrowerAddress: string,
     amount: bigint,
-    assetAddress: string,
+    assetAddress: `0x${string}`,
   ): Promise<void> {
     return this.addPendingLoan(
       borrowerAddress,
@@ -493,7 +493,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
     borrowerAddress: string,
     loanAmount: bigint,
     paidAmount: bigint,
-    assetAddress: string,
+    assetAddress: `0x${string}`,
   ): Promise<void> {
     return this.addPendingLoan(
       borrowerAddress,
