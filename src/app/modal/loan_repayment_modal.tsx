@@ -1,7 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { FieldValues } from "react-hook-form";
+import { useForm, FieldValues } from "react-hook-form";
 import { useContext, useState } from "react";
 import { PersonalLoan } from "@/models/personal_loan";
 import { UserIdentity } from "../user_identity";
@@ -9,19 +8,12 @@ import { AssetAmount } from "../asset_amount";
 import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { calculateTokenAmount } from "@/lib/asset_amount";
 import { InputError } from "../input_error";
-import { useModalWindow } from "react-modal-global";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
-import { ErrorReporterProvider } from "@/services/error_reporter_provider";
-import {
-  InMemoryErrorReporter,
-  registerErrorListener,
-} from "@/services/error_reporter";
-import { ErrorMessage } from "../error_message";
-
-const errorReporter = new InMemoryErrorReporter();
+import { ModalWrapper } from "./modal_wrapper";
+import { useModalWindow } from "react-modal-global";
 
 export interface LoanRepaymentModalProps {
-  loan: PersonalLoan | undefined;
+  loan: PersonalLoan;
   onClose: () => Promise<void>;
   onPaymentSubmission: (amount: bigint) => Promise<void>;
 }
@@ -29,38 +21,8 @@ export interface LoanRepaymentModalProps {
 export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const loanService = useContext(PersonalLoanContext);
   const appStateService = useContext(ApplicationStateServiceContext);
-  const modal = useModalWindow();
-
   const [isProcessing, setIsProcessing] = useState(false);
-  const [capturedError, setCapturedError] = useState<Error | undefined>(
-    undefined,
-  );
-
-  registerErrorListener(errorReporter, setCapturedError);
-
-  if (appStateService) {
-    appStateService
-      .subscribe(async (appState) => {
-        setIsProcessing(appState.processing);
-      })
-      .then((unsubFn) => {
-        modal.on("close", async () => {
-          await unsubFn();
-        });
-      });
-  }
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    reValidateMode: "onChange",
-  });
-
-  if (!props.loan) {
-    return <div>There doesn&apos;t appear to be a loan set</div>;
-  }
+  const [capturedError, setCapturedError] = useState<any>(undefined);
 
   const submitRepayment = async (
     fieldValues: FieldValues,
@@ -84,60 +46,83 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
       await props.onPaymentSubmission(wholeAmount);
 
       await props.onClose();
-
-      // Close the modal so that the user isn't presented the payment modal while signing for payments
-      modal.close();
     } catch (error) {
-      await errorReporter.reportAny(error);
+      setCapturedError(error);
     } finally {
       await token?.complete();
     }
   };
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    reValidateMode: "onChange",
+  });
+
   const remainingBalance = props.loan.amountLoaned - props.loan.amountRepaid;
 
+  const modal = useModalWindow();
+
+  if (appStateService) {
+    appStateService
+      .subscribe(async (appState) => {
+        setIsProcessing(appState.processing);
+      })
+      .then((unsubFn) => {
+        modal.on("close", () => {
+          unsubFn();
+        });
+      });
+  }
+
   return (
-    <div className="popup-layout">
-      <ErrorReporterProvider errorReporter={errorReporter}>
-        {capturedError && <ErrorMessage error={capturedError} />}
-        <h3 className="section-title">Repay Loan</h3>
-        <ul className="details">
-          <li>
-            <span className="label">Lender</span>
-            <span className="value address-container">
-              <UserIdentity identity={props.loan?.lender} />
-            </span>
-          </li>
-          <li>
-            <span className="label">Total Loaned</span>
-            <span className="value">
-              <AssetAmount
-                amount={props.loan.amountLoaned}
-                asset={props.loan.asset}
-              />
-            </span>
-          </li>
-          <li>
-            <span className="label">Total Paid</span>
-            <span className="value">
-              <AssetAmount
-                amount={props.loan.amountRepaid}
-                asset={props.loan.asset}
-              />
-            </span>
-          </li>
-          <li>
-            <span className="label">Remaining Owed</span>
-            <span className="value">
-              <AssetAmount amount={remainingBalance} asset={props.loan.asset} />
-            </span>
-          </li>
-          <li>
-            <form
-              onSubmit={handleSubmit((data: FieldValues) =>
-                submitRepayment(data, props.loan as PersonalLoan),
-              )}
-            >
+    <ModalWrapper reportedError={capturedError}>
+      <form
+        onSubmit={handleSubmit(async (fieldValues) => {
+          await submitRepayment(fieldValues, props.loan as PersonalLoan);
+
+          await modal.close();
+        })}
+      >
+        <div>
+          <h3 className="section-title">Repay Loan</h3>
+          <ul className="details">
+            <li>
+              <span className="label">Lender</span>
+              <span className="value address-container">
+                <UserIdentity identity={props.loan?.lender} />
+              </span>
+            </li>
+            <li>
+              <span className="label">Total Loaned</span>
+              <span className="value">
+                <AssetAmount
+                  amount={props.loan.amountLoaned}
+                  asset={props.loan.asset}
+                />
+              </span>
+            </li>
+            <li>
+              <span className="label">Total Paid</span>
+              <span className="value">
+                <AssetAmount
+                  amount={props.loan.amountRepaid}
+                  asset={props.loan.asset}
+                />
+              </span>
+            </li>
+            <li>
+              <span className="label">Remaining Owed</span>
+              <span className="value">
+                <AssetAmount
+                  amount={remainingBalance}
+                  asset={props.loan.asset}
+                />
+              </span>
+            </li>
+            <li>
               <span className="label">Repayment Amount:</span>
               <span className="value">
                 <input
@@ -164,24 +149,25 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
               {errors.amount && (
                 <InputError message="Invalid repayment amount" />
               )}
-              <div className="form-buttons">
-                <button type="submit" disabled={isProcessing}>
-                  Submit Repayment
-                </button>
-                <button
-                  disabled={isProcessing}
-                  onClick={async () => {
-                    modal.close();
-                    await props.onClose();
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </li>
-        </ul>
-      </ErrorReporterProvider>
-    </div>
+            </li>
+          </ul>
+        </div>
+        <div className="form-buttons">
+          <button
+            disabled={isProcessing}
+            onClick={async () => {
+              await props.onClose();
+
+              await modal.close();
+            }}
+          >
+            Cancel
+          </button>
+          <button type-="submit" disabled={isProcessing}>
+            Submit Repayment
+          </button>
+        </div>
+      </form>
+    </ModalWrapper>
   );
 }

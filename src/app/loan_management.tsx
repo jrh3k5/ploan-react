@@ -159,11 +159,13 @@ export function LoanManagement(props: LoanManagementProps) {
       <BorrowingLoanList
         borrowingLoans={borrowingLoans}
         onPaymentSubmission={refreshBorrowingLoans}
+        onLoanDeletion={refreshBorrowingLoans}
         isProcessing={props.isProcessing}
       />
       <LendingLoanList
         lendingLoans={lendingLoans}
         onLoanCancelation={refreshLendingLoans}
+        onLoanDeletion={refreshLendingLoans}
         isProcessing={props.isProcessing}
       />
     </div>

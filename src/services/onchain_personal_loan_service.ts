@@ -5,7 +5,7 @@ import { PersonalLoan, LoanStatus } from "@/models/personal_loan";
 import { ContractResolver } from "./contract_resolver";
 import { PersonalLoanService } from "./personal_loan_service";
 import { PublicClient, WalletClient } from "viem";
-import { ploanABI } from "./abi/ploan/abi_v0.6.0";
+import { ploanABI } from "./abi/ploan/abi_v0.7.0";
 import { Account, Chain } from "viem";
 import { poll } from "./poller";
 import { EthereumAssetResolverService } from "./ethereum_asset_resolver_service";
@@ -230,6 +230,22 @@ export class OnchainPersonalLoanService implements PersonalLoanService {
     }
 
     return true;
+  }
+
+  async deleteLoan(loanID: string): Promise<void> {
+    await this.assertCanWrite();
+
+    await this.writeContract(
+      undefined,
+      "deleteLoan",
+      undefined,
+      async () => {
+        return [BigInt(loanID)];
+      },
+      async () => {},
+    );
+
+    await this.waitForLoanExistence(loanID, false);
   }
 
   async disallowLoanProposal(identity: Identity): Promise<void> {

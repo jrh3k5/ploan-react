@@ -5,13 +5,7 @@ import { ApplicationStateServiceContext } from "@/services/application_state_ser
 import { PersonalLoan } from "@/models/personal_loan";
 import { AssetAmount } from "../asset_amount";
 import { UserIdentity } from "../user_identity";
-import {
-  InMemoryErrorReporter,
-  registerErrorListener,
-} from "@/services/error_reporter";
-import { ErrorMessage } from "../error_message";
-
-const errorReporter = new InMemoryErrorReporter();
+import { ModalWrapper } from "./modal_wrapper";
 
 export interface SubmitPaymentModalProps {
   loan: PersonalLoan;
@@ -23,11 +17,7 @@ export function SubmitPaymentModal(props: SubmitPaymentModalProps) {
   const loanService = useContext(PersonalLoanContext);
   const appStateService = useContext(ApplicationStateServiceContext);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [capturedError, setCapturedError] = useState<Error | undefined>(
-    undefined,
-  );
-
-  registerErrorListener(errorReporter, setCapturedError);
+  const [capturedError, setCapturedError] = useState<any>(undefined);
 
   const modal = useModalWindow();
 
@@ -61,15 +51,14 @@ export function SubmitPaymentModal(props: SubmitPaymentModalProps) {
 
       await modal.close();
     } catch (error) {
-      await errorReporter.reportAny(error);
+      setCapturedError(error);
     } finally {
       await token?.complete();
     }
   };
 
   return (
-    <div className="popup-layout">
-      {capturedError && <ErrorMessage error={capturedError} />}
+    <ModalWrapper reportedError={capturedError}>
       Clicking &quot;Send&quot; will send send{" "}
       <AssetAmount amount={props.amount} asset={props.loan.asset} /> to{" "}
       <UserIdentity identity={props.loan.lender} /> for this loan.
@@ -81,6 +70,6 @@ export function SubmitPaymentModal(props: SubmitPaymentModalProps) {
           Send
         </button>
       </div>
-    </div>
+    </ModalWrapper>
   );
 }
