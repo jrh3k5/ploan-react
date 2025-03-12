@@ -23,7 +23,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   private activeLoans: PersonalLoan[] | undefined = undefined;
   private idCounter: number;
   private loanProposalAllowlist: Map<string, string[]> = new Map();
-  private tokenApprovals: Map<string, Map<string, bigint>> = new Map(); // asset address -> recipient address -> amount
+  private tokenApprovals: Map<string, Map<string, bigint>> = new Map(); // asset address -> spender address -> amount
 
   constructor(ethereumAssetResolverService: EthereumAssetResolverService) {
     this.idCounter = 0;
@@ -112,10 +112,13 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
   }
 
   async approveTokenTransfer(
-    recipient: Identity,
     asset: EthereumAsset,
     amount: bigint,
   ): Promise<void> {
+    if (!this.userAddress) {
+      throw new Error("User address must be set");
+    }
+
     if (!asset.address) {
       throw new Error("Asset must have an address");
     }
@@ -128,7 +131,7 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
       this.tokenApprovals.set(asset.address, tokenApprovals);
     }
 
-    tokenApprovals.set(recipient.address, amount);
+    tokenApprovals.set(this.userAddress, amount);
   }
 
   async cancelLendingLoan(loanID: string): Promise<void> {
@@ -220,22 +223,19 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
 
         // Verify that the approval has been executed (only for non-imported loans)
         if (!newLoan.imported) {
-          const tokenApprovals = this.tokenApprovals.get(newLoan.asset.address);
-          if (!tokenApprovals) {
-            throw new Error("User has not approved token transfer");
-          } else {
-            const approvalAmount = tokenApprovals.get(newLoan.borrower.address);
-            if (!approvalAmount) {
-              throw new Error(
-                "User has not approved token transfer to the recipient",
-              );
-            }
+          const allowance = await this.getApplicationAllowance(
+            newLoan.asset.address,
+          );
+          if (allowance === 0n) {
+            throw new Error(
+              "User has not approved token transfer to the recipient",
+            );
+          }
 
-            if (approvalAmount < newLoan.amountLoaned) {
-              throw new Error(
-                "User has not approved enough token transfer to the recipient",
-              );
-            }
+          if (allowance < newLoan.amountLoaned) {
+            throw new Error(
+              "User has not approved enough token transfer to the recipient",
+            );
           }
         }
 
@@ -261,6 +261,21 @@ export class InMemoryPersonalLoanService implements PersonalLoanService {
         ]);
       }
     }
+  }
+
+  async getApplicationAllowance(
+    contractAddress: `0x${string}`,
+  ): Promise<bigint> {
+    if (!this.userAddress) {
+      return 0n;
+    }
+
+    const tokenApprovals = this.tokenApprovals.get(contractAddress);
+    if (!tokenApprovals) {
+      return 0n;
+    }
+
+    return tokenApprovals.get(this.userAddress)!;
   }
 
   async getBorrowingLoans(): Promise<PersonalLoan[]> {

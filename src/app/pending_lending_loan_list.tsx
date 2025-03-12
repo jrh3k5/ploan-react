@@ -17,6 +17,7 @@ import { TokenApproval } from "./modal/token_approval_modal";
 import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 import { ProcessingAwareProps } from "./processing_aware_props";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
+import { SubmitPaymentModal } from "./modal/submit_payment_modal";
 
 export interface PendingLendingLoanListProps extends ProcessingAwareProps {
   pendingLoans: PendingLoan[];
@@ -60,10 +61,28 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
     try {
       Modal.open(TokenApproval, {
         onCancel: async () => {},
-        onApprove: async () => executeLoan(loanService, pendingLoan.loanID),
+        onApprove: async () => showPaymentSubmission(pendingLoan),
         amount: `${pendingLoan.amountLoaned}`,
         asset: pendingLoan.asset,
         recipient: pendingLoan.borrower,
+      });
+    } catch (error) {
+      errorReporter.reportAny(error);
+    }
+  };
+
+  const showPaymentSubmission = async (pendingLoan: PendingLoan) => {
+    try {
+      Modal.open(SubmitPaymentModal, {
+        asset: pendingLoan.asset,
+        amount: `${pendingLoan.amountLoaned}`,
+        recipient: pendingLoan.borrower,
+        submitPayment: async (amount: bigint) => {
+          await executeLoan(loanService, pendingLoan.loanID);
+        },
+        onPaymentSubmission: async (_: bigint) => {
+          await props.onLoanExecution(pendingLoan.loanID);
+        },
       });
     } catch (error) {
       errorReporter.reportAny(error);
@@ -143,12 +162,28 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
                 {pendingLoan.status == PendingLoanStatusEnum.ACCEPTED && (
                   <button
                     disabled={props.isProcessing}
-                    onClick={() => {
-                      if (pendingLoan.imported) {
-                        return executeLoan(loanService, pendingLoan.loanID);
+                    onClick={async () => {
+                      if (!loanService) {
+                        throw new Error(
+                          "Loan service must be set in order to execute a loan",
+                        );
                       }
 
-                      return showTokenApproval(pendingLoan);
+                      if (pendingLoan.imported) {
+                        await executeLoan(loanService, pendingLoan.loanID);
+
+                        return;
+                      }
+
+                      const allowance =
+                        await loanService.getApplicationAllowance(
+                          pendingLoan.asset.address!,
+                        );
+                      if (allowance < pendingLoan.amountLoaned) {
+                        await showTokenApproval(pendingLoan);
+                      } else {
+                        await showPaymentSubmission(pendingLoan);
+                      }
                     }}
                   >
                     Execute Loan

@@ -48,11 +48,7 @@ export function TokenApproval(props: TokenApprovalProps) {
     try {
       const amountBigInt = BigInt(props.amount);
 
-      await loanService.approveTokenTransfer(
-        props.recipient,
-        props.asset,
-        amountBigInt,
-      );
+      await loanService.approveTokenTransfer(props.asset, amountBigInt);
 
       // Manually complete the token so that, when the subsequent
       // send modal is opened, it's not incorreclty kept disabled

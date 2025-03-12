@@ -1,20 +1,21 @@
 import { useModalWindow } from "react-modal-global";
 import { useContext, useState } from "react";
-import { PersonalLoanContext } from "@/services/personal_loan_service_provider";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
-import { PersonalLoan } from "@/models/personal_loan";
 import { AssetAmount } from "../asset_amount";
 import { UserIdentity } from "../user_identity";
 import { ModalWrapper } from "./modal_wrapper";
+import { EthereumAsset } from "@/models/asset";
+import { Identity } from "@/models/identity";
 
 export interface SubmitPaymentModalProps {
-  loan: PersonalLoan;
+  asset: EthereumAsset;
+  recipient: Identity;
   amount: string;
-  onPaymentSubmission: (amount: bigint) => Promise<void>;
+  submitPayment: (amount: bigint) => Promise<void>; // the action to be invoked when the user clicks "send payment"
+  onPaymentSubmission: (amount: bigint) => Promise<void>; // the action to be taken after the payment has been submitted
 }
 
 export function SubmitPaymentModal(props: SubmitPaymentModalProps) {
-  const loanService = useContext(PersonalLoanContext);
   const appStateService = useContext(ApplicationStateServiceContext);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [capturedError, setCapturedError] = useState<any>(undefined);
@@ -34,10 +35,6 @@ export function SubmitPaymentModal(props: SubmitPaymentModalProps) {
   }
 
   const submitPayment = async () => {
-    if (!loanService) {
-      return;
-    }
-
     const token = await appStateService?.startProcessing(
       "submit_payment_modal:submitPayment",
     );
@@ -45,7 +42,7 @@ export function SubmitPaymentModal(props: SubmitPaymentModalProps) {
     try {
       const amountBigInt = BigInt(props.amount);
 
-      await loanService.repayLoan(props.loan.loanID, amountBigInt);
+      await props.submitPayment(amountBigInt);
 
       await props.onPaymentSubmission(amountBigInt);
 
@@ -60,8 +57,9 @@ export function SubmitPaymentModal(props: SubmitPaymentModalProps) {
   return (
     <ModalWrapper reportedError={capturedError}>
       Clicking &quot;Send&quot; will send send{" "}
-      <AssetAmount amount={props.amount} asset={props.loan.asset} /> to{" "}
-      <UserIdentity identity={props.loan.lender} /> for this loan.
+      <AssetAmount amount={props.amount} asset={props.asset} /> to{" "}
+      <UserIdentity identity={props.recipient} />. Are you sure you wish to do
+      this?
       <div className="form-buttons">
         <button disabled={isProcessing} onClick={() => modal.close()}>
           Cancel

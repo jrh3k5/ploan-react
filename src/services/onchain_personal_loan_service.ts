@@ -60,7 +60,6 @@ export class OnchainPersonalLoanService implements PersonalLoanService {
   }
 
   async approveTokenTransfer(
-    _: Identity,
     asset: EthereumAsset,
     amount: bigint,
   ): Promise<void> {
@@ -278,6 +277,57 @@ export class OnchainPersonalLoanService implements PersonalLoanService {
     );
 
     await this.waitForLoanState(loanID, (l) => l?.isAtLeastExecuted() ?? false);
+  }
+
+  async getApplicationAllowance(
+    contractAddress: `0x${string}`,
+  ): Promise<bigint> {
+    const canRead = await this.canRead();
+    if (!canRead) {
+      return 0n;
+    }
+
+    const currentAccount = await this.getCurrentAccount();
+    if (!currentAccount) {
+      return 0n;
+    }
+
+    const appContractAddress = await this.resolveContractAddress();
+    if (!appContractAddress) {
+      return 0n;
+    }
+
+    return await this.readContract(
+      contractAddress,
+      "allowance",
+      [
+        {
+          constant: true,
+          inputs: [
+            {
+              name: "_owner",
+              type: "address",
+            },
+            {
+              name: "_spender",
+              type: "address",
+            },
+          ],
+          name: "allowance",
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+            },
+          ],
+          payable: false,
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+      async () => [currentAccount.address, appContractAddress],
+      async (r: any) => BigInt(r),
+    );
   }
 
   async getBorrowingLoans(): Promise<PersonalLoan[]> {

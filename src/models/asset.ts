@@ -2,13 +2,13 @@ export class EthereumAsset {
   chainID: number;
   symbol: string;
   decimals: number;
-  address: string | undefined;
+  address: `0x${string}` | undefined;
 
   constructor(
     chainID: number,
     symbol: string,
     decimals: number,
-    address: string | undefined,
+    address: `0x${string}` | undefined,
   ) {
     this.chainID = chainID;
     this.symbol = symbol;
