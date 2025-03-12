@@ -159,6 +159,7 @@ export function LoanManagement(props: LoanManagementProps) {
       <BorrowingLoanList
         borrowingLoans={borrowingLoans}
         onPaymentSubmission={refreshBorrowingLoans}
+        onLoanDeletion={refreshBorrowingLoans}
         isProcessing={props.isProcessing}
       />
       <LendingLoanList

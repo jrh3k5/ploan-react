@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { UserIdentity } from "./user_identity";
 import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
@@ -12,11 +12,13 @@ import { TokenApproval } from "./modal/token_approval_modal";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { ProcessingAwareProps } from "./processing_aware_props";
 import { SubmitPaymentModal } from "./modal/submit_payment_modal";
+import { DeleteLoanModal } from "./modal/delete_loan_modal";
 
 // BorrowingLoanListProps describes the properties required by BorrowingLoanList
 export interface BorrowingLoanListProps extends ProcessingAwareProps {
   borrowingLoans: PersonalLoan[]; // the loans to be shown
   onPaymentSubmission: (loanID: string) => Promise<void>; // invoked upon submission of payment for a loan
+  onLoanDeletion: (loanID: string) => Promise<void>;
 }
 
 // BorrowingLoanList shows the user what loans they are the borrower on
@@ -29,6 +31,15 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
       onClose: async () => {},
       onPaymentSubmission: async (repaymentAmount: bigint) => {
         await showTokenApproval(loan, repaymentAmount);
+      },
+    });
+  };
+
+  const openLoanDeletionModal = (loan: PersonalLoan) => {
+    Modal.open(DeleteLoanModal, {
+      loan: loan,
+      onDeletion: async () => {
+        await props.onLoanDeletion(loan.loanID);
       },
     });
   };
@@ -58,10 +69,6 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
     } catch (error) {
       errorReporter.reportAny(error);
     }
-  };
-
-  const deleteLoan = async (loan: PersonalLoan) => {
-    // TODO: fill this out
   };
 
   return (
@@ -100,7 +107,7 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
                 {(borrowingLoan.status == LoanStatusEnum.CANCELED ||
                   borrowingLoan.status === LoanStatusEnum.COMPLETED) && (
                   <button
-                    onClick={() => openRepaymentModal(borrowingLoan)}
+                    onClick={() => openLoanDeletionModal(borrowingLoan)}
                     disabled={props.isProcessing}
                   >
                     Delete

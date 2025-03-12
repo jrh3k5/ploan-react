@@ -9,7 +9,7 @@ export interface ContractResolver {
 // InMemoryContractResolver is an in-memory implementation of the ContractResolver interface.
 export class InMemoryContractResolver {
   private contractMappings: Map<string, string> = new Map([
-    [`${baseSepolia.id}`, "0xDeEF024B1fFf995E572A08318B5f770b1402dB01"],
+    [`${baseSepolia.id}`, "0xEE69dBb8eE67D79Fa6C7fBf86D6dc51eaecb76d4"],
   ]);
 
   async resolveContractAddress(chainId: number): Promise<string> {

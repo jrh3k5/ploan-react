@@ -60,6 +60,8 @@ export function TokenApproval(props: TokenApprovalProps) {
       await token?.complete();
 
       await props.onApprove();
+
+      await modal.close();
     } catch (error) {
       setCapturedError(error);
     } finally {
