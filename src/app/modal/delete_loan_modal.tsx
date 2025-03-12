@@ -64,7 +64,7 @@ export function DeleteLoanModal(props: DeleteLoanModalProps) {
             amount={props.loan.amountLoaned}
             asset={props.loan.asset}
           />
-          , it will be removed from your and the other users' loan lists.
+          , it will be removed from your and the other users&apos; loan lists.
         </p>
         <p>This action cannot be undone. Do you wish to proeed?</p>
         <div className="form-buttons">

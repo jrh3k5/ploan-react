@@ -13,7 +13,7 @@ import { ModalWrapper } from "./modal_wrapper";
 import { useModalWindow } from "react-modal-global";
 
 export interface LoanRepaymentModalProps {
-  loan: PersonalLoan | undefined;
+  loan: PersonalLoan;
   onClose: () => Promise<void>;
   onPaymentSubmission: (amount: bigint) => Promise<void>;
 }
@@ -23,10 +23,6 @@ export function LoanRepaymentModal(props: LoanRepaymentModalProps) {
   const appStateService = useContext(ApplicationStateServiceContext);
   const [isProcessing, setIsProcessing] = useState(false);
   const [capturedError, setCapturedError] = useState<any>(undefined);
-
-  if (!props.loan) {
-    return <div>There doesn&apos;t appear to be a loan set</div>;
-  }
 
   const submitRepayment = async (
     fieldValues: FieldValues,
