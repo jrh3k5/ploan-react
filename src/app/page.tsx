@@ -29,10 +29,11 @@ import { InMemoryContractResolver } from "@/services/contract_resolver";
 import { OnchainPersonalLoanService } from "@/services/onchain_personal_loan_service";
 import { PublicClient, WalletClient } from "viem";
 import { switchChain } from "@wagmi/core";
-import { ModalContainer, ModalController } from "react-modal-global";
+import { ModalContainer } from "react-modal-global";
 import { Modal } from "@/lib/modal";
 import { InMemoryApplicationStateService } from "@/services/application_state_service";
 import { ApplicationStateServiceProvider } from "@/services/application_state_service_provider";
+import sdk from "@farcaster/frame-sdk";
 
 // Declare outside of app so that it's not constantly building new instances
 const wagmiResolver = new WagmiEthereumAssetResolverService();
@@ -93,6 +94,23 @@ function App() {
   appStateService.subscribe(async (state) => {
     await setIsProcessing(state.processing);
   });
+
+  // Set up Farcaster frame
+  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      sdk.actions.ready();
+    };
+    if (sdk && !isSDKLoaded) {
+      setIsSDKLoaded(true);
+      load();
+    }
+  }, [isSDKLoaded]);
+
+  if (!isSDKLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>

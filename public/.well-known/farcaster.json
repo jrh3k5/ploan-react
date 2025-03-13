@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjk3MDIsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgzQURFNjM1Njg1RmMyNzBBNTBFRDU1MDI2Njc1MjAwMjRiOWEwRjQ0In0",
+    "payload": "eyJkb21haW4iOiJwbG9hbi54eXoifQ",
+    "signature": "MHg1YzBmZTEwNzUwMTYyZTgwOWNmNmQyZThiMTQzOTIwNzcxNGFhYTZlMzU2OTNjYjgyZDdhYmFjODUzMjA0YThkMTlhZmQ2ZTkzOGRhOGY4ZmZkY2Q2YzQ2ZTFkNjI4ZmY3Zjg4YzJiMWNhODRhMDI5MzE0MGQ2OTE0ODdiN2ZkZjFj"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Ploan",
+    "iconUrl": "https://ploan.xyz/images/farcaster/frame/splash_200x200.png",
+    "homeUrl": "https://ploan.xyz",
+    "imageUrl": "https://ploan.xyz/images/farcaster/frame/preview_600x400.png",
+    "buttonTitle": "Lend Onchain with Ploan",
+    "splashImageUrl": "https://ploan.xyz/images/farcaster/frame/splash_200x200.png",
+    "splashBackgroundColor": "#1c55a5",
+    "webhookUrl": "https://ploan.xyz/api/webhook"
+  }
+}
