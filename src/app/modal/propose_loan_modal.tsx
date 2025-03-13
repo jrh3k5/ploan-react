@@ -323,6 +323,12 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
             </span>
           </li>
         </ul>
+        <div className="contextual-description">
+          Clicking &quot;Propose&quot; will <b>not</b> transfer funds to the
+          user. It will merely propose a loan to be accepted by the user, after
+          which you will execute the loan - at which time, then, the assets will
+          be transferred to the borrower.
+        </div>
         <div className="form-buttons">
           <button
             type="button"
