@@ -7,11 +7,12 @@ import { defaultChain } from "@/models/chain";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
 import { useContext } from "react";
 import { ProcessingAwareProps } from "./processing_aware_props";
+import { Chain } from "viem";
 
 // ChainSelectorProps defines the properties needed by the ChainSelector component.
 export interface ChainSelectorProps extends ProcessingAwareProps {
   // onChainSelection is invoked whenever a user selects a chain
-  onChainSelection: (chainId: number) => Promise<void>;
+  onChainSelection: (chain: Chain) => Promise<void>;
 }
 
 // ChainSelector is a component allowing a user to select the active chain.
@@ -31,10 +32,10 @@ export function ChainSelector(props: ChainSelectorProps) {
     }
   }
 
-  const changeSelectedChain = async (chainId: number) => {
+  const changeSelectedChain = async (chain: Chain) => {
     try {
-      await switchChain(wagmiConfig, { chainId: chainId as 8453 | 84532 });
-      await props.onChainSelection(chainId);
+      await switchChain(wagmiConfig, { chainId: chain.id as 8453 | 84532 });
+      await props.onChainSelection(chain);
     } catch (error) {
       await errorReporter.reportAny(error);
     }
@@ -42,7 +43,7 @@ export function ChainSelector(props: ChainSelectorProps) {
 
   if (!isSelectableChain) {
     // Switch the user to Base by default
-    changeSelectedChain(defaultChain.id).catch((error) => {
+    changeSelectedChain(defaultChain).catch((error) => {
       errorReporter.reportAny(error);
     });
   }
@@ -53,7 +54,14 @@ export function ChainSelector(props: ChainSelectorProps) {
       disabled={props.isProcessing}
       onChange={async (event) => {
         const selectedChainId = parseInt(event.target.value);
-        await changeSelectedChain(selectedChainId);
+        const selectedChain = userSelectableChains.find(
+          (chain) => chain.id === selectedChainId,
+        );
+        if (!selectedChain) {
+          return;
+        }
+
+        await changeSelectedChain(selectedChain);
       }}
       value={currentChainId.toString()}
     >

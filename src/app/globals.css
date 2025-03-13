@@ -196,3 +196,11 @@ ul.details span.value {
   font-size: x-small;
   font-weight: normal;
 }
+
+.testnet-warning {
+  background-color: rgb(152, 152, 16);
+  color: yellow;
+  border-radius: 0.5em;
+  padding: 0.5em;
+  margin-bottom: 0.5em;
+}

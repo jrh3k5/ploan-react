@@ -27,7 +27,7 @@ import { ErrorReporterProvider } from "@/services/error_reporter_provider";
 import { ErrorMessage } from "./error_message";
 import { InMemoryContractResolver } from "@/services/contract_resolver";
 import { OnchainPersonalLoanService } from "@/services/onchain_personal_loan_service";
-import { PublicClient, WalletClient } from "viem";
+import { Chain, PublicClient, WalletClient } from "viem";
 import { switchChain } from "@wagmi/core";
 import { ModalContainer } from "react-modal-global";
 import { Modal } from "@/lib/modal";
@@ -64,22 +64,36 @@ function App() {
     undefined,
   );
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [currentChain, setCurrentChain] = useState<Chain | undefined>(
+    undefined,
+  );
 
   const wagmiConfig = useConfig();
 
-  const setActiveChain = async (activeChainId: number) => {
+  const setActiveChain = async (chain: Chain) => {
+    if (chain.id === currentChain?.id) {
+      return;
+    }
+
     try {
       await switchChain(wagmiConfig, {
-        chainId: activeChainId as 1 | 8453 | 84532,
+        chainId: chain.id as 1 | 8453 | 84532,
       });
-      supportedAssetResolver.setChainId(activeChainId);
+      supportedAssetResolver.setChainId(chain.id);
+      setCurrentChain(chain);
     } catch (error) {
       errorReporter.reportAny(error);
     }
   };
 
   // Start by setting the default chain
-  setActiveChain(defaultChain.id);
+  useEffect(() => {
+    setActiveChain(defaultChain);
+    // The linter is disabled because if the dependency array is removed,
+    // this is fired every time the component renders. The linter flags the
+    // empty dependency array every time, however.
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     if (walletClient?.account.address) {
@@ -115,6 +129,13 @@ function App() {
   return (
     <>
       <div className="app">
+        {currentChain?.testnet && (
+          <div className="testnet-warning">
+            ⚠️ WARNING: you are using a testnet network. This is NOT real money.
+            If someone is trying to offer you a loan while using a testnet
+            network, you are likely being scammed.
+          </div>
+        )}
         <ApplicationStateServiceProvider appStateService={appStateService}>
           {capturedError && <ErrorMessage error={capturedError} />}
           <ErrorReporterProvider errorReporter={errorReporter}>
@@ -149,8 +170,8 @@ function App() {
                   <div className="chain-selector">
                     Select chain:&nbsp;
                     <ChainSelector
-                      onChainSelection={async (chainId) =>
-                        await setActiveChain(chainId)
+                      onChainSelection={async (chain) =>
+                        await setActiveChain(chain)
                       }
                       isProcessing={isProcessing}
                     />
