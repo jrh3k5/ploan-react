@@ -62,10 +62,9 @@ div.wallet-info > span.identity {
 }
 
 .footer {
-    display: grid;
-    grid-template-areas: 
-      "chain-selector issue-reporter";
-      grid-template-columns: 1fr 1fr;
+  display: grid;
+  grid-template-areas: "chain-selector issue-reporter";
+  grid-template-columns: 1fr 1fr;
 }
 
 .chain-selector .issue-reporter {
@@ -74,12 +73,12 @@ div.wallet-info > span.identity {
 }
 
 .chain-selector {
-    grid-area: chain-selector;;
+  grid-area: chain-selector;
 }
 
 .issue-reporter {
-    grid-area: issue-reporter;
-    text-align: right
+  grid-area: issue-reporter;
+  text-align: right;
 }
 
 .chain-selector > select {
