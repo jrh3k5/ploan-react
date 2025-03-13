@@ -145,14 +145,19 @@ function App() {
                   </SupportedAssetResolverProvider>
                 </PersonalLoanServiceProvider>
 
+<div className="footer">
                 <div className="chain-selector">
-                  Select chain:
+                  Select chain:&nbsp;
                   <ChainSelector
                     onChainSelection={async (chainId) =>
                       await setActiveChain(chainId)
                     }
                     isProcessing={isProcessing}
                   />
+                </div>
+                <div className="issue-reporter">
+                🐛 <a href="https://github.com/jrh3k5/ploan-react/issues" target="_new">Report an Issue</a>
+                </div>
                 </div>
               </div>
             ) : (
