@@ -8,7 +8,7 @@ import { Identity } from "@/models/identity";
 import { UserIdentity } from "../user_identity";
 import { useConfig } from "wagmi";
 import { normalize } from "viem/ens";
-import { mainnet } from "viem/chains";
+import { form, mainnet } from "viem/chains";
 import { getEnsAddress } from "@wagmi/core";
 import { useModalWindow } from "react-modal-global";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
@@ -16,6 +16,8 @@ import { Modal } from "@/lib/modal";
 import { ProposeLoanAllowlistRemovalConfirmation } from "./propose_loan_allowlist_removal_confirmation_modal";
 import { ProposeLoanAllowlistAdditionConfirmation } from "./propose_loan_allowlist_addition_confirmation_modal";
 import { ModalWrapper } from "./modal_wrapper";
+import { InputError } from "../input_error";
+import { errorToJSON } from "next/dist/server/render";
 
 export interface ProposeLoanAllowlistModalProps {
   chainId: number | undefined;
@@ -84,9 +86,10 @@ export function ProposeLoanAllowlistModal(
       });
   }
 
-  const { register, handleSubmit, setValue, setError, reset } = useForm({
-    reValidateMode: "onChange",
-  });
+  const { register, handleSubmit, setValue, setError, reset, formState } =
+    useForm({
+      reValidateMode: "onChange",
+    });
 
   modal.on("close", () => {
     reset();
@@ -116,8 +119,6 @@ export function ProposeLoanAllowlistModal(
     if (!loanService) {
       return;
     }
-
-    // TODO: add modal dialog for adding a user
 
     const token = await appStateService?.startProcessing(
       "propose_loan_allowlist_modal:addToAllowlist",
@@ -153,6 +154,23 @@ export function ProposeLoanAllowlistModal(
       await token?.complete();
     }
 
+    // If the address is already in the allowlist, don't add it again
+    if (
+      allowlist.find(
+        (identity) =>
+          identity.address.toLocaleLowerCase() ===
+          toAdd.address.toLocaleLowerCase(),
+      )
+    ) {
+      console.log("setting error");
+      setError("allowlistedAddress", {
+        type: "custom",
+        message: "Address already in allowlist",
+      });
+
+      return;
+    }
+
     Modal.open(ProposeLoanAllowlistAdditionConfirmation, {
       toAdd: toAdd,
       onAddition: async () => {
@@ -173,6 +191,14 @@ export function ProposeLoanAllowlistModal(
               <span className="value">
                 <input {...register("allowlistedAddress")} />
               </span>
+              {formState.errors.allowlistedAddress && (
+                <InputError
+                  message={
+                    (formState?.errors?.allowlistedAddress
+                      ?.message as string) ?? "Unknown error"
+                  }
+                />
+              )}
             </div>
             <div className="form-buttons">
               <button type="submit" disabled={isProcessing}>
