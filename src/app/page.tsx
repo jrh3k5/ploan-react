@@ -129,7 +129,7 @@ function App() {
   return (
     <>
       <div className="app">
-        {currentChain?.testnet && (
+        {account.status === "connected" && currentChain?.testnet && (
           <div className="testnet-warning">
             ⚠️ WARNING: you are using a testnet network. This is NOT real money.
             If someone is trying to offer you a loan while using a testnet
