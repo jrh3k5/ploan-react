@@ -61,9 +61,24 @@ div.wallet-info > span.identity {
   padding: 0.25em;
 }
 
-.chain-selector {
+.footer {
+  display: grid;
+  grid-template-areas: "chain-selector issue-reporter";
+  grid-template-columns: 1fr 1fr;
+}
+
+.chain-selector .issue-reporter {
   padding: 0.75em;
   font-size: x-small;
+}
+
+.chain-selector {
+  grid-area: chain-selector;
+}
+
+.issue-reporter {
+  grid-area: issue-reporter;
+  text-align: right;
 }
 
 .chain-selector > select {
