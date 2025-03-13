@@ -5,7 +5,10 @@ import { UserIdentity } from "./user_identity";
 import { LoanProgress } from "./loan_progress";
 import { PersonalLoan } from "@/models/personal_loan";
 import { LoanStatus } from "./loan_status";
-import { LoanStatus as LoanStatusEnum } from "@/models/personal_loan";
+import {
+  LoanStatus as LoanStatusEnum,
+  compareByStatus,
+} from "@/models/personal_loan";
 import { LoanRepaymentModal } from "./modal/loan_repayment_modal";
 import { Modal } from "@/lib/modal";
 import { TokenApproval } from "./modal/token_approval_modal";
@@ -103,7 +106,7 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
           </tr>
         </thead>
         <tbody>
-          {props.borrowingLoans.map((borrowingLoan) => (
+          {props.borrowingLoans.sort(compareByStatus).map((borrowingLoan) => (
             <tr key={borrowingLoan.loanID}>
               <td className="address-container">
                 <UserIdentity identity={borrowingLoan.lender} />
