@@ -47,3 +47,9 @@ export enum LoanStatus {
   COMPLETED,
   CANCELED,
 }
+
+// compareByStatus compares two loans so that a list of loans is sorted by their statuses in the order of:
+// UNSPECIFIED, IN_PROGRESS, COMPLETED, CANCELED
+export function compareByStatus(a: PersonalLoan, b: PersonalLoan): number {
+  return a.status - b.status;
+}
