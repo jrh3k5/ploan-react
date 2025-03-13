@@ -13,9 +13,28 @@ import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const farcasterFrameMetadata = {
+  version: "next",
+  imageUrl: "https://ploan.xyz/images/farcaster/frame/preview_600x400.png",
+  button: {
+    title: "Ploan",
+    action: {
+      type: "launch_frame",
+      name: "Launch Ploan",
+      url: "https://ploan.xyz",
+      splashImageUrl:
+        "https://ploan.xyz/images/farcaster/frame/splash_200x200.png",
+      splashBackgroundColor: "#1c55a5",
+    },
+  },
+};
+
 export const metadata: Metadata = {
   title: "Ploan",
   description: "A personal loan tracker",
+  other: {
+    "fc:frame": JSON.stringify(farcasterFrameMetadata),
+  },
 };
 
 export default function RootLayout(props: { children: ReactNode }) {
