@@ -1,3 +1,5 @@
 # ploan-react
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-wagmi`](https://github.com/wevm/wagmi/tree/main/packages/create-wagmi).
+Website URL: https://ploan.xyz
+
+This is a React-based frontend for interacting with the [Ploan smart contract](https://github.com/jrh3k5/ploan.sol).
