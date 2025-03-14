@@ -215,7 +215,7 @@ export function ProposeLoanAllowlistModal(
                 <tbody>
                   {allowlist.map((identity) => (
                     <tr key={identity.address}>
-                      <td className="address-container">
+                      <td>
                         <UserIdentity identity={identity} />
                       </td>
                       <td className="actions single-item">

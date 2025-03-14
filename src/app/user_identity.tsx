@@ -43,5 +43,9 @@ export function UserIdentity(props: UserIdentityProps) {
     }
   }, [props.identity.address, errorReporter]);
 
-  return <span>{ensName ?? props.identity.address}</span>;
+  return (
+    <span className="address-container">
+      {ensName ?? props.identity.address}
+    </span>
+  );
 }

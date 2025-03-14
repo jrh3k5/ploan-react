@@ -140,7 +140,7 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
         <tbody>
           {pendingLoans.map((pendingLoan) => (
             <tr key={pendingLoan.loanID}>
-              <td className="address-container">
+              <td>
                 <UserIdentity identity={pendingLoan.borrower} />
               </td>
               <td className="amount">

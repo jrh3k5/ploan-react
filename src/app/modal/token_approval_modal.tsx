@@ -67,7 +67,7 @@ export function TokenApproval(props: TokenApprovalProps) {
 
   return (
     <ModalWrapper reportedError={capturedError}>
-      <div className="address-container">
+      <div>
         You must first approve the transfer of{" "}
         <AssetAmount amount={props.amount} asset={props.asset} /> to{" "}
         <UserIdentity identity={props.recipient} />. This allows this
