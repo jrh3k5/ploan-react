@@ -66,6 +66,8 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
 
   modal.on("close", () => {
     reset();
+    // Make sure that the form is re-enabled when it's loaded
+    setIsProcessing(false);
   });
 
   useEffect(() => {
