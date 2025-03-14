@@ -34,6 +34,7 @@ import { Modal } from "@/lib/modal";
 import { InMemoryApplicationStateService } from "@/services/application_state_service";
 import { ApplicationStateServiceProvider } from "@/services/application_state_service_provider";
 import sdk from "@farcaster/frame-sdk";
+import { FAQModal } from "./modal/faq_modal";
 
 // Declare outside of app so that it's not constantly building new instances
 const wagmiResolver = new WagmiEthereumAssetResolverService();
@@ -126,6 +127,10 @@ function App() {
     return <div>Loading...</div>;
   }
 
+  const showFAQModal = () => {
+    Modal.open(FAQModal);
+  };
+
   return (
     <>
       <div className="app">
@@ -165,31 +170,34 @@ function App() {
                     <ModalContainer controller={Modal} />
                   </SupportedAssetResolverProvider>
                 </PersonalLoanServiceProvider>
-
-                <div className="footer">
-                  <div className="chain-selector">
-                    Select chain:&nbsp;
-                    <ChainSelector
-                      onChainSelection={async (chain) =>
-                        await setActiveChain(chain)
-                      }
-                      isProcessing={isProcessing}
-                    />
-                  </div>
-                  <div className="issue-reporter">
-                    🐛{" "}
-                    <a
-                      href="https://github.com/jrh3k5/ploan-react/issues"
-                      target="_new"
-                    >
-                      Report an Issue
-                    </a>
-                  </div>
-                </div>
               </div>
             ) : (
               <WelcomePage />
             )}
+            <div className="footer">
+              <div className="chain-selector">
+                {account.status == "connected" && (
+                  <ChainSelector
+                    onChainSelection={async (chain) =>
+                      await setActiveChain(chain)
+                    }
+                    isProcessing={isProcessing}
+                  />
+                )}
+              </div>
+              <div className="faq">
+                ❓<a onClick={() => showFAQModal()}>FAQ</a>
+              </div>
+              <div className="issue-reporter">
+                🐛{" "}
+                <a
+                  href="https://github.com/jrh3k5/ploan-react/issues"
+                  target="_new"
+                >
+                  Report an Issue
+                </a>
+              </div>
+            </div>
           </ErrorReporterProvider>
         </ApplicationStateServiceProvider>
       </div>

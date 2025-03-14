@@ -63,13 +63,31 @@ div.wallet-info > span.identity {
 
 .footer {
   display: grid;
-  grid-template-areas: "chain-selector issue-reporter";
-  grid-template-columns: 1fr 1fr;
+  grid-template-areas: "chain-selector faq issue-reporter";
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
-.chain-selector .issue-reporter {
-  padding: 0.75em;
+.chain-selector,
+.chain-selector select,
+.issue-reporter,
+.faq {
   font-size: x-small;
+}
+
+div.chain-selector,
+div.issue-reporter,
+div.faq {
+  padding: 0.75em;
+}
+
+.faq {
+  grid-area: faq;
+  text-align: center;
+}
+
+.faq a {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .chain-selector {
@@ -203,4 +221,13 @@ ul.details span.value {
   border-radius: 0.5em;
   padding: 0.5em;
   margin-bottom: 0.5em;
+}
+
+.faq-question {
+  font-weight: bold;
+  margin-bottom: 0.25em;
+}
+
+.faq-answer {
+  margin-bottom: 1em;
 }
