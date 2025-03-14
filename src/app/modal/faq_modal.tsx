@@ -35,8 +35,8 @@ export function FAQModal() {
           Why can&apos;t I charge interest with loans on this app?
         </div>
         <div className="faq-answer">
-          Because you shouldn&apos;t monetize spotting your friends some cash. That&apos;s
-          weird.
+          Because you shouldn&apos;t monetize spotting your friends some cash.
+          That&apos;s weird.
         </div>
       </div>
       <div className="form-buttons">
