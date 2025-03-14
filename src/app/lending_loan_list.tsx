@@ -71,7 +71,7 @@ export function LendingLoanList(props: LendingLoanListProps) {
         <tbody>
           {lendingLoans.sort(compareByStatus).map((lendingLoan) => (
             <tr key={lendingLoan.loanID}>
-              <td className="address-container">
+              <td>
                 <UserIdentity identity={lendingLoan.borrower} />
               </td>
               <td>

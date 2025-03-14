@@ -108,7 +108,7 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
         <tbody>
           {props.borrowingLoans.sort(compareByStatus).map((borrowingLoan) => (
             <tr key={borrowingLoan.loanID}>
-              <td className="address-container">
+              <td>
                 <UserIdentity identity={borrowingLoan.lender} />
               </td>
               <td>
