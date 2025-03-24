@@ -34,7 +34,9 @@ export function ChainSelector(props: ChainSelectorProps) {
 
   const changeSelectedChain = async (chain: Chain) => {
     try {
-      await switchChain(wagmiConfig, { chainId: chain.id as 8453 | 84532 });
+      await switchChain(wagmiConfig, {
+        chainId: chain.id as 8453 | 84532,
+      });
       await props.onChainSelection(chain);
     } catch (error) {
       await errorReporter.reportAny(error);

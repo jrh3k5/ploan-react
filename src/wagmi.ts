@@ -3,7 +3,7 @@ import { mainnet, base, baseSepolia } from "wagmi/chains";
 import { coinbaseWallet, injected } from "wagmi/connectors";
 import { Chain } from "wagmi/chains";
 
-export function getConfig() {
+export function getConfig(): ReturnType<typeof createConfig> {
   return createConfig({
     // add in mainnet support for ENS resolution
     // keep it last, though, to ensure that Base is used by default
