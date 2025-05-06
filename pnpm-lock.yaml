@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@farcaster/frame-sdk':
-        specifier: ^0.0.36
-        version: 0.0.36(typescript@5.8.3)(zod@3.24.2)
+        specifier: ^0.0.37
+        version: 0.0.37(typescript@5.8.3)(zod@3.24.2)
       '@tanstack/react-query':
         specifier: 5.74.11
         version: 5.74.11(react@18.3.1)
@@ -1106,11 +1106,11 @@ packages:
     resolution: {integrity: sha512-zQ0IqbdX8FZ9aw11vP+dZkKDkS+kgIvQPHnSAXzP9pLu+Rfu3D3XEeLbicvoXJTYnhZiPmsZUxgdzXwNKxRPbA==}
     engines: {node: '>=14'}
 
-  '@farcaster/frame-core@0.0.33':
-    resolution: {integrity: sha512-KvrpTSoYeSK/gEOWz37Zh6k1i7zNqPQV/AG64HlgIEH3a7fCQsZ5iCqR8Xn/ejsKORTiajhfAQrfFGnYcVlryA==}
+  '@farcaster/frame-core@0.0.34':
+    resolution: {integrity: sha512-hohopBJo9TH5C4M+3WzcvpWfuJ6bMXyqSx4gP1AvRT3F3MxHf0qCakicV4wiR3SM9FfPNcCjUcK3wSM+WzsDjA==}
 
-  '@farcaster/frame-sdk@0.0.36':
-    resolution: {integrity: sha512-UjcM3J67xlQSZN5o279toY2Abr4We3nmzNctmohQQVksgSopYbT29T/vfWOFUJSKAsT5Z4fYgb6J0KUornCuBQ==}
+  '@farcaster/frame-sdk@0.0.37':
+    resolution: {integrity: sha512-A6dWqhTvt6GwS+m4iWSNV4CFM6+dRHi859e1JXdtjEf2JrEyGeijypJGPVTPxh3lDk2STolFG/2xpCic38dePg==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -4884,8 +4884,8 @@ packages:
   zod@3.24.2:
     resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
 
-  zod@3.24.3:
-    resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
+  zod@3.24.4:
+    resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
 
   zustand@5.0.0:
     resolution: {integrity: sha512-LE+VcmbartOPM+auOjCCLQOsQ05zUTp8RkgwRzefUk+2jISdMMFnxvyTjA4YNWr5ZGXYbVsEMZosttuxUBkojQ==}
@@ -5940,16 +5940,16 @@ snapshots:
       ethereum-cryptography: 2.2.1
       micro-ftch: 0.3.1
 
-  '@farcaster/frame-core@0.0.33(typescript@5.8.3)':
+  '@farcaster/frame-core@0.0.34(typescript@5.8.3)':
     dependencies:
-      ox: 0.4.4(typescript@5.8.3)(zod@3.24.3)
-      zod: 3.24.3
+      ox: 0.4.4(typescript@5.8.3)(zod@3.24.4)
+      zod: 3.24.4
     transitivePeerDependencies:
       - typescript
 
-  '@farcaster/frame-sdk@0.0.36(typescript@5.8.3)(zod@3.24.2)':
+  '@farcaster/frame-sdk@0.0.37(typescript@5.8.3)(zod@3.24.2)':
     dependencies:
-      '@farcaster/frame-core': 0.0.33(typescript@5.8.3)
+      '@farcaster/frame-core': 0.0.34(typescript@5.8.3)
       comlink: 4.4.2
       eventemitter3: 5.0.1
       ox: 0.4.4(typescript@5.8.3)(zod@3.24.2)
@@ -7718,10 +7718,10 @@ snapshots:
       typescript: 5.8.3
       zod: 3.24.2
 
-  abitype@1.0.8(typescript@5.8.3)(zod@3.24.3):
+  abitype@1.0.8(typescript@5.8.3)(zod@3.24.4):
     optionalDependencies:
       typescript: 5.8.3
-      zod: 3.24.3
+      zod: 3.24.4
 
   acorn-globals@7.0.1:
     dependencies:
@@ -9936,14 +9936,14 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
-  ox@0.4.4(typescript@5.8.3)(zod@3.24.3):
+  ox@0.4.4(typescript@5.8.3)(zod@3.24.4):
     dependencies:
       '@adraffy/ens-normalize': 1.11.0
       '@noble/curves': 1.9.0
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.0.8(typescript@5.8.3)(zod@3.24.3)
+      abitype: 1.0.8(typescript@5.8.3)(zod@3.24.4)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.8.3
@@ -9953,10 +9953,10 @@ snapshots:
   ox@0.6.7(typescript@5.8.3)(zod@3.24.2):
     dependencies:
       '@adraffy/ens-normalize': 1.11.0
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
-      '@scure/bip32': 1.6.2
-      '@scure/bip39': 1.5.4
+      '@noble/curves': 1.9.0
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
       abitype: 1.0.8(typescript@5.8.3)(zod@3.24.2)
       eventemitter3: 5.0.1
     optionalDependencies:
@@ -11120,7 +11120,7 @@ snapshots:
 
   zod@3.24.2: {}
 
-  zod@3.24.3: {}
+  zod@3.24.4: {}
 
   zustand@5.0.0(@types/react@18.3.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1)):
     optionalDependencies:
