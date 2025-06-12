@@ -18,6 +18,8 @@ import { AssetAmountPrepaid } from "./asset_amount_prepaid";
 import { ProcessingAwareProps } from "./processing_aware_props";
 import { ApplicationStateServiceContext } from "@/services/application_state_service_provider";
 import { SubmitPaymentModal } from "./modal/submit_payment_modal";
+import { ErrorReporter } from "@/services/error_reporter";
+import { ApplicationStateService } from "@/services/application_state_service";
 
 export interface PendingLendingLoanListProps extends ProcessingAwareProps {
   pendingLoans: PendingLoan[];
@@ -25,13 +27,17 @@ export interface PendingLendingLoanListProps extends ProcessingAwareProps {
   onLoanCancellation: (loanID: string) => Promise<void>;
   onLoanExecution: (loanID: string) => Promise<void>;
   onLoanProposal: () => Promise<void>;
+  loanService?: PersonalLoanService | null;
+  errorReporter?: ErrorReporter | null;
+  appStateService?: ApplicationStateService | null;
 }
 
 // PendingLendingLoanList provides a component to show what offers of loans a user has to other users that have not yet been executed
 export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
-  const loanService = useContext(PersonalLoanContext);
-  const errorReporter = useContext(ErrorReporterContext);
-  const appStateService = useContext(ApplicationStateServiceContext);
+  const loanService = props.loanService || useContext(PersonalLoanContext);
+  const errorReporter = props.errorReporter || useContext(ErrorReporterContext);
+  const appStateService =
+    props.appStateService || useContext(ApplicationStateServiceContext);
 
   const pendingLoans = props.pendingLoans;
 

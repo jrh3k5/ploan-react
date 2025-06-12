@@ -1,51 +1,56 @@
 import { useState, useEffect, useContext } from "react";
 import { Identity } from "@/models/identity";
-import { getEnsName } from "@wagmi/core";
-import { mainnet } from "wagmi/chains";
-import { getConfig } from "@/wagmi";
 import { ErrorReporterContext } from "@/services/error_reporter_provider";
-import { ProcessingAwareProps } from "./processing_aware_props";
+// NOTE: Do NOT import any ESM-only modules here! ENS logic must be injected.
 
 const ensCache = new Map<string, string>();
 
 // UserIdentityProps describes the properties required by a UserIdentity component.
 export interface UserIdentityProps {
   identity: Identity;
+  // Optionally inject ENS resolver for unit testing
+  resolveEnsNameFn?: (address: string) => Promise<string | null>;
+  // Optionally inject errorReporter for unit testing
+  errorReporter?: { reportAny: (e: unknown) => void };
 }
 
 // UserIdentity is a component used to render out information about a user.
 export function UserIdentity(props: UserIdentityProps) {
   const [ensName, setEnsName] = useState<string | null>(null);
-  const errorReporter = useContext(ErrorReporterContext);
+  const errorReporterContext = useContext(ErrorReporterContext);
+  const errorReporter = props.errorReporter ?? errorReporterContext;
 
+  // NOTE: If no resolver is provided, ENS resolution is skipped and only the address is shown.
   useEffect(() => {
-    const chainId = mainnet.id;
-    const cacheKey = `${chainId}:${props.identity.address.toLowerCase()}`;
-
+    const cacheKey = props.identity.address.toLowerCase();
     if (ensCache.has(cacheKey)) {
       setEnsName(ensCache.get(cacheKey) as string);
-
       return;
     } else if (props.identity?.address) {
-      getEnsName(getConfig(), {
-        chainId: mainnet.id, // always resolve from mainnet ENS
-        address: props.identity.address as `0x${string}`,
-      })
-        .then((name) => {
-          ensCache.set(cacheKey, name as string);
+      const ensResolverFn = props.resolveEnsNameFn
+        ? props.resolveEnsNameFn
+        : async (address: string) => {
+            // Dynamically import only when needed (never in tests)
+            const { resolveEnsName } = await import("./ens_resolver");
+            return resolveEnsName(address);
+          };
+
+      ensResolverFn(props.identity.address)
+        .then((name: string | null) => {
+          if (name) {
+            ensCache.set(cacheKey, name);
+          }
           setEnsName(name);
         })
-        .catch((e) => {
-          errorReporter.reportAny(e);
-
-          ensCache.set(cacheKey, "");
+        .catch((e: unknown) => {
+          errorReporter?.reportAny(e);
         });
     }
-  }, [props.identity.address, errorReporter]);
+  }, [props.identity.address, errorReporter, props.resolveEnsNameFn]);
 
   return (
     <span className="address-container">
-      {ensName ?? props.identity.address}
+      {ensName || props.identity.address}
     </span>
   );
 }
