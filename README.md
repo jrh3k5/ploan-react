@@ -13,3 +13,11 @@ pnpm install
 pnpm run build
 pnpm run serve
 ```
+
+## Running Tests
+
+To run the tests, run the following command:
+
+```bash
+pnpm run test
+```

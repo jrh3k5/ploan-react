@@ -19,6 +19,8 @@ const config = {
     "^@/models/(.*)$": "<rootDir>/src/models/$1",
     "^@/services/(.*)$": "<rootDir>/src/services/$1",
   },
+  // Allow all node_modules to be transformed (to support ESM dependencies)
+  transformIgnorePatterns: ["/node_modules/(?!.*)"],
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
