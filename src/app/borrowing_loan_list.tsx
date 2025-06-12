@@ -94,30 +94,29 @@ export function BorrowingLoanList(props: BorrowingLoanListProps) {
   };
 
   return (
-    <div className="loan-grouping">
-      <h3>Loans You Owe On ({props.borrowingLoans.length})</h3>
+    <div>
       <table>
         <thead>
           <tr>
-            <th>Lender</th>
-            <th>Progress</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th className="label">Lender</th>
+            <th className="label">Progress</th>
+            <th className="label">Status</th>
+            <th className="label">Actions</th>
           </tr>
         </thead>
         <tbody>
           {props.borrowingLoans.sort(compareByStatus).map((borrowingLoan) => (
             <tr key={borrowingLoan.loanID}>
-              <td>
+              <td className="value">
                 <UserIdentity identity={borrowingLoan.lender} />
               </td>
-              <td>
+              <td className="value">
                 <LoanProgress loan={borrowingLoan} />
               </td>
-              <td className="status">
+              <td className="status value">
                 <LoanStatus loan={borrowingLoan} />
               </td>
-              <td className="actions">
+              <td className="actions form-buttons">
                 {borrowingLoan.status === LoanStatusEnum.IN_PROGRESS && (
                   <button
                     onClick={() => openRepaymentModal(borrowingLoan)}

@@ -146,18 +146,21 @@ function App() {
           <ErrorReporterProvider errorReporter={errorReporter}>
             {account.status === "connected" && walletClient ? (
               <div>
-                <div className="wallet-info">
-                  <span className="identity">
-                    Connected as{" "}
-                    <UserIdentity
-                      identity={new Identity(walletClient!.account.address)}
-                    />
-                  </span>
-                  <button type="button" onClick={() => disconnect()}>
-                    Disconnect
-                  </button>
+                <div className="wallet-info card">
+                  <div className="connected-as">
+                    <span className="identity">
+                      Connected as{" "}
+                      <UserIdentity
+                        identity={new Identity(walletClient!.account.address)}
+                      />
+                    </span>
+                  </div>
+                  <div className="form-buttons">
+                    <button type="button" onClick={() => disconnect()}>
+                      Disconnect
+                    </button>
+                  </div>
                 </div>
-
                 <PersonalLoanServiceProvider loanService={loanService}>
                   <SupportedAssetResolverProvider
                     supportedAssetResolver={supportedAssetResolver}
@@ -185,17 +188,19 @@ function App() {
                   />
                 )}
               </div>
-              <div className="faq">
-                ❓<a onClick={() => showFAQModal()}>FAQ</a>
-              </div>
-              <div className="issue-reporter">
-                🐛{" "}
-                <a
-                  href="https://github.com/jrh3k5/ploan-react/issues"
-                  target="_new"
-                >
-                  Report an Issue
-                </a>
+              <div className="footer-links">
+                <span className="faq">
+                  ❓<a onClick={() => showFAQModal()}>FAQ</a>
+                </span>
+                <span className="issue-reporter">
+                  🐛{" "}
+                  <a
+                    href="https://github.com/jrh3k5/ploan-react/issues"
+                    target="_new"
+                  >
+                    Report an Issue
+                  </a>
+                </span>
               </div>
             </div>
           </ErrorReporterProvider>

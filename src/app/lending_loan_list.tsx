@@ -57,52 +57,49 @@ export function LendingLoanList(props: LendingLoanListProps) {
   };
 
   return (
-    <div className="loan-grouping">
-      <h3>Loans Owed to You ({lendingLoans.length})</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Borrower</th>
-            <th>Amount to Lend</th>
-            <th>Status</th>
-            <th>Actions</th>
+    <table>
+      <thead>
+        <tr>
+          <th className="label">Borrower</th>
+          <th className="label">Amount to Lend</th>
+          <th className="label">Status</th>
+          <th className="label">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {lendingLoans.sort(compareByStatus).map((lendingLoan) => (
+          <tr key={lendingLoan.loanID}>
+            <td className="value">
+              <UserIdentity identity={lendingLoan.borrower} />
+            </td>
+            <td className="value">
+              <LoanProgress loan={lendingLoan} />
+            </td>
+            <td className="status value">
+              <LoanStatus loan={lendingLoan} />
+            </td>
+            <td className="actions">
+              {lendingLoan.status === LoanStatusEnum.IN_PROGRESS && (
+                <button
+                  disabled={props.isProcessing}
+                  onClick={() => cancelLoan(lendingLoan.loanID)}
+                >
+                  Cancel
+                </button>
+              )}
+              {(lendingLoan.status == LoanStatusEnum.CANCELED ||
+                lendingLoan.status === LoanStatusEnum.COMPLETED) && (
+                <button
+                  onClick={() => openLoanDeletionModal(lendingLoan)}
+                  disabled={props.isProcessing}
+                >
+                  Delete
+                </button>
+              )}
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {lendingLoans.sort(compareByStatus).map((lendingLoan) => (
-            <tr key={lendingLoan.loanID}>
-              <td>
-                <UserIdentity identity={lendingLoan.borrower} />
-              </td>
-              <td>
-                <LoanProgress loan={lendingLoan} />
-              </td>
-              <td className="status">
-                <LoanStatus loan={lendingLoan} />
-              </td>
-              <td className="actions">
-                {lendingLoan.status === LoanStatusEnum.IN_PROGRESS && (
-                  <button
-                    disabled={props.isProcessing}
-                    onClick={() => cancelLoan(lendingLoan.loanID)}
-                  >
-                    Cancel
-                  </button>
-                )}
-                {(lendingLoan.status == LoanStatusEnum.CANCELED ||
-                  lendingLoan.status === LoanStatusEnum.COMPLETED) && (
-                  <button
-                    onClick={() => openLoanDeletionModal(lendingLoan)}
-                    disabled={props.isProcessing}
-                  >
-                    Delete
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 }

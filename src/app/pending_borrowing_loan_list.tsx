@@ -71,43 +71,40 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
   };
 
   return (
-    <div className="loan-grouping">
-      <h3>Loans Offered to You ({pendingBorrowingLoans.length})</h3>
-      <div>
-        <div>
-          <button
-            disabled={props.isProcessing}
-            onClick={() =>
-              Modal.open(ProposeLoanAllowlistModal, {
-                chainId: props.chainId,
-                onClose: async () => {},
-                userAddress: props.userAddress,
-              })
-            }
-          >
-            Manage Allowlist
-          </button>
-        </div>
-        <div className="contextual-description">
+    <div>
+      <div className="form-buttons start">
+        <button
+          disabled={props.isProcessing}
+          onClick={() =>
+            Modal.open(ProposeLoanAllowlistModal, {
+              chainId: props.chainId,
+              onClose: async () => {},
+              userAddress: props.userAddress,
+            })
+          }
+        >
+          Manage Allowlist
+        </button>
+        <span className="value">
           Only users on your allowlist can propose loans for you to accept
-        </div>
+        </span>
       </div>
       <table>
         <thead>
           <tr>
-            <th>Lender</th>
-            <th>Amount to Borrow</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th className="label">Lender</th>
+            <th className="label">Amount to Borrow</th>
+            <th className="label">Status</th>
+            <th className="label">Actions</th>
           </tr>
         </thead>
         <tbody>
           {pendingBorrowingLoans.map((pendingLoan) => (
             <tr key={pendingLoan.loanID}>
-              <td>
+              <td className="value">
                 <UserIdentity identity={pendingLoan.lender} />
               </td>
-              <td className="amount">
+              <td className="amount value">
                 <AssetAmount
                   asset={pendingLoan.asset}
                   amount={pendingLoan.amountLoaned}
@@ -119,10 +116,10 @@ export function PendingBorrowingLoanList(props: PendingBorrowingLoanListProps) {
                   />
                 )}
               </td>
-              <td className="status">
+              <td className="status value">
                 <PendingLoanStatus loan={pendingLoan} />
               </td>
-              <td className="actions">
+              <td className="actions form-buttons">
                 {pendingLoan.status ==
                   PendingLoanStatusEnum.WAITING_FOR_ACCEPTANCE && (
                   <button

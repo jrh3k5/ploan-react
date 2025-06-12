@@ -183,67 +183,66 @@ export function ProposeLoanAllowlistModal(
 
   return (
     <ModalWrapper reportedError={capturedError}>
-      <ul className="details">
-        <li className="details">
-          <form onSubmit={handleSubmit(addToAllowlist)}>
-            <div>
-              <span className="label">Add to Allowlist</span>
-              <span className="value">
-                <input {...register("allowlistedAddress")} />
-              </span>
-              {formState.errors.allowlistedAddress && (
-                <InputError
-                  message={
-                    (formState?.errors?.allowlistedAddress
-                      ?.message as string) ?? "Unknown error"
-                  }
-                />
-              )}
-            </div>
-            <div className="form-buttons">
-              <button type="submit" disabled={isProcessing}>
-                Add to Allowlist
-              </button>
-            </div>
-          </form>
-        </li>
-        <li>
-          <span className="label">Manage Allowlist</span>
-          <span className="value">
-            <div>
-              <table>
-                <tbody>
-                  {allowlist.map((identity) => (
-                    <tr key={identity.address}>
-                      <td>
-                        <UserIdentity identity={identity} />
-                      </td>
-                      <td className="actions single-item">
-                        <button
-                          onClick={() => removeAllowedUser(identity)}
-                          disabled={isProcessing}
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </span>
-        </li>
-      </ul>
-      <div className="form-buttons">
-        <button
-          disabled={isProcessing}
-          onClick={async () => {
-            modal.close();
-            await props.onClose();
-          }}
+      <div className="allowlist-modal">
+        <form
+          className="allowlist-form"
+          onSubmit={handleSubmit(addToAllowlist)}
         >
-          Close
-        </button>
+          <label className="label" htmlFor="allowlistedAddress">
+            Add to Allowlist
+          </label>
+          <div className="allowlist-input-row">
+            <input
+              id="allowlistedAddress"
+              {...register("allowlistedAddress")}
+            />
+            <button type="submit" disabled={isProcessing}>
+              Add to Allowlist
+            </button>
+          </div>
+          {formState.errors.allowlistedAddress && (
+            <InputError
+              message={
+                (formState?.errors?.allowlistedAddress?.message as string) ??
+                "Unknown error"
+              }
+            />
+          )}
+        </form>
+        <div className="allowlist-table-section">
+          <div className="label">Manage Allowlist</div>
+          <table className="allowlist-table">
+            <tbody>
+              {allowlist.map((identity) => (
+                <tr key={identity.address}>
+                  <td className="allowlist-identity-cell">
+                    <UserIdentity identity={identity} />
+                  </td>
+                  <td className="actions single-item">
+                    <button
+                      onClick={() => removeAllowedUser(identity)}
+                      disabled={isProcessing}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="modal-actions">
+          <button
+            type="button"
+            disabled={isProcessing}
+            onClick={async () => {
+              modal.close();
+              await props.onClose();
+            }}
+          >
+            Close
+          </button>
+        </div>
       </div>
     </ModalWrapper>
   );
