@@ -25,13 +25,21 @@ export interface PendingLendingLoanListProps extends ProcessingAwareProps {
   onLoanCancellation: (loanID: string) => Promise<void>;
   onLoanExecution: (loanID: string) => Promise<void>;
   onLoanProposal: () => Promise<void>;
+  loanService?: PersonalLoanService | null;
+  errorReporter?: { reportAny: (error: any) => Promise<void> | void } | null;
+  appStateService?: {
+    startProcessing: (
+      name: string,
+    ) => Promise<{ complete: () => Promise<void> | void }>;
+  } | null;
 }
 
 // PendingLendingLoanList provides a component to show what offers of loans a user has to other users that have not yet been executed
 export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
-  const loanService = useContext(PersonalLoanContext);
-  const errorReporter = useContext(ErrorReporterContext);
-  const appStateService = useContext(ApplicationStateServiceContext);
+  const loanService = props.loanService || useContext(PersonalLoanContext);
+  const errorReporter = props.errorReporter || useContext(ErrorReporterContext);
+  const appStateService =
+    props.appStateService || useContext(ApplicationStateServiceContext);
 
   const pendingLoans = props.pendingLoans;
 
