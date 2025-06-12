@@ -114,7 +114,11 @@ describe("PendingLendingLoanList", () => {
       rejectBorrow: jest.fn(),
       repayLoan: jest.fn(),
     };
-    const errorReporter = { reportAny: jest.fn() };
+    const errorReporter = {
+      reportAny: jest.fn(),
+      reportError: jest.fn(),
+      reportErrorMessage: jest.fn(),
+    };
     const appStateService = {
       startProcessing: jest.fn().mockResolvedValue({ complete: jest.fn() }),
     };
