@@ -133,41 +133,53 @@ export function LoanManagement(props: LoanManagementProps) {
 
   return (
     <div className="loan-management">
-      <PendingBorrowingLoanList
-        chainId={chainId}
-        pendingBorrowingLoans={pendingBorrowingLoans}
-        onAcceptBorrow={onAcceptBorrow}
-        onRejectLoan={onRejectBorrow}
-        isProcessing={props.isProcessing}
-        userAddress={userAddress}
-      />
-      <PendingLendingLoanList
-        chainId={chainId}
-        pendingLoans={pendingLendingLoans}
-        onLoanCancellation={async () => {
-          await refreshPendingLendingLoans();
-        }}
-        onLoanExecution={async () => {
-          await Promise.all([
-            refreshPendingLendingLoans(),
-            refreshLendingLoans(),
-          ]);
-        }}
-        onLoanProposal={refreshPendingLendingLoans}
-        isProcessing={props.isProcessing}
-      />
-      <BorrowingLoanList
-        borrowingLoans={borrowingLoans}
-        onPaymentSubmission={refreshBorrowingLoans}
-        onLoanDeletion={refreshBorrowingLoans}
-        isProcessing={props.isProcessing}
-      />
-      <LendingLoanList
-        lendingLoans={lendingLoans}
-        onLoanCancelation={refreshLendingLoans}
-        onLoanDeletion={refreshLendingLoans}
-        isProcessing={props.isProcessing}
-      />
+      <section className="card">
+        <h2>Loans Offered to You</h2>
+        <PendingBorrowingLoanList
+          chainId={chainId}
+          pendingBorrowingLoans={pendingBorrowingLoans}
+          onAcceptBorrow={onAcceptBorrow}
+          onRejectLoan={onRejectBorrow}
+          isProcessing={props.isProcessing}
+          userAddress={userAddress}
+        />
+      </section>
+      <section className="card">
+        <h2>Loans You&apos;ve Offered Others</h2>
+        <PendingLendingLoanList
+          chainId={chainId}
+          pendingLoans={pendingLendingLoans}
+          onLoanCancellation={async () => {
+            await refreshPendingLendingLoans();
+          }}
+          onLoanExecution={async () => {
+            await Promise.all([
+              refreshPendingLendingLoans(),
+              refreshLendingLoans(),
+            ]);
+          }}
+          onLoanProposal={refreshPendingLendingLoans}
+          isProcessing={props.isProcessing}
+        />
+      </section>
+      <section className="card">
+        <h2>Loans You Owe On</h2>
+        <BorrowingLoanList
+          borrowingLoans={borrowingLoans}
+          onPaymentSubmission={refreshBorrowingLoans}
+          onLoanDeletion={refreshBorrowingLoans}
+          isProcessing={props.isProcessing}
+        />
+      </section>
+      <section className="card">
+        <h2>Loans Owed to You</h2>
+        <LendingLoanList
+          lendingLoans={lendingLoans}
+          onLoanCancelation={refreshLendingLoans}
+          onLoanDeletion={refreshLendingLoans}
+          isProcessing={props.isProcessing}
+        />
+      </section>
     </div>
   );
 }

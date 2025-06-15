@@ -234,7 +234,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
 
   return (
     <ModalWrapper reportedError={capturedError}>
-      <form onSubmit={handleSubmit(proposeLoan)}>
+      <form onSubmit={handleSubmit(proposeLoan)} className="propose-loan-modal">
         <h3 className="section-title">Propose Loan</h3>
         <ul className="details">
           <li>
@@ -294,7 +294,7 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
               {errors.amount && <InputError message="Invalid amount" />}
             </span>
           </li>
-          <li>
+          <li className="checkbox-group">
             <input
               disabled={isProcessing}
               type="checkbox"
@@ -325,13 +325,13 @@ export function ProposeLoanModal(props: ProposeLoanModalProps) {
             </span>
           </li>
         </ul>
-        <div className="contextual-description">
-          Clicking &quot;Propose&quot; will <b>not</b> transfer funds to the
-          user. It will merely propose a loan to be accepted by the user, after
-          which you will execute the loan - at which time, then, the assets will
-          be transferred to the borrower.
+        <div className="form-help contextual-description">
+          Clicking <b>Propose</b> will <b>not</b> transfer funds to the user. It
+          will merely propose a loan to be accepted by the user, after which you
+          will execute the loan—at which time, then, the assets will be
+          transferred to the borrower.
         </div>
-        <div className="form-buttons">
+        <div className="modal-actions">
           <button
             type="button"
             disabled={isProcessing}

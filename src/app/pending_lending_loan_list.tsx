@@ -112,9 +112,8 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
   };
 
   return (
-    <div className="loan-grouping">
-      <h3>Loans You&apos;ve Offered Others ({pendingLoans.length})</h3>
-      <div>
+    <div>
+      <div className="form-buttons start">
         <button
           onClick={() => {
             Modal.open(ProposeLoanModal, {
@@ -131,19 +130,19 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
       <table>
         <thead>
           <tr>
-            <th>Borrower</th>
-            <th>Amount to Lend</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th className="label">Borrower</th>
+            <th className="label">Amount to Lend</th>
+            <th className="label">Status</th>
+            <th className="label">Actions</th>
           </tr>
         </thead>
         <tbody>
           {pendingLoans.map((pendingLoan) => (
             <tr key={pendingLoan.loanID}>
-              <td>
+              <td className="value">
                 <UserIdentity identity={pendingLoan.borrower} />
               </td>
-              <td className="amount">
+              <td className="amount value">
                 <AssetAmount
                   asset={pendingLoan.asset}
                   amount={pendingLoan.amountLoaned}
@@ -155,10 +154,10 @@ export function PendingLendingLoanList(props: PendingLendingLoanListProps) {
                   />
                 )}
               </td>
-              <td className="status">
+              <td className="status value">
                 <PendingLoanStatus loan={pendingLoan} />
               </td>
-              <td className="actions">
+              <td className="actions form-buttons">
                 {pendingLoan.status == PendingLoanStatusEnum.ACCEPTED && (
                   <button
                     disabled={props.isProcessing}
