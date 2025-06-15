@@ -19,7 +19,7 @@
     "next": "^15",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-hook-form": "^7.56.2",
+    "react-hook-form": "^7.58.0",
     "react-modal-global": "^2.3.7",
     "sass": "^1.87.0",
     "viem": "latest",
