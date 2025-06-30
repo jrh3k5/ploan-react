@@ -12,7 +12,7 @@
     function n(o) {
       if (t[o]) return t[o].exports;
       var r = (t[o] = { i: o, l: !1, exports: {} });
-      return e[o].call(r.exports, r, r.exports, n), (r.l = !0), r.exports;
+      return (e[o].call(r.exports, r, r.exports, n), (r.l = !0), r.exports);
     }
     return (
       (n.m = e),
@@ -21,10 +21,10 @@
         n.o(e, t) || Object.defineProperty(e, t, { enumerable: !0, get: o });
       }),
       (n.r = function (e) {
-        "undefined" != typeof Symbol &&
+        ("undefined" != typeof Symbol &&
           Symbol.toStringTag &&
           Object.defineProperty(e, Symbol.toStringTag, { value: "Module" }),
-          Object.defineProperty(e, "__esModule", { value: !0 });
+          Object.defineProperty(e, "__esModule", { value: !0 }));
       }),
       (n.t = function (e, t) {
         if ((1 & t && (e = n(e)), 8 & t)) return e;
@@ -54,7 +54,7 @@
             : function () {
                 return e;
               };
-        return n.d(t, "a", t), t;
+        return (n.d(t, "a", t), t);
       }),
       (n.o = function (e, t) {
         return Object.prototype.hasOwnProperty.call(e, t);
@@ -69,15 +69,15 @@
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
-        (t.canUseDOM = t.SafeNodeList = t.SafeHTMLCollection = void 0);
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
+        (t.canUseDOM = t.SafeNodeList = t.SafeHTMLCollection = void 0));
       var o,
         r = n(21);
       var a = ((o = r) && o.__esModule ? o : { default: o }).default,
         l = a.canUseDOM ? window.HTMLElement : {};
-      (t.SafeHTMLCollection = a.canUseDOM ? window.HTMLCollection : {}),
+      ((t.SafeHTMLCollection = a.canUseDOM ? window.HTMLCollection : {}),
         (t.SafeNodeList = a.canUseDOM ? window.NodeList : {}),
-        (t.canUseDOM = a.canUseDOM);
+        (t.canUseDOM = a.canUseDOM));
       t.default = l;
     },
     function (t, n) {
@@ -93,10 +93,10 @@
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
         (t.default = function (e) {
           return [].slice.call(e.querySelectorAll("*"), 0).filter(l);
-        });
+        }));
       /*!
        * Adapted from jQuery UI core
        *
@@ -119,7 +119,7 @@
                 (e.scrollWidth <= 0 && e.scrollHeight <= 0)
             : "none" == n.getPropertyValue("display");
         } catch (e) {
-          return console.warn("Failed to inspect element style"), !1;
+          return (console.warn("Failed to inspect element style"), !1);
         }
       }
       function a(e, t) {
@@ -145,7 +145,7 @@
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
         (t.resetState = function () {
           i &&
             (i.removeAttribute
@@ -162,16 +162,16 @@
         (t.log = function () {
           0;
           var e = i || {};
-          console.log("ariaAppHider ----------"),
+          (console.log("ariaAppHider ----------"),
             console.log(e.nodeName, e.className, e.id),
-            console.log("end ariaAppHider ----------");
+            console.log("end ariaAppHider ----------"));
         }),
         (t.assertNodeList = s),
         (t.setElement = function (e) {
           var t = e;
           if ("string" == typeof t && l.canUseDOM) {
             var n = document.querySelectorAll(t);
-            s(n, t), (t = n);
+            (s(n, t), (t = n));
           }
           return (i = t || i);
         }),
@@ -189,7 +189,7 @@
               r.value.setAttribute("aria-hidden", "true");
             }
           } catch (e) {
-            (n = !0), (o = e);
+            ((n = !0), (o = e));
           } finally {
             try {
               !t && a.return && a.return();
@@ -211,7 +211,7 @@
               r.value.removeAttribute("aria-hidden");
             }
           } catch (e) {
-            (n = !0), (o = e);
+            ((n = !0), (o = e));
           } finally {
             try {
               !t && a.return && a.return();
@@ -222,7 +222,7 @@
         }),
         (t.documentNotReadyOrSSRTesting = function () {
           i = null;
-        });
+        }));
       var o,
         r = n(20),
         a = (o = r) && o.__esModule ? o : { default: o },
@@ -257,21 +257,21 @@
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
         (t.log = function () {
-          console.log("portalOpenInstances ----------"),
+          (console.log("portalOpenInstances ----------"),
             console.log(r.openInstances.length),
             r.openInstances.forEach(function (e) {
               return console.log(e);
             }),
-            console.log("end portalOpenInstances ----------");
+            console.log("end portalOpenInstances ----------"));
         }),
         (t.resetState = function () {
           r = new o();
-        });
+        }));
       var o = function e() {
           var t = this;
-          !(function (e, t) {
+          (!(function (e, t) {
             if (!(e instanceof t))
               throw new TypeError("Cannot call a class as a function");
           })(this, e),
@@ -301,7 +301,7 @@
               });
             }),
             (this.openInstances = []),
-            (this.subscribers = []);
+            (this.subscribers = []));
         },
         r = new o();
       t.default = r;
@@ -312,12 +312,12 @@
       var o,
         r = n(9),
         a = (o = r) && o.__esModule ? o : { default: o };
-      (t.default = a.default), (e.exports = t.default);
+      ((t.default = a.default), (e.exports = t.default));
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
-        (t.bodyOpenClassName = t.portalClassName = void 0);
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
+        (t.bodyOpenClassName = t.portalClassName = void 0));
       var o =
           Object.assign ||
           function (e) {
@@ -332,14 +332,14 @@
           function e(e, t) {
             for (var n = 0; n < t.length; n++) {
               var o = t[n];
-              (o.enumerable = o.enumerable || !1),
+              ((o.enumerable = o.enumerable || !1),
                 (o.configurable = !0),
                 "value" in o && (o.writable = !0),
-                Object.defineProperty(e, o.key, o);
+                Object.defineProperty(e, o.key, o));
             }
           }
           return function (t, n, o) {
-            return n && e(t.prototype, n), o && e(t, o), t;
+            return (n && e(t.prototype, n), o && e(t, o), t);
           };
         })(),
         a = n(2),
@@ -353,7 +353,7 @@
           if (null != e)
             for (var n in e)
               Object.prototype.hasOwnProperty.call(e, n) && (t[n] = e[n]);
-          return (t.default = e), t;
+          return ((t.default = e), t);
         })(n(6)),
         f = n(1),
         p = y(f),
@@ -434,7 +434,7 @@
                 "Super expression must either be null or a function, not " +
                   typeof t,
               );
-            (e.prototype = Object.create(t && t.prototype, {
+            ((e.prototype = Object.create(t && t.prototype, {
               constructor: {
                 value: e,
                 enumerable: !1,
@@ -445,7 +445,7 @@
               t &&
                 (Object.setPrototypeOf
                   ? Object.setPrototypeOf(e, t)
-                  : (e.__proto__ = t));
+                  : (e.__proto__ = t)));
           })(t, e),
           r(
             t,
@@ -479,9 +479,9 @@
                     e.portalClassName !== a && (this.node.className = a);
                     var l = n.prevParent,
                       i = n.nextParent;
-                    i !== l &&
+                    (i !== l &&
                       (l.removeChild(this.node), i.appendChild(this.node)),
-                      (e.isOpen || r) && !g && this.renderPortal(this.props);
+                      (e.isOpen || r) && !g && this.renderPortal(this.props));
                   }
                 },
               },
@@ -536,7 +536,7 @@
           t
         );
       })(a.Component);
-      (S.propTypes = {
+      ((S.propTypes = {
         isOpen: s.default.bool.isRequired,
         style: s.default.shape({
           content: s.default.object,
@@ -637,7 +637,7 @@
         (S.setCreateHTMLElement = function (e) {
           return (O = e);
         }),
-        (t.default = S);
+        (t.default = S));
     },
     function (e, n) {
       e.exports = t;
@@ -703,7 +703,7 @@
       function S(e) {
         return C(e) === p;
       }
-      (t.AsyncMode = f),
+      ((t.AsyncMode = f),
         (t.ConcurrentMode = p),
         (t.ContextConsumer = c),
         (t.ContextProvider = u),
@@ -776,7 +776,7 @@
                 e.$$typeof === b))
           );
         }),
-        (t.typeOf = C);
+        (t.typeOf = C));
     },
     function (e, t, n) {
       "use strict";
@@ -856,7 +856,7 @@
         function F(e) {
           return O(e) === c;
         }
-        (t.AsyncMode = w),
+        ((t.AsyncMode = w),
           (t.ConcurrentMode = C),
           (t.ContextConsumer = S),
           (t.ContextProvider = E),
@@ -936,7 +936,7 @@
                   e.$$typeof === h))
             );
           }),
-          (t.typeOf = O);
+          (t.typeOf = O));
       })();
     },
     function (e, t, n) {
@@ -950,7 +950,7 @@
       function u() {
         return null;
       }
-      (s = function (e) {
+      ((s = function (e) {
         var t = "Warning: " + e;
         "undefined" != typeof console && console.error(t);
         try {
@@ -1236,7 +1236,7 @@
             return e === t ? 0 !== e || 1 / e == 1 / t : e != e && t != t;
           }
           function p(e) {
-            (this.message = e), (this.stack = "");
+            ((this.message = e), (this.stack = ""));
           }
           function d(e) {
             var n = {},
@@ -1289,7 +1289,7 @@
                 : e(l, i, u, c, f);
             }
             var l = r.bind(null, !1);
-            return (l.isRequired = r.bind(null, !0)), l;
+            return ((l.isRequired = r.bind(null, !0)), l);
           }
           function y(e) {
             return d(function (t, n, o, r, a, l) {
@@ -1389,7 +1389,7 @@
             (c.PropTypes = c),
             c
           );
-        });
+        }));
     },
     function (e, t, n) {
       "use strict";
@@ -1499,7 +1499,7 @@ object-assign
             }
           }
       }
-      (o = function (e) {
+      ((o = function (e) {
         var t = "Warning: " + e;
         "undefined" != typeof console && console.error(t);
         try {
@@ -1509,14 +1509,14 @@ object-assign
         (i.resetWarningCache = function () {
           a = {};
         }),
-        (e.exports = i);
+        (e.exports = i));
     },
     function (e, t, n) {
       "use strict";
       var o = n(0);
       function r() {}
       function a() {}
-      (a.resetWarningCache = r),
+      ((a.resetWarningCache = r),
         (e.exports = function () {
           function e(e, t, n, r, a, l) {
             if (l !== o) {
@@ -1552,8 +1552,8 @@ object-assign
             checkPropTypes: a,
             resetWarningCache: r,
           };
-          return (n.PropTypes = n), n;
-        });
+          return ((n.PropTypes = n), n);
+        }));
     },
     function (e, t, n) {
       "use strict";
@@ -1585,14 +1585,14 @@ object-assign
           function e(e, t) {
             for (var n = 0; n < t.length; n++) {
               var o = t[n];
-              (o.enumerable = o.enumerable || !1),
+              ((o.enumerable = o.enumerable || !1),
                 (o.configurable = !0),
                 "value" in o && (o.writable = !0),
-                Object.defineProperty(e, o.key, o);
+                Object.defineProperty(e, o.key, o));
             }
           }
           return function (t, n, o) {
-            return n && e(t.prototype, n), o && e(t, o), t;
+            return (n && e(t.prototype, n), o && e(t, o), t);
           };
         })(),
         l = n(2),
@@ -1610,7 +1610,7 @@ object-assign
         if (null != e)
           for (var n in e)
             Object.prototype.hasOwnProperty.call(e, n) && (t[n] = e[n]);
-        return (t.default = e), t;
+        return ((t.default = e), t);
       }
       function h(e) {
         return e && e.__esModule ? e : { default: e };
@@ -1638,10 +1638,10 @@ object-assign
             })(this, (t.__proto__ || Object.getPrototypeOf(t)).call(this, e));
             return (
               (n.setOverlayRef = function (e) {
-                (n.overlay = e), n.props.overlayRef && n.props.overlayRef(e);
+                ((n.overlay = e), n.props.overlayRef && n.props.overlayRef(e));
               }),
               (n.setContentRef = function (e) {
-                (n.content = e), n.props.contentRef && n.props.contentRef(e);
+                ((n.content = e), n.props.contentRef && n.props.contentRef(e));
               }),
               (n.afterClose = function () {
                 var e = n.props,
@@ -1649,7 +1649,7 @@ object-assign
                   o = e.ariaHideApp,
                   r = e.htmlOpenClassName,
                   a = e.bodyOpenClassName;
-                a && f.remove(document.body, a),
+                (a && f.remove(document.body, a),
                   r && f.remove(document.getElementsByTagName("html")[0], r),
                   o && b > 0 && 0 === (b -= 1) && c.show(t),
                   n.props.shouldFocusAfterRender &&
@@ -1658,10 +1658,10 @@ object-assign
                         s.teardownScopedFocus())
                       : s.popWithoutFocus()),
                   n.props.onAfterClose && n.props.onAfterClose(),
-                  y.default.deregister(n);
+                  y.default.deregister(n));
               }),
               (n.open = function () {
-                n.beforeOpen(),
+                (n.beforeOpen(),
                   n.state.afterOpen && n.state.beforeClose
                     ? (clearTimeout(n.closeTimer),
                       n.setState({ beforeClose: !1 }))
@@ -1670,16 +1670,16 @@ object-assign
                       n.setState({ isOpen: !0 }, function () {
                         n.openAnimationFrame = requestAnimationFrame(
                           function () {
-                            n.setState({ afterOpen: !0 }),
+                            (n.setState({ afterOpen: !0 }),
                               n.props.isOpen &&
                                 n.props.onAfterOpen &&
                                 n.props.onAfterOpen({
                                   overlayEl: n.overlay,
                                   contentEl: n.content,
-                                });
+                                }));
                           },
                         );
-                      }));
+                      })));
               }),
               (n.close = function () {
                 n.props.closeTimeoutMS > 0
@@ -1714,19 +1714,19 @@ object-assign
                 );
               }),
               (n.handleKeyDown = function (e) {
-                9 === e.keyCode && (0, u.default)(n.content, e),
+                (9 === e.keyCode && (0, u.default)(n.content, e),
                   n.props.shouldCloseOnEsc &&
                     27 === e.keyCode &&
-                    (e.stopPropagation(), n.requestClose(e));
+                    (e.stopPropagation(), n.requestClose(e)));
               }),
               (n.handleOverlayOnClick = function (e) {
-                null === n.shouldClose && (n.shouldClose = !0),
+                (null === n.shouldClose && (n.shouldClose = !0),
                   n.shouldClose &&
                     n.props.shouldCloseOnOverlayClick &&
                     (n.ownerHandlesClose()
                       ? n.requestClose(e)
                       : n.focusContent()),
-                  (n.shouldClose = null);
+                  (n.shouldClose = null));
               }),
               (n.handleContentOnMouseUp = function () {
                 n.shouldClose = !1;
@@ -1775,7 +1775,7 @@ object-assign
               }),
               (n.attributesFromObject = function (e, t) {
                 return Object.keys(t).reduce(function (n, o) {
-                  return (n[e + "-" + o] = t[o]), n;
+                  return ((n[e + "-" + o] = t[o]), n);
                 }, {});
               }),
               (n.state = { afterOpen: !1, beforeClose: !1 }),
@@ -1791,7 +1791,7 @@ object-assign
                   "Super expression must either be null or a function, not " +
                     typeof t,
                 );
-              (e.prototype = Object.create(t && t.prototype, {
+              ((e.prototype = Object.create(t && t.prototype, {
                 constructor: {
                   value: e,
                   enumerable: !1,
@@ -1802,7 +1802,7 @@ object-assign
                 t &&
                   (Object.setPrototypeOf
                     ? Object.setPrototypeOf(e, t)
-                    : (e.__proto__ = t));
+                    : (e.__proto__ = t)));
             })(t, e),
             a(t, [
               {
@@ -1814,7 +1814,7 @@ object-assign
               {
                 key: "componentDidUpdate",
                 value: function (e, t) {
-                  e.bodyOpenClassName !== this.props.bodyOpenClassName &&
+                  (e.bodyOpenClassName !== this.props.bodyOpenClassName &&
                     console.warn(
                       'React-Modal: "bodyOpenClassName" prop has been modified. This may cause unexpected behavior when multiple modals are open.',
                     ),
@@ -1828,15 +1828,15 @@ object-assign
                     this.props.shouldFocusAfterRender &&
                       this.state.isOpen &&
                       !t.isOpen &&
-                      this.focusContent();
+                      this.focusContent());
                 },
               },
               {
                 key: "componentWillUnmount",
                 value: function () {
-                  this.state.isOpen && this.afterClose(),
+                  (this.state.isOpen && this.afterClose(),
                     clearTimeout(this.closeTimer),
-                    cancelAnimationFrame(this.openAnimationFrame);
+                    cancelAnimationFrame(this.openAnimationFrame));
                 },
               },
               {
@@ -1847,10 +1847,10 @@ object-assign
                     n = e.ariaHideApp,
                     o = e.htmlOpenClassName,
                     r = e.bodyOpenClassName;
-                  r && f.add(document.body, r),
+                  (r && f.add(document.body, r),
                     o && f.add(document.getElementsByTagName("html")[0], o),
                     n && ((b += 1), c.hide(t)),
-                    y.default.register(this);
+                    y.default.register(this));
                 },
               },
               {
@@ -1901,7 +1901,7 @@ object-assign
             t
           );
         })(l.Component);
-      (g.defaultProps = {
+      ((g.defaultProps = {
         style: { overlay: {}, content: {} },
         defaultStyles: {},
       }),
@@ -1951,22 +1951,22 @@ object-assign
           testId: i.default.string,
         }),
         (t.default = g),
-        (e.exports = t.default);
+        (e.exports = t.default));
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
         (t.resetState = function () {
           l = [];
         }),
         (t.log = function () {
           0;
-          console.log("focusManager ----------"),
+          (console.log("focusManager ----------"),
             l.forEach(function (e) {
               var t = e || {};
               console.log(t.nodeName, t.className, t.id);
             }),
-            console.log("end focusManager ----------");
+            console.log("end focusManager ----------"));
         }),
         (t.handleBlur = u),
         (t.handleFocus = c),
@@ -1995,21 +1995,21 @@ object-assign
           l.length > 0 && l.pop();
         }),
         (t.setupScopedFocus = function (e) {
-          (i = e),
+          ((i = e),
             window.addEventListener
               ? (window.addEventListener("blur", u, !1),
                 document.addEventListener("focus", c, !0))
               : (window.attachEvent("onBlur", u),
-                document.attachEvent("onFocus", c));
+                document.attachEvent("onFocus", c)));
         }),
         (t.teardownScopedFocus = function () {
-          (i = null),
+          ((i = null),
             window.addEventListener
               ? (window.removeEventListener("blur", u),
                 document.removeEventListener("focus", c))
               : (window.detachEvent("onBlur", u),
-                document.detachEvent("onFocus", c));
-        });
+                document.detachEvent("onFocus", c)));
+        }));
       var o,
         r = n(5),
         a = (o = r) && o.__esModule ? o : { default: o };
@@ -2031,7 +2031,7 @@ object-assign
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
         (t.default = function (e, t) {
           var n = (0, a.default)(e);
           if (!n.length) return void t.preventDefault();
@@ -2045,7 +2045,7 @@ object-assign
           }
           i !== document.activeElement || r || (o = l);
           l === document.activeElement && r && (o = i);
-          if (o) return t.preventDefault(), void o.focus();
+          if (o) return (t.preventDefault(), void o.focus());
           var s = /(\bChrome\b|\bSafari\b)\//.exec(navigator.userAgent);
           if (
             null == s ||
@@ -2056,9 +2056,9 @@ object-assign
           var u = n.indexOf(document.activeElement);
           u > -1 && (u += r ? -1 : 1);
           if (void 0 === (o = n[u]))
-            return t.preventDefault(), void (o = r ? i : l).focus();
-          t.preventDefault(), o.focus();
-        });
+            return (t.preventDefault(), void (o = r ? i : l).focus());
+          (t.preventDefault(), o.focus());
+        }));
       var o,
         r = n(5),
         a = (o = r) && o.__esModule ? o : { default: o };
@@ -2082,7 +2082,7 @@ object-assign
             throw new Error(a);
           } catch (e) {}
         };
-      (o = function (e, t, n) {
+      ((o = function (e, t, n) {
         var o = arguments.length;
         n = new Array(o > 2 ? o - 2 : 0);
         for (var a = 2; a < o; a++) n[a - 2] = arguments[a];
@@ -2092,7 +2092,7 @@ object-assign
           );
         e || r.apply(null, [t].concat(n));
       }),
-        (e.exports = o);
+        (e.exports = o));
     },
     function (e, t, n) {
       var o;
@@ -2122,13 +2122,13 @@ object-assign
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
         (t.resetState = function () {
           var e = document.getElementsByTagName("html")[0];
           for (var t in o) a(e, o[t]);
           var n = document.body;
           for (var l in r) a(n, r[l]);
-          (o = {}), (r = {});
+          ((o = {}), (r = {}));
         }),
         (t.log = function () {
           0;
@@ -2140,22 +2140,22 @@ object-assign
           (t += "\n\ndoc.body (" + e + "):\n"),
           r))
             t += "  " + a + " " + r[a] + "\n";
-          (t += "\n"), console.log(t);
-        });
+          ((t += "\n"), console.log(t));
+        }));
       var o = {},
         r = {};
       function a(e, t) {
         e.classList.remove(t);
       }
-      (t.add = function (e, t) {
+      ((t.add = function (e, t) {
         return (
           (n = e.classList),
           (a = "html" == e.nodeName.toLowerCase() ? o : r),
           void t.split(" ").forEach(function (e) {
-            !(function (e, t) {
-              e[t] || (e[t] = 0), (e[t] += 1);
+            (!(function (e, t) {
+              (e[t] || (e[t] = 0), (e[t] += 1));
             })(a, e),
-              n.add(e);
+              n.add(e));
           })
         );
         var n, a;
@@ -2165,33 +2165,33 @@ object-assign
             (n = e.classList),
             (a = "html" == e.nodeName.toLowerCase() ? o : r),
             void t.split(" ").forEach(function (e) {
-              !(function (e, t) {
+              (!(function (e, t) {
                 e[t] && (e[t] -= 1);
               })(a, e),
-                0 === a[e] && n.remove(e);
+                0 === a[e] && n.remove(e));
             })
           );
           var n, a;
-        });
+        }));
     },
     function (e, t, n) {
       "use strict";
-      Object.defineProperty(t, "__esModule", { value: !0 }),
+      (Object.defineProperty(t, "__esModule", { value: !0 }),
         (t.resetState = function () {
           for (var e = [l, i], t = 0; t < e.length; t++) {
             var n = e[t];
             n && n.parentNode && n.parentNode.removeChild(n);
           }
-          (l = i = null), (s = []);
+          ((l = i = null), (s = []));
         }),
         (t.log = function () {
-          console.log("bodyTrap ----------"), console.log(s.length);
+          (console.log("bodyTrap ----------"), console.log(s.length));
           for (var e = [l, i], t = 0; t < e.length; t++) {
             var n = e[t] || {};
             console.log(n.nodeName, n.className, n.id);
           }
           console.log("edn bodyTrap ----------");
-        });
+        }));
       var o,
         r = n(7),
         a = (o = r) && o.__esModule ? o : { default: o };
@@ -2204,7 +2204,7 @@ object-assign
           : console.warn("React-Modal: Open instances > 0 expected");
       }
       a.default.subscribe(function (e, t) {
-        l ||
+        (l ||
           i ||
           ((l = document.createElement("div")).setAttribute(
             "data-react-modal-body-trap",
@@ -2220,7 +2220,7 @@ object-assign
                 document.body.insertBefore(l, document.body.firstChild),
               document.body.lastChild !== i && document.body.appendChild(i))
             : (l.parentElement && l.parentElement.removeChild(l),
-              i.parentElement && i.parentElement.removeChild(i));
+              i.parentElement && i.parentElement.removeChild(i)));
       });
     },
     function (e, t, n) {
@@ -2244,12 +2244,15 @@ object-assign
         try {
           var n = this.props,
             o = this.state;
-          (this.props = e),
+          ((this.props = e),
             (this.state = t),
             (this.__reactInternalSnapshotFlag = !0),
-            (this.__reactInternalSnapshot = this.getSnapshotBeforeUpdate(n, o));
+            (this.__reactInternalSnapshot = this.getSnapshotBeforeUpdate(
+              n,
+              o,
+            )));
         } finally {
-          (this.props = n), (this.state = o);
+          ((this.props = n), (this.state = o));
         }
       }
       function l(e) {
@@ -2316,13 +2319,13 @@ object-assign
         }
         return e;
       }
-      n.r(t),
+      (n.r(t),
         n.d(t, "polyfill", function () {
           return l;
         }),
         (o.__suppressDeprecationWarning = !0),
         (r.__suppressDeprecationWarning = !0),
-        (a.__suppressDeprecationWarning = !0);
+        (a.__suppressDeprecationWarning = !0));
     },
   ]);
 });
